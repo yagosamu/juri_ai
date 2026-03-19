@@ -9,6 +9,9 @@ from agno.vectordb.lancedb import LanceDb
 from .literals import TribunalLiteral
 from dotenv import load_dotenv
 
+#AGNO agent 
+
+
 load_dotenv()  # Carrega as variáveis de ambiente do arquivo .env
 
 @tool

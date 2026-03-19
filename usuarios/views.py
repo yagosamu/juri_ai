@@ -1,6 +1,5 @@
 from django.contrib.auth import authenticate
-from django.contrib import auth
-from django.shortcuts import render
+from django.contrib import auth, messages
 from django.shortcuts import render, redirect
 from django.contrib.messages import constants
 from django.contrib import messages
@@ -9,6 +8,9 @@ from .models import Cliente, Documentos
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from ia.agents import JuriAI
+from usuarios.models import Documentos
+
+
 
 def cadastro(request):
     if request.method == 'GET':
@@ -101,3 +103,5 @@ def cliente(request, id):
         documentos.save()
 
         return redirect(reverse('cliente', kwargs={'id': cliente.id}))
+    
+
