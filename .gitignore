@@ -28,6 +28,9 @@ staticfiles/
 .env.*
 !.env.example
 
+# Google OAuth secrets
+client_secret_*.json
+
 # LanceDB
 lancedb/
 

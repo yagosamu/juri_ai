@@ -6,7 +6,7 @@ from ia.models import Pergunta
 from usuarios.models import Cliente, Documentos
 from .models import ContextRag, Pergunta, AnaliseJurisprudencia, Documentos
 from django.http import JsonResponse, StreamingHttpResponse
-from .agents import JuriAI
+from .agents import JuriAI, SecretariaAI
 from typing import Iterator
 from agno.agent import RunOutputEvent, RunEvent
 from ia.agente_langchain import JurisprudenciaAI
@@ -14,6 +14,7 @@ from .models import AnaliseJurisprudencia
 from django.contrib import messages
 from django.contrib.messages import constants
 import time
+from agno.agent import RunOutput
 
 
 @csrf_exempt
