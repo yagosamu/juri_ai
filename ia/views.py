@@ -15,6 +15,11 @@ from django.contrib import messages
 from django.contrib.messages import constants
 import time
 from agno.agent import RunOutput
+import json
+from usuarios.wrapper_evolutionapi import SendMessage
+from agno.agent import RunOutput
+from .agents import SecretariaAI
+
 
 
 @csrf_exempt
@@ -120,3 +125,16 @@ def processar_analise(request, id):
     except Exception as e:
         messages.add_message(request, constants.ERROR, f'Erro ao processar análise: {str(e)}')
         return redirect('analise_jurisprudencia', id=id)
+
+
+@csrf_exempt
+def webhook_whatsapp(request):
+    data = json.loads(request.body)
+    phone = data.get('data').get('key').get('remoteJid').split('@')[0]
+    message = data.get('data').get('message').get('extendedTextMessage').get('text')
+
+    agent = SecretariaAI.build_agent(session_id=phone)
+    response: RunOutput = agent.run(message)
+    print(response.content)
+    return JsonResponse({'response': response.content})
+    #send_message = SendMessage().send_message('arcane3', {"number": phone, "textMessage": {"text": response}})
