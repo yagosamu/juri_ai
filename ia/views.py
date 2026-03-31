@@ -16,7 +16,7 @@ from django.contrib.messages import constants
 import time
 from agno.agent import RunOutput
 import json
-from usuarios.wrapper_evolutionapi import SendMessage
+from .wrapper_evolution_api import SendMessage
 from agno.agent import RunOutput
 from .agents import SecretariaAI
 
@@ -137,4 +137,4 @@ def webhook_whatsapp(request):
     response: RunOutput = agent.run(message)
     print(response.content)
     return JsonResponse({'response': response.content})
-    #send_message = SendMessage().send_message('arcane3', {"number": phone, "textMessage": {"text": response}})
+    #send_message = SendMessage().send_message('arcane3(nome da instancia conectada no evolution API)', {"number": phone, "textMessage": {"text": response}})
