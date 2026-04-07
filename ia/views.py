@@ -1,12 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Max
 from django.views.decorators.csrf import csrf_exempt
+from usuarios.models import ConfiguracaoWhatsApp
 from mpire import context
 from semchunk.semchunk import chunk
 from ia.models import Pergunta
 from usuarios.models import Cliente, Documentos
 from .models import ContextRag, Pergunta, AnaliseJurisprudencia, Documentos
 from django.http import JsonResponse, StreamingHttpResponse
-from .agents import JuriAI
+from .agents import JuriAI, SecretariaAI
 from typing import Iterator
 from agno.agent import RunOutputEvent, RunEvent
 from ia.agente_langchain import JurisprudenciaAI
@@ -14,9 +17,16 @@ from .models import AnaliseJurisprudencia
 from django.contrib import messages
 from django.contrib.messages import constants
 import time
+from agno.agent import RunOutput
+import json
+from .wrapper_evolution_api import SendMessage
+from agno.agent import RunOutput
+from .agents import SecretariaAI
+
 
 
 @csrf_exempt
+@login_required
 def chat(request, id):
     cliente = Cliente.objects.get(id=id)
     if request.method == 'GET':
@@ -28,6 +38,7 @@ def chat(request, id):
         return JsonResponse({'id': pergunta_model.id})
     
 
+@login_required
 def stream_resposta(request):
     id_pergunta = request.POST.get('id_pergunta')
 
@@ -55,6 +66,7 @@ def stream_resposta(request):
     return response
 
 
+@login_required
 def ver_referencias(request, id):
     pergunta = get_object_or_404(Pergunta, id=id)
     contextos = ContextRag.objects.filter(pergunta=pergunta)
@@ -64,8 +76,9 @@ def ver_referencias(request, id):
     })
 
 
+@login_required
 def analise_jurisprudencia(request, id):
-    documento = get_object_or_404(Documentos, id=id)
+    documento = get_object_or_404(Documentos, id=id, cliente__user=request.user)
     analise = AnaliseJurisprudencia.objects.filter(documento=documento).first()
     return render(request, 'analise_jurisprudencia.html', {
         'documento': documento,
@@ -73,6 +86,7 @@ def analise_jurisprudencia(request, id):
     })
 
 
+@login_required
 def processar_analise(request, id):
     if request.method != 'POST':
         messages.add_message(request, constants.ERROR, 'Método não permitido.')
@@ -119,3 +133,45 @@ def processar_analise(request, id):
     except Exception as e:
         messages.add_message(request, constants.ERROR, f'Erro ao processar análise: {str(e)}')
         return redirect('analise_jurisprudencia', id=id)
+
+
+@login_required
+def lista_chats(request):
+    clientes = (Cliente.objects
+                .filter(user=request.user, pergunta__isnull=False)
+                .annotate(
+                    total_perguntas=Count('pergunta'),
+                    ultima_pergunta_id=Max('pergunta__id'),
+                )
+                .distinct()
+                .order_by('-ultima_pergunta_id'))
+    return render(request, 'lista_chats.html', {'clientes': clientes})
+
+
+@login_required
+def lista_analises(request):
+    analises = (AnaliseJurisprudencia.objects
+                .filter(documento__cliente__user=request.user)
+                .select_related('documento', 'documento__cliente')
+                .order_by('-data_criacao'))
+    return render(request, 'lista_analises.html', {'analises': analises})
+
+
+@csrf_exempt
+def webhook_whatsapp(request):
+    data = json.loads(request.body)
+    instancia = data.get('instance')
+    phone = data.get('data').get('key').get('remoteJid').split('@')[0]
+    message = data.get('data').get('message').get('extendedTextMessage').get('text')
+
+    config = get_object_or_404(ConfiguracaoWhatsApp, instancia=instancia)
+
+    agent = SecretariaAI.build_agent(session_id=phone)
+    response: RunOutput = agent.run(message)
+
+    SendMessage(base_url=config.base_url, api_key=config.api_key).send_message(
+        config.instancia,
+        {"number": phone, "textMessage": {"text": response.content}}
+    )
+
+    return JsonResponse({'response': response.content})

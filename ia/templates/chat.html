@@ -1,56 +1,64 @@
 {% extends "base.html" %}
-{% load static %}
-{% block 'body' %}
-<main>
-    <header class="relative isolate bg-indigo-200/80">
-        <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-            <div class="mx-auto flex max-w-2xl items-center justify-between gap-x-8 lg:mx-0 lg:max-w-none">
-                <div class="flex items-center gap-x-6">
-                    <h1>
-                        <div class="mt-1 text-base font-semibold text-gray-900">{{ cliente.nome }}</div>
-                    </h1>
-                </div>
-            </div>
-        </div>
-    </header>
-    <div class="px-4 md:px-0">
-        <div
-            class="mx-auto bg-slate-50 mt-8 max-w-4xl px-4 py-16 sm:px-6 lg:px-8 border border-slate-200/60 rounded-md">
-            <!-- Container principal empilhando tudo -->
-            <div class="flex flex-col gap-6" id="chat">
-                <!-- Mensagem do assistente -->
-                <div class="flex items-start gap-2.5">
-                    <img class="w-12 h-12 rounded-full" src="{% static 'assistente_virtual.png' %}">
-                    <div class="flex flex-col gap-1 w-full max-w-[320px]">
-                        <div class="flex items-center space-x-2 rtl:space-x-reverse">
-                            <span class="text-sm font-semibold text-gray-900">PsiQuete</span>
-                            <span class="text-sm font-normal text-gray-500">11:46</span>
-                        </div>
-                        <div
-                            class="flex flex-col leading-1.5 p-4 border-gray-200 bg-gray-200 rounded-e-xl rounded-es-xl">
-                            <p class="text-sm font-normal py-2.5 text-gray-900">Olá, eu sou sua assistente virtual. Como
-                                posso ajudar?</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+{% block 'content' %}
+
+  {# ── Page Header ── #}
+  <div class="bg-white border-b border-slate-200 px-8 py-5 sticky top-0 z-10">
+    <div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium mb-1">
+      <span>Início</span>
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+      </svg>
+      <span>Análise Jurídica</span>
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+      </svg>
+      <span class="text-slate-600">{{ cliente.nome }}</span>
     </div>
-    <div class="px-4 md:px-0">
-        <div class="mx-auto bg-slate-50 mt-6 max-w-4xl px-4 py-4 sm:px-6 lg:px-8 border border-slate-200/60 rounded-md">
-            <form id="form-pergunta">
-                <div class="flex items-center gap-4">
-                    <input type="text" name="pergunta" id="pergunta" placeholder="Digite sua pergunta..."
-                        class="flex-1 border border-slate-300 rounded-md px-4 py-2 text-sm text-gray-800 bg-white">
-                    <button type="submit"
-                        class="rounded-md cursor-pointer bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                        Enviar
-                    </button>
-                </div>
-            </form>
+    <h1 class="text-slate-900 text-xl font-semibold tracking-tight">{{ cliente.nome }}</h1>
+  </div>
+
+  {# ── Chat Body ── #}
+  <div class="px-8 py-8">
+    <div class="mx-auto bg-white max-w-4xl px-6 py-8 border border-slate-200 rounded-2xl shadow-sm">
+      <div class="flex flex-col gap-6" id="chat">
+
+        {# Mensagem de boas-vindas #}
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.75">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.97zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.97z" />
+            </svg>
+          </div>
+          <div class="flex flex-col gap-1 w-full max-w-[360px]">
+            <div class="flex items-center space-x-2">
+              <span class="text-sm font-semibold text-gray-900">JuriAI</span>
+            </div>
+            <div class="flex flex-col leading-1.5 p-4 bg-slate-100 rounded-e-xl rounded-es-xl">
+              <p class="text-sm font-normal text-gray-900">Olá, sou o JuriAI. Como posso ajudar com este caso?</p>
+            </div>
+          </div>
         </div>
+
+      </div>
     </div>
-</main>
+  </div>
+
+  {# ── Input Form ── #}
+  <div class="px-8 pb-8">
+    <div class="mx-auto max-w-4xl">
+      <form id="form-pergunta">
+        <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-4 py-3 shadow-sm">
+          <input type="text" name="pergunta" id="pergunta" placeholder="Digite sua pergunta jurídica..."
+              class="flex-1 border-none outline-none text-sm text-gray-800 bg-transparent">
+          <button type="submit"
+              class="rounded-xl cursor-pointer bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+            Enviar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 <script>
     document.getElementById('form-pergunta').addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -67,12 +75,11 @@
         const novaMensagem1 = document.createElement("div");
         novaMensagem1.className = "flex items-start gap-2.5 justify-end";
         novaMensagem1.innerHTML = `
-                <div class="flex flex-col gap-1 w-full max-w-[320px] text-right">
+                <div class="flex flex-col gap-1 w-full max-w-[360px] text-right">
                     <div class="flex items-center justify-end space-x-2 rtl:space-x-reverse">
-                    <span class="text-sm font-normal text-gray-500">11:46</span>
                     <span class="text-sm font-semibold text-gray-900">Você</span>
                     </div>
-                        <div class="flex flex-col leading-1.5 p-4 bg-indigo-200 text-gray-900 rounded-s-xl rounded-ee-xl">
+                        <div class="flex flex-col leading-1.5 p-4 bg-indigo-100 text-gray-900 rounded-s-xl rounded-ee-xl">
                         <p class="text-sm font-normal py-2.5">
                             ${pergunta}
                         </p>
@@ -82,19 +89,22 @@
         document.getElementById("chat").appendChild(novaMensagem1);
 
         const novaMensagem = document.createElement("div");
-        novaMensagem.className = "flex items-start gap-2.5";
+        novaMensagem.className = "flex items-start gap-3";
 
         novaMensagem.innerHTML = `
-                <img class="w-12 h-12 rounded-full" src="{% static 'assistente_virtual.png' %}" alt="Pythonete">
-                <div class="flex flex-col gap-1 w-full max-w-[320px]">
+                <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
+                  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.75">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.97zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.97z" />
+                  </svg>
+                </div>
+                <div class="flex flex-col gap-1 w-full max-w-[360px]">
                     <div class="flex items-center space-x-2 rtl:space-x-reverse">
-                        <span class="text-sm font-semibold text-gray-900">PsiQuete</span>
-                        <span class="text-sm font-normal text-gray-500">10:00</span>
+                        <span class="text-sm font-semibold text-gray-900">JuriAI</span>
                     </div>
-                    <div class="flex flex-col leading-1.5 p-4 border-gray-200 bg-gray-200 rounded-e-xl rounded-es-xl">
-                        <p id="resposta-pythonete-${perguntaId}" class="text-sm font-normal py-2.5 text-gray-900"></p>
+                    <div class="flex flex-col leading-1.5 p-4 bg-slate-100 rounded-e-xl rounded-es-xl">
+                        <p id="resposta-juriai-${perguntaId}" class="text-sm font-normal py-2.5 text-gray-900"></p>
                     </div>
-                   <a href="/ia/ver_referencias/${perguntaId}" class="text-sm font-normal text-gray-500 dark:text-gray-400">Confira as fontes</a>
+                   <a href="/ia/ver_referencias/${perguntaId}" class="text-xs font-normal text-slate-400 hover:text-slate-600 transition-colors">Confira as fontes</a>
                 </div>
             `;
 
@@ -104,13 +114,14 @@
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
             },
             body: new URLSearchParams({ id_pergunta: perguntaId })
         });
 
         const reader = streamResponse.body.getReader()
         const decoder = new TextDecoder("utf-8")
-        const respostaElemento = document.getElementById(`resposta-pythonete-${perguntaId}`)
+        const respostaElemento = document.getElementById(`resposta-juriai-${perguntaId}`)
 
         while (true) {
             const { done, value } = await reader.read()
@@ -124,4 +135,4 @@
     })
 
 </script>
-{% endblock 'body' %}
+{% endblock 'content' %}

@@ -1,6 +1,25 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 from martor.models import MartorField
+from cryptography.fernet import Fernet
+
+
+class EncryptedCharField(models.TextField):
+    """Armazena valor criptografado com Fernet. Requer FIELD_ENCRYPTION_KEY no .env"""
+
+    def _cipher(self):
+        return Fernet(settings.FIELD_ENCRYPTION_KEY.encode())
+
+    def from_db_value(self, value, expression, connection):
+        if value:
+            return self._cipher().decrypt(value.encode()).decode()
+        return value
+
+    def get_prep_value(self, value):
+        if value:
+            return self._cipher().encrypt(value.encode()).decode()
+        return value
 
 class Cliente(models.Model):
     # a classe model esencial para criar a tabela no banco de dados, 
@@ -41,3 +60,13 @@ class Documentos(models.Model):
 
     def __str__(self):
         return self.tipo
+
+
+class ConfiguracaoWhatsApp(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='configuracao_whatsapp')
+    base_url = models.URLField(help_text="URL do servidor Evolution API (ex: http://meuservidor.com)")
+    api_key = EncryptedCharField(help_text="API Key da instância Evolution API")
+    instancia = models.CharField(max_length=100, help_text="Nome da instância no Evolution API")
+
+    def __str__(self):
+        return f"WhatsApp — {self.user.username}"

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JuriAI — Design System Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    svg { display: inline-block; flex-shrink: 0; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+
+  <!-- PREVIEW BANNER -->
+  <div class="fixed top-0 left-0 right-0 z-50 bg-amber-400 text-amber-950 text-xs font-semibold text-center py-1.5 tracking-wide">
+    DESIGN SYSTEM PREVIEW — não aplicado aos templates reais
+  </div>
+
+  <!-- APP SHELL: sidebar + main -->
+  <div class="flex h-screen pt-7">
+
+    <!-- ══════════════════════════════════════════════════════
+         COMPONENTE 1 — SIDEBAR
+    ══════════════════════════════════════════════════════ -->
+    <aside style="width:240px; min-width:240px;" class="bg-slate-950 flex flex-col h-full overflow-hidden">
+
+      <!-- Logo -->
+      <div class="px-5 pt-6 pb-5 border-b border-slate-800">
+        <div class="flex items-center gap-0.5">
+          <span class="text-white font-bold text-xl tracking-tight">Juri</span>
+          <span class="text-indigo-400 font-bold text-xl tracking-tight">AI</span>
+        </div>
+      </div>
+
+      <!-- Nav items -->
+      <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest px-2 pb-2">Menu</p>
+
+        <!-- Dashboard — ACTIVE -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+          </svg>
+          <span>Dashboard</span>
+        </a>
+
+        <!-- Clientes -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-sm font-medium transition-colors">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+          </svg>
+          <span>Clientes</span>
+        </a>
+
+        <!-- Config WhatsApp -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-sm font-medium transition-colors">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+          </svg>
+          <span>Config. WhatsApp</span>
+        </a>
+
+        <!-- Análise Jurídica -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-sm font-medium transition-colors">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+          <span>Análise Jurídica</span>
+        </a>
+
+        <!-- Jurisprudência -->
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-sm font-medium transition-colors">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.97zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.97z" />
+          </svg>
+          <span>Jurisprudência</span>
+        </a>
+      </nav>
+
+      <!-- Bottom: user + logout -->
+      <div class="border-t border-slate-800 px-3 py-4 space-y-1">
+        <div class="flex items-center gap-3 px-3 py-2">
+          <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
+            <span class="text-white text-xs font-semibold">Y</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-white text-xs font-medium truncate">yago.piedraslopes</p>
+            <p class="text-slate-500 text-xs truncate">Advogado</p>
+          </div>
+        </div>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-950 text-sm font-medium transition-colors">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+          </svg>
+          <span>Sair</span>
+        </a>
+      </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto bg-slate-50">
+
+      <!-- ══════════════════════════════════════════════════════
+           COMPONENTE 4 — PAGE HEADER
+      ══════════════════════════════════════════════════════ -->
+      <div class="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between sticky top-0 z-10">
+        <div>
+          <div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium mb-1">
+            <span>Início</span>
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-3 h-3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+            <span class="text-slate-600">Dashboard</span>
+          </div>
+          <h1 class="text-slate-900 text-xl font-semibold tracking-tight">Dashboard</h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="flex items-center gap-2 text-slate-600 bg-slate-100 hover:bg-slate-200 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+            </svg>
+            Clientes
+          </button>
+          <button class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-sm font-medium transition-colors">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Novo cliente
+          </button>
+        </div>
+      </div>
+
+      <!-- PAGE BODY -->
+      <div class="px-8 py-8 space-y-8">
+
+        <!-- ══════════════════════════════════════════════════════
+             COMPONENTE 2 — METRIC CARDS
+        ══════════════════════════════════════════════════════ -->
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Componente 2 — Metric Cards</p>
+          <div class="grid grid-cols-4 gap-5">
+
+            <!-- Clientes Ativos -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+              <div class="flex items-start justify-between mb-4">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Clientes Ativos</p>
+                <span class="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-50 flex-shrink-0">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" class="w-4 h-4 text-emerald-600">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                  </svg>
+                </span>
+              </div>
+              <p class="text-3xl font-bold text-slate-900 tracking-tight">24</p>
+              <p class="text-xs text-emerald-600 mt-1.5 font-medium">de 31 total</p>
+            </div>
+
+            <!-- Inativos -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+              <div class="flex items-start justify-between mb-4">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Inativos</p>
+                <span class="flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 flex-shrink-0">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" class="w-4 h-4 text-red-400">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M22 10.5h-6m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+                  </svg>
+                </span>
+              </div>
+              <p class="text-3xl font-bold text-slate-900 tracking-tight">7</p>
+              <p class="text-xs text-red-400 mt-1.5 font-medium">sem atividade recente</p>
+            </div>
+
+            <!-- Docs Processados -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+              <div class="flex items-start justify-between mb-4">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Docs Processados</p>
+                <span class="flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-50 flex-shrink-0">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" class="w-4 h-4 text-indigo-600">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                </span>
+              </div>
+              <p class="text-3xl font-bold text-slate-900 tracking-tight">18 <span class="text-lg text-slate-300 font-normal">/</span> <span class="text-lg text-slate-400 font-semibold">23</span></p>
+              <p class="text-xs text-indigo-600 mt-1.5 font-medium">documentos analisados</p>
+            </div>
+
+            <!-- Processos (em breve) -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 opacity-50">
+              <div class="flex items-start justify-between mb-4">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Processos</p>
+                <span class="flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 flex-shrink-0">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" class="w-4 h-4 text-slate-400">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                  </svg>
+                </span>
+              </div>
+              <p class="text-3xl font-bold text-slate-400 tracking-tight">—</p>
+              <p class="text-xs text-slate-400 mt-1.5 font-medium">Em breve</p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════
+             COMPONENTE 3 — RISK ALERT CARD
+        ══════════════════════════════════════════════════════ -->
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Componente 3 — Risk Alert Card</p>
+          <div class="grid grid-cols-2 gap-5">
+
+            <!-- Risk Alert Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100">
+              <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                  <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-50">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 text-amber-500">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                  </span>
+                  <h2 class="text-sm font-semibold text-slate-800">Alertas de Risco</h2>
+                </div>
+                <span class="bg-amber-50 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded-full">3 pendentes</span>
+              </div>
+
+              <ul class="divide-y divide-slate-100">
+                <!-- Crítico -->
+                <li class="px-6 py-4 hover:bg-slate-50 transition-colors">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1.5">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Crítico</span>
+                        <span class="text-xs text-slate-400">02/04/2026</span>
+                      </div>
+                      <p class="text-sm font-medium text-slate-800 truncate">Recurso de Apelação — João Silva</p>
+                      <p class="text-xs text-slate-400 mt-0.5">3 red flags, coerência interna</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      <span class="text-base font-bold text-red-600">87%</span>
+                      <a href="#" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Ver análise →</a>
+                    </div>
+                  </div>
+                </li>
+                <!-- Alto -->
+                <li class="px-6 py-4 hover:bg-slate-50 transition-colors">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1.5">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">Alto</span>
+                        <span class="text-xs text-slate-400">01/04/2026</span>
+                      </div>
+                      <p class="text-sm font-medium text-slate-800 truncate">Contrato de Prestação — Maria Souza</p>
+                      <p class="text-xs text-slate-400 mt-0.5">Cláusula de vigência ambígua</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      <span class="text-base font-bold text-amber-600">72%</span>
+                      <a href="#" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Ver análise →</a>
+                    </div>
+                  </div>
+                </li>
+                <!-- Alto -->
+                <li class="px-6 py-4 hover:bg-slate-50 transition-colors">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1.5">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">Alto</span>
+                        <span class="text-xs text-slate-400">30/03/2026</span>
+                      </div>
+                      <p class="text-sm font-medium text-slate-800 truncate">Petição Inicial — Carlos Mendes</p>
+                      <p class="text-xs text-slate-400 mt-0.5">Formatação e fundamentação</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      <span class="text-base font-bold text-amber-600">68%</span>
+                      <a href="#" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Ver análise →</a>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Próximos Eventos -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100">
+              <div class="flex items-center gap-2 px-6 py-4 border-b border-slate-100">
+                <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-50">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 text-indigo-600">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                  </svg>
+                </span>
+                <h2 class="text-sm font-semibold text-slate-800">Próximos Eventos</h2>
+              </div>
+              <ul class="divide-y divide-slate-100">
+                <li class="px-6 py-4 flex items-center justify-between">
+                  <p class="text-sm font-medium text-slate-800">Reunião com João Silva</p>
+                  <span class="text-xs text-slate-400 font-medium">03/04/2026</span>
+                </li>
+                <li class="px-6 py-4 flex items-center justify-between">
+                  <p class="text-sm font-medium text-slate-800">Audiência Trabalhista</p>
+                  <span class="text-xs text-slate-400 font-medium">07/04/2026</span>
+                </li>
+                <li class="px-6 py-4 flex items-center justify-between">
+                  <p class="text-sm font-medium text-slate-800">Consulta — Maria Souza</p>
+                  <span class="text-xs text-slate-400 font-medium">10/04/2026</span>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="flex items-center gap-6 pt-2 border-t border-slate-200">
+          <a href="#" class="text-sm text-slate-400 hover:text-slate-700 transition-colors font-medium">→ Ver todos os clientes</a>
+          <a href="#" class="text-sm text-slate-400 hover:text-slate-700 transition-colors font-medium">→ Configurar WhatsApp</a>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+</body>
+</html>
