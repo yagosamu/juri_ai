@@ -55,9 +55,7 @@ def login(request):
         username = request.POST.get('username')
         senha = request.POST.get('senha')
         
-        user = authenticate(username=username, password=senha)
-        #verifica se o usuário existe com essa senha dentro do banco de dados, 
-        # se sim, retorna o usuário, se não, retorna None
+        user = authenticate(request, username=username, password=senha)
         if user is not None:
             auth.login(request, user)
             return redirect('dashboard')

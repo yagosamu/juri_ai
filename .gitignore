@@ -17,6 +17,13 @@ lancedb/
 # Google OAuth token
 token.json
 
+# Database backups
+backup_*.json
+
+# Test artifacts
+test_migration.py
+test_screenshots/
+
 # Virtual env
 venv/
 .venv/
@@ -26,3 +33,4 @@ venv/
 .idea/
 
 client_secret_*.json
+client_secret.json

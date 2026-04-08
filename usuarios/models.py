@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from martor.models import MartorField
 from cryptography.fernet import Fernet
+from auditlog.registry import auditlog
 
 
 class EncryptedCharField(models.TextField):
@@ -70,3 +71,9 @@ class ConfiguracaoWhatsApp(models.Model):
 
     def __str__(self):
         return f"WhatsApp — {self.user.username}"
+
+
+auditlog.register(Cliente)
+auditlog.register(Documentos)
+auditlog.register(ConfiguracaoWhatsApp)
+auditlog.register(User)
