@@ -103,34 +103,38 @@
 ## 🟠 FASE 1 — MVP Comercializável
 
 
-### Sprint 1.1 — Model de Processos
+### Sprint 1.1 — Model de Processos ✅
 
-- [ ] **Criar model `Processo`**
-  - Campos: `numero_cnj`, `vara`, `comarca`, `tribunal`, `tipo_acao`, `polo_ativo`, `polo_passivo`, `status` (ativo/arquivado/suspenso), `data_distribuicao`, `valor_causa`, `cliente` (FK), `user` (FK)
-  - Migration gerada e aplicada
-  - `__str__` retorna número CNJ formatado
+- [x] **Criar model `Processo`**
+  - Campos: `numero_cnj`, `vara`, `comarca`, `tribunal` (choices do TribunalLiteral + "Outro"), `tribunal_outro`, `tipo_acao`, `polo_ativo`, `polo_passivo`, `status` (ativo/arquivado/suspenso), `data_distribuicao`, `valor_causa`, `cliente` (FK), `user` (FK)
+  - Migration `0005_processo_documentos_processo` gerada e aplicada
+  - `__str__` retorna número CNJ formatado (NNNNNNN-DD.AAAA.J.TT.OOOO)
+  - `auditlog.register(Processo)` adicionado
 
-- [ ] **CRUD completo de processos**
-  - `listar_processos()` — lista todos os processos do usuário com filtro por status
-  - `criar_processo()` — form com validação do número CNJ (formato TJ)
-  - `editar_processo()` — edição inline
+- [x] **CRUD completo de processos**
+  - `lista_processos()` — lista com filtros por status e tribunal
+  - `criar_processo()` — form com validação de 20 dígitos CNJ
+  - `processo()` — detalhe com tabs Documentos e Análises de Risco
+  - `editar_processo()` — edição completa
   - `arquivar_processo()` — soft delete (status = arquivado)
-  - Todas as views com `@login_required` e verificação de ownership
+  - `vincular_documento()` — vincula documento existente do cliente ao processo
+  - Todas com `@login_required` e verificação de ownership
 
-- [ ] **Templates de processos**
-  - `processos.html` — lista com filtros por status, tribunal, cliente
-  - `processo.html` — detalhe com tabs: Andamentos | Documentos | Prazos | Honorários
-  - Empty state quando não há processos
+- [x] **Templates de processos**
+  - `processos.html` — tabela com filtros por status e tribunal, empty state
+  - `processo.html` — detalhe com tabs: Documentos | Análises de Risco (breadcrumb, badges de status, metadados)
+  - `criar_processo.html` — form completo com JS para campo "Outro" tribunal
+  - `editar_processo.html` — form pré-preenchido
 
-- [ ] **Adicionar Processos na sidebar**
-  - Ícone de balança SVG inline
-  - Active state: `url_name == 'lista_processos' or url_name == 'processo'`
-  - Rota `/processos/` e `/processos/<id>/`
+- [x] **Adicionar Processos na sidebar**
+  - Ícone de balança SVG inline (Heroicons `scale`)
+  - Active state cobre: `lista_processos`, `processo`, `criar_processo`, `editar_processo`
+  - Posicionado entre Dashboard e Clientes
 
-- [ ] **Vincular documentos e análises ao processo**
-  - Adicionar campo `processo` (FK nullable) em `Documentos`
-  - Migration e atualização do form de upload
-  - Exibir documentos vinculados na aba "Documentos" do processo
+- [x] **Vincular documentos e análises ao processo**
+  - Campo `processo` (FK nullable, `SET_NULL`) adicionado em `Documentos`
+  - Vinculação via dropdown na aba Documentos da página do processo
+  - Análises exibidas via `documento__processo` na aba Análises de Risco
 
 ### Sprint 1.2 — Controle de Prazos
 

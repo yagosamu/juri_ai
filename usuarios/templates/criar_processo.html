@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block 'title' %}Novo processo — JuriAI{% endblock %}
+
+{% block 'content' %}
+<div class="px-8 py-8 max-w-2xl mx-auto">
+
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm text-slate-500 mb-6">
+    <a href="{% url 'lista_processos' %}" class="hover:text-slate-700 transition-colors">Processos</a>
+    <span class="text-slate-300">/</span>
+    <span class="text-slate-700 font-medium">Novo processo</span>
+  </div>
+
+  <h1 class="text-xl font-semibold text-slate-900 mb-6">Cadastrar processo</h1>
+
+  <!-- Messages -->
+  {% if messages %}
+  <div class="mb-6 space-y-2">
+    {% for message in messages %}
+    <div class="rounded-xl px-4 py-3 text-sm font-medium bg-red-50 text-red-800 border border-red-200">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form method="POST" action="{% url 'criar_processo' %}" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+    {% csrf_token %}
+
+    <!-- Número CNJ -->
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1.5">
+        Número CNJ <span class="text-red-500">*</span>
+      </label>
+      <input type="text" name="numero_cnj" required
+        value="{{ form_data.numero_cnj|default:'' }}"
+        placeholder="0000000-00.0000.0.00.0000"
+        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900
+               placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      <p class="text-xs text-slate-400 mt-1">20 dígitos, com ou sem pontuação.</p>
+    </div>
+
+    <!-- Tribunal + campo livre -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
+          Tribunal <span class="text-red-500">*</span>
+        </label>
+        <select name="tribunal" id="id_tribunal" required
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
+                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+          <option value="">Selecione...</option>
+          {% for code, label in tribunal_choices %}
+          <option value="{{ code }}"
+            {% if form_data.tribunal == code %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div id="tribunal_outro_wrapper" style="display:none;">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Nome do tribunal</label>
+        <input type="text" name="tribunal_outro" id="id_tribunal_outro"
+          value="{{ form_data.tribunal_outro|default:'' }}"
+          placeholder="Ex: TJCE — Comarca de Fortaleza"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+    </div>
+
+    <!-- Cliente -->
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1.5">
+        Cliente <span class="text-red-500">*</span>
+      </label>
+      <select name="cliente_id" required
+        class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
+               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+        <option value="">Selecione um cliente...</option>
+        {% for c in clientes %}
+        <option value="{{ c.id }}"
+          {% if form_data.cliente_id == c.id|stringformat:'s' %}selected{% endif %}>
+          {{ c.nome }}{% if c.tipo == 'PJ' %} (PJ){% endif %}
+        </option>
+        {% endfor %}
+      </select>
+      {% if not clientes %}
+      <p class="text-xs text-amber-600 mt-1">
+        Você não tem clientes cadastrados.
+        <a href="{% url 'clientes' %}" class="underline hover:text-amber-700">Cadastre um cliente primeiro.</a>
+      </p>
+      {% endif %}
+    </div>
+
+    <hr class="border-slate-100"/>
+
+    <!-- Vara + Comarca -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Vara</label>
+        <input type="text" name="vara" value="{{ form_data.vara|default:'' }}"
+          placeholder="Ex: 3ª Vara Cível"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Comarca</label>
+        <input type="text" name="comarca" value="{{ form_data.comarca|default:'' }}"
+          placeholder="Ex: São Paulo"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+    </div>
+
+    <!-- Tipo de ação -->
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1.5">Tipo de ação</label>
+      <input type="text" name="tipo_acao" value="{{ form_data.tipo_acao|default:'' }}"
+        placeholder="Ex: Ação de Cobrança, Ação Trabalhista..."
+        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+               placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+    </div>
+
+    <!-- Polo ativo + Polo passivo -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Polo ativo</label>
+        <input type="text" name="polo_ativo" value="{{ form_data.polo_ativo|default:'' }}"
+          placeholder="Nome da parte autora"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Polo passivo</label>
+        <input type="text" name="polo_passivo" value="{{ form_data.polo_passivo|default:'' }}"
+          placeholder="Nome da parte ré"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+    </div>
+
+    <!-- Data distribuição + Valor da causa + Status -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Data de distribuição</label>
+        <input type="date" name="data_distribuicao"
+          value="{{ form_data.data_distribuicao|default:'' }}"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Valor da causa (R$)</label>
+        <input type="number" name="valor_causa" step="0.01" min="0"
+          value="{{ form_data.valor_causa|default:'' }}"
+          placeholder="0,00"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
+        <select name="status"
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
+                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+          <option value="ativo"    {% if form_data.status == 'ativo' or not form_data %}selected{% endif %}>Ativo</option>
+          <option value="suspenso" {% if form_data.status == 'suspenso' %}selected{% endif %}>Suspenso</option>
+          <option value="arquivado"{% if form_data.status == 'arquivado' %}selected{% endif %}>Arquivado</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="flex items-center gap-3 pt-2">
+      <button type="submit"
+        class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+        Cadastrar processo
+      </button>
+      <a href="{% url 'lista_processos' %}"
+         class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-sm font-medium
+                px-4 py-2.5 rounded-xl transition-colors">
+        Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Mostra/oculta o campo "tribunal_outro" quando "Outro" é selecionado
+  const sel = document.getElementById('id_tribunal');
+  const wrapper = document.getElementById('tribunal_outro_wrapper');
+  function toggleOutro() {
+    wrapper.style.display = sel.value === 'outro' ? '' : 'none';
+    document.getElementById('id_tribunal_outro').required = sel.value === 'outro';
+  }
+  sel.addEventListener('change', toggleOutro);
+  toggleOutro();
+</script>
+{% endblock %}

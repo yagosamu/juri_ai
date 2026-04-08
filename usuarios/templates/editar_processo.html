@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block 'title' %}Editar processo — JuriAI{% endblock %}
+
+{% block 'content' %}
+<div class="px-8 py-8 max-w-2xl mx-auto">
+
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm text-slate-500 mb-6">
+    <a href="{% url 'lista_processos' %}" class="hover:text-slate-700 transition-colors">Processos</a>
+    <span class="text-slate-300">/</span>
+    <a href="{% url 'processo' processo.id %}" class="hover:text-slate-700 transition-colors font-mono">{{ processo }}</a>
+    <span class="text-slate-300">/</span>
+    <span class="text-slate-700 font-medium">Editar</span>
+  </div>
+
+  <h1 class="text-xl font-semibold text-slate-900 mb-6">Editar processo</h1>
+
+  <!-- Messages -->
+  {% if messages %}
+  <div class="mb-6 space-y-2">
+    {% for message in messages %}
+    <div class="rounded-xl px-4 py-3 text-sm font-medium bg-red-50 text-red-800 border border-red-200">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form method="POST" action="{% url 'editar_processo' processo.id %}"
+        class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+    {% csrf_token %}
+
+    <!-- Número CNJ -->
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1.5">
+        Número CNJ <span class="text-red-500">*</span>
+      </label>
+      <input type="text" name="numero_cnj" required
+        value="{{ processo.numero_cnj }}"
+        placeholder="0000000-00.0000.0.00.0000"
+        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900
+               placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      <p class="text-xs text-slate-400 mt-1">20 dígitos, com ou sem pontuação.</p>
+    </div>
+
+    <!-- Tribunal + campo livre -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
+          Tribunal <span class="text-red-500">*</span>
+        </label>
+        <select name="tribunal" id="id_tribunal" required
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
+                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+          <option value="">Selecione...</option>
+          {% for code, label in tribunal_choices %}
+          <option value="{{ code }}"
+            {% if processo.tribunal == code %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div id="tribunal_outro_wrapper" {% if processo.tribunal != 'outro' %}style="display:none;"{% endif %}>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Nome do tribunal</label>
+        <input type="text" name="tribunal_outro" id="id_tribunal_outro"
+          value="{{ processo.tribunal_outro }}"
+          placeholder="Ex: TJCE — Comarca de Fortaleza"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+    </div>
+
+    <!-- Cliente -->
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1.5">
+        Cliente <span class="text-red-500">*</span>
+      </label>
+      <select name="cliente_id" required
+        class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
+               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+        {% for c in clientes %}
+        <option value="{{ c.id }}" {% if processo.cliente_id == c.id %}selected{% endif %}>
+          {{ c.nome }}{% if c.tipo == 'PJ' %} (PJ){% endif %}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <hr class="border-slate-100"/>
+
+    <!-- Vara + Comarca -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Vara</label>
+        <input type="text" name="vara" value="{{ processo.vara }}"
+          placeholder="Ex: 3ª Vara Cível"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Comarca</label>
+        <input type="text" name="comarca" value="{{ processo.comarca }}"
+          placeholder="Ex: São Paulo"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+    </div>
+
+    <!-- Tipo de ação -->
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1.5">Tipo de ação</label>
+      <input type="text" name="tipo_acao" value="{{ processo.tipo_acao }}"
+        placeholder="Ex: Ação de Cobrança, Ação Trabalhista..."
+        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+               placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+    </div>
+
+    <!-- Polo ativo + Polo passivo -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Polo ativo</label>
+        <input type="text" name="polo_ativo" value="{{ processo.polo_ativo }}"
+          placeholder="Nome da parte autora"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Polo passivo</label>
+        <input type="text" name="polo_passivo" value="{{ processo.polo_passivo }}"
+          placeholder="Nome da parte ré"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+    </div>
+
+    <!-- Data distribuição + Valor da causa + Status -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Data de distribuição</label>
+        <input type="date" name="data_distribuicao"
+          value="{{ processo.data_distribuicao|date:'Y-m-d'|default:'' }}"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Valor da causa (R$)</label>
+        <input type="number" name="valor_causa" step="0.01" min="0"
+          value="{{ processo.valor_causa|default:'' }}"
+          placeholder="0,00"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
+        <select name="status"
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
+                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+          <option value="ativo"    {% if processo.status == 'ativo' %}selected{% endif %}>Ativo</option>
+          <option value="suspenso" {% if processo.status == 'suspenso' %}selected{% endif %}>Suspenso</option>
+          <option value="arquivado"{% if processo.status == 'arquivado' %}selected{% endif %}>Arquivado</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="flex items-center gap-3 pt-2">
+      <button type="submit"
+        class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+        Salvar alterações
+      </button>
+      <a href="{% url 'processo' processo.id %}"
+         class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-sm font-medium
+                px-4 py-2.5 rounded-xl transition-colors">
+        Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+  const sel = document.getElementById('id_tribunal');
+  const wrapper = document.getElementById('tribunal_outro_wrapper');
+  function toggleOutro() {
+    wrapper.style.display = sel.value === 'outro' ? '' : 'none';
+    document.getElementById('id_tribunal_outro').required = sel.value === 'outro';
+  }
+  sel.addEventListener('change', toggleOutro);
+  toggleOutro();
+</script>
+{% endblock %}

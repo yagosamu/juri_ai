@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.messages import constants
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD
+from .models import Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD, Processo, TRIBUNAL_CHOICES
 from ia.models import AnaliseJurisprudencia
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -210,6 +210,233 @@ def configuracao_whatsapp(request):
 
         messages.add_message(request, constants.SUCCESS, 'Configuração salva com sucesso!')
         return redirect('configuracao_whatsapp')
+
+
+@login_required
+def lista_processos(request):
+    qs = Processo.objects.filter(user=request.user).select_related('cliente')
+
+    # Filtros via querystring
+    status_filtro   = request.GET.get('status', '')
+    tribunal_filtro = request.GET.get('tribunal', '')
+
+    if status_filtro:
+        qs = qs.filter(status=status_filtro)
+    if tribunal_filtro:
+        qs = qs.filter(tribunal=tribunal_filtro)
+
+    return render(request, 'processos.html', {
+        'processos':        qs,
+        'status_filtro':    status_filtro,
+        'tribunal_filtro':  tribunal_filtro,
+        'tribunal_choices': TRIBUNAL_CHOICES,
+    })
+
+
+@login_required
+def criar_processo(request):
+    clientes_usuario = Cliente.objects.filter(user=request.user)
+
+    if request.method == 'GET':
+        return render(request, 'criar_processo.html', {
+            'clientes':         clientes_usuario,
+            'tribunal_choices': TRIBUNAL_CHOICES,
+        })
+
+    # POST — valida e cria
+    numero_cnj        = request.POST.get('numero_cnj', '').strip()
+    tribunal          = request.POST.get('tribunal', '').strip()
+    tribunal_outro    = request.POST.get('tribunal_outro', '').strip()
+    vara              = request.POST.get('vara', '').strip()
+    comarca           = request.POST.get('comarca', '').strip()
+    tipo_acao         = request.POST.get('tipo_acao', '').strip()
+    polo_ativo        = request.POST.get('polo_ativo', '').strip()
+    polo_passivo      = request.POST.get('polo_passivo', '').strip()
+    status            = request.POST.get('status', 'ativo')
+    data_distribuicao = request.POST.get('data_distribuicao') or None
+    valor_causa       = request.POST.get('valor_causa') or None
+    cliente_id        = request.POST.get('cliente_id')
+
+    # Validações
+    digitos = numero_cnj.replace('-', '').replace('.', '')
+    if len(digitos) != 20:
+        messages.add_message(request, constants.ERROR, 'Número CNJ inválido. Informe os 20 dígitos (ex: 0000000-00.0000.0.00.0000).')
+        return render(request, 'criar_processo.html', {
+            'clientes':         clientes_usuario,
+            'tribunal_choices': TRIBUNAL_CHOICES,
+            'form_data':        request.POST,
+        })
+
+    if tribunal == 'outro' and not tribunal_outro:
+        messages.add_message(request, constants.ERROR, 'Informe o nome do tribunal no campo "Tribunal (outro)".')
+        return render(request, 'criar_processo.html', {
+            'clientes':         clientes_usuario,
+            'tribunal_choices': TRIBUNAL_CHOICES,
+            'form_data':        request.POST,
+        })
+
+    cliente_obj = get_object_or_404(Cliente, id=cliente_id, user=request.user)
+
+    if Processo.objects.filter(numero_cnj=numero_cnj, user=request.user).exists():
+        messages.add_message(request, constants.ERROR, 'Você já cadastrou um processo com este número CNJ.')
+        return render(request, 'criar_processo.html', {
+            'clientes':         clientes_usuario,
+            'tribunal_choices': TRIBUNAL_CHOICES,
+            'form_data':        request.POST,
+        })
+
+    processo = Processo.objects.create(
+        numero_cnj        = numero_cnj,
+        tribunal          = tribunal,
+        tribunal_outro    = tribunal_outro,
+        vara              = vara,
+        comarca           = comarca,
+        tipo_acao         = tipo_acao,
+        polo_ativo        = polo_ativo,
+        polo_passivo      = polo_passivo,
+        status            = status,
+        data_distribuicao = data_distribuicao,
+        valor_causa       = valor_causa,
+        cliente           = cliente_obj,
+        user              = request.user,
+    )
+
+    messages.add_message(request, constants.SUCCESS, 'Processo cadastrado com sucesso!')
+    return redirect(reverse('processo', kwargs={'id': processo.id}))
+
+
+@login_required
+def processo(request, id):
+    processo_obj = get_object_or_404(Processo, id=id, user=request.user)
+
+    # Documentos vinculados ao processo
+    docs_vinculados = Documentos.objects.filter(processo=processo_obj).select_related('cliente')
+
+    # Documentos do mesmo cliente ainda sem processo (para vinculação)
+    docs_disponiveis = Documentos.objects.filter(
+        cliente=processo_obj.cliente,
+        processo__isnull=True
+    )
+
+    # Análises de risco via documentos vinculados
+    from ia.models import AnaliseJurisprudencia
+    analises = AnaliseJurisprudencia.objects.filter(
+        documento__processo=processo_obj
+    ).select_related('documento').order_by('-data_criacao')
+
+    # Tab ativa (querystring ?tab=documentos|analises)
+    tab = request.GET.get('tab', 'documentos')
+
+    return render(request, 'processo.html', {
+        'processo':         processo_obj,
+        'docs_vinculados':  docs_vinculados,
+        'docs_disponiveis': docs_disponiveis,
+        'analises':         analises,
+        'tab':              tab,
+    })
+
+
+@login_required
+def vincular_documento(request, id):
+    """Vincula um documento existente do cliente ao processo via POST."""
+    processo_obj = get_object_or_404(Processo, id=id, user=request.user)
+
+    if request.method == 'POST':
+        doc_id = request.POST.get('documento_id')
+        doc = get_object_or_404(Documentos, id=doc_id, cliente=processo_obj.cliente)
+        doc.processo = processo_obj
+        doc.save()
+        messages.add_message(request, constants.SUCCESS, 'Documento vinculado ao processo.')
+
+    return redirect(reverse('processo', kwargs={'id': id}) + '?tab=documentos')
+
+
+@login_required
+def editar_processo(request, id):
+    processo_obj    = get_object_or_404(Processo, id=id, user=request.user)
+    clientes_usuario = Cliente.objects.filter(user=request.user)
+
+    if request.method == 'GET':
+        return render(request, 'editar_processo.html', {
+            'processo':         processo_obj,
+            'clientes':         clientes_usuario,
+            'tribunal_choices': TRIBUNAL_CHOICES,
+        })
+
+    # POST — atualiza
+    numero_cnj        = request.POST.get('numero_cnj', '').strip()
+    tribunal          = request.POST.get('tribunal', '').strip()
+    tribunal_outro    = request.POST.get('tribunal_outro', '').strip()
+    vara              = request.POST.get('vara', '').strip()
+    comarca           = request.POST.get('comarca', '').strip()
+    tipo_acao         = request.POST.get('tipo_acao', '').strip()
+    polo_ativo        = request.POST.get('polo_ativo', '').strip()
+    polo_passivo      = request.POST.get('polo_passivo', '').strip()
+    status            = request.POST.get('status', processo_obj.status)
+    data_distribuicao = request.POST.get('data_distribuicao') or None
+    valor_causa       = request.POST.get('valor_causa') or None
+    cliente_id        = request.POST.get('cliente_id')
+
+    digitos = numero_cnj.replace('-', '').replace('.', '')
+    if len(digitos) != 20:
+        messages.add_message(request, constants.ERROR, 'Número CNJ inválido.')
+        return render(request, 'editar_processo.html', {
+            'processo':         processo_obj,
+            'clientes':         clientes_usuario,
+            'tribunal_choices': TRIBUNAL_CHOICES,
+        })
+
+    if tribunal == 'outro' and not tribunal_outro:
+        messages.add_message(request, constants.ERROR, 'Informe o nome do tribunal no campo "Tribunal (outro)".')
+        return render(request, 'editar_processo.html', {
+            'processo':         processo_obj,
+            'clientes':         clientes_usuario,
+            'tribunal_choices': TRIBUNAL_CHOICES,
+        })
+
+    # Verifica unicidade excluindo o próprio processo
+    if (Processo.objects.filter(numero_cnj=numero_cnj, user=request.user)
+                        .exclude(id=processo_obj.id).exists()):
+        messages.add_message(request, constants.ERROR, 'Você já tem outro processo com este número CNJ.')
+        return render(request, 'editar_processo.html', {
+            'processo':         processo_obj,
+            'clientes':         clientes_usuario,
+            'tribunal_choices': TRIBUNAL_CHOICES,
+        })
+
+    cliente_obj = get_object_or_404(Cliente, id=cliente_id, user=request.user)
+
+    processo_obj.numero_cnj        = numero_cnj
+    processo_obj.tribunal          = tribunal
+    processo_obj.tribunal_outro    = tribunal_outro
+    processo_obj.vara              = vara
+    processo_obj.comarca           = comarca
+    processo_obj.tipo_acao         = tipo_acao
+    processo_obj.polo_ativo        = polo_ativo
+    processo_obj.polo_passivo      = polo_passivo
+    processo_obj.status            = status
+    processo_obj.data_distribuicao = data_distribuicao
+    processo_obj.valor_causa       = valor_causa
+    processo_obj.cliente           = cliente_obj
+    processo_obj.save()
+
+    messages.add_message(request, constants.SUCCESS, 'Processo atualizado com sucesso!')
+    return redirect(reverse('processo', kwargs={'id': processo_obj.id}))
+
+
+@login_required
+def arquivar_processo(request, id):
+    """Soft delete: muda status para 'arquivado'."""
+    if request.method != 'POST':
+        return redirect('lista_processos')
+
+    processo_obj = get_object_or_404(Processo, id=id, user=request.user)
+    processo_obj.status = 'arquivado'
+    processo_obj.save()
+
+    messages.add_message(request, constants.SUCCESS,
+                         f'Processo {processo_obj} arquivado.')
+    return redirect('lista_processos')
 
 
 @login_required

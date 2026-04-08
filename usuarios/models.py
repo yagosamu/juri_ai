@@ -6,6 +6,110 @@ from cryptography.fernet import Fernet
 from auditlog.registry import auditlog
 
 
+# ── Choices de tribunal derivados do TribunalLiteral (ia/literals.py) ──────────
+TRIBUNAL_CHOICES = [
+    # Superiores
+    ('tst',    'TST — Tribunal Superior do Trabalho'),
+    ('tse',    'TSE — Tribunal Superior Eleitoral'),
+    ('stj',    'STJ — Superior Tribunal de Justiça'),
+    ('stm',    'STM — Superior Tribunal Militar'),
+    # TRFs
+    ('trf1',   'TRF-1ª Região'),
+    ('trf2',   'TRF-2ª Região'),
+    ('trf3',   'TRF-3ª Região'),
+    ('trf4',   'TRF-4ª Região'),
+    ('trf5',   'TRF-5ª Região'),
+    ('trf6',   'TRF-6ª Região'),
+    # Tribunais de Justiça
+    ('tjac',   'TJAC — Acre'),
+    ('tjal',   'TJAL — Alagoas'),
+    ('tjam',   'TJAM — Amazonas'),
+    ('tjap',   'TJAP — Amapá'),
+    ('tjba',   'TJBA — Bahia'),
+    ('tjce',   'TJCE — Ceará'),
+    ('tjdft',  'TJDFT — Distrito Federal'),
+    ('tjes',   'TJES — Espírito Santo'),
+    ('tjgo',   'TJGO — Goiás'),
+    ('tjma',   'TJMA — Maranhão'),
+    ('tjmg',   'TJMG — Minas Gerais'),
+    ('tjms',   'TJMS — Mato Grosso do Sul'),
+    ('tjmt',   'TJMT — Mato Grosso'),
+    ('tjpa',   'TJPA — Pará'),
+    ('tjpb',   'TJPB — Paraíba'),
+    ('tjpe',   'TJPE — Pernambuco'),
+    ('tjpi',   'TJPI — Piauí'),
+    ('tjpr',   'TJPR — Paraná'),
+    ('tjrj',   'TJRJ — Rio de Janeiro'),
+    ('tjrn',   'TJRN — Rio Grande do Norte'),
+    ('tjro',   'TJRO — Rondônia'),
+    ('tjrr',   'TJRR — Roraima'),
+    ('tjrs',   'TJRS — Rio Grande do Sul'),
+    ('tjsc',   'TJSC — Santa Catarina'),
+    ('tjse',   'TJSE — Sergipe'),
+    ('tjsp',   'TJSP — São Paulo'),
+    ('tjto',   'TJTO — Tocantins'),
+    # TRTs
+    ('trt1',   'TRT-1ª Região'),
+    ('trt2',   'TRT-2ª Região'),
+    ('trt3',   'TRT-3ª Região'),
+    ('trt4',   'TRT-4ª Região'),
+    ('trt5',   'TRT-5ª Região'),
+    ('trt6',   'TRT-6ª Região'),
+    ('trt7',   'TRT-7ª Região'),
+    ('trt8',   'TRT-8ª Região'),
+    ('trt9',   'TRT-9ª Região'),
+    ('trt10',  'TRT-10ª Região'),
+    ('trt11',  'TRT-11ª Região'),
+    ('trt12',  'TRT-12ª Região'),
+    ('trt13',  'TRT-13ª Região'),
+    ('trt14',  'TRT-14ª Região'),
+    ('trt15',  'TRT-15ª Região'),
+    ('trt16',  'TRT-16ª Região'),
+    ('trt17',  'TRT-17ª Região'),
+    ('trt18',  'TRT-18ª Região'),
+    ('trt19',  'TRT-19ª Região'),
+    ('trt20',  'TRT-20ª Região'),
+    ('trt21',  'TRT-21ª Região'),
+    ('trt22',  'TRT-22ª Região'),
+    ('trt23',  'TRT-23ª Região'),
+    ('trt24',  'TRT-24ª Região'),
+    # TREs
+    ('tre-ac', 'TRE-AC — Acre'),
+    ('tre-al', 'TRE-AL — Alagoas'),
+    ('tre-am', 'TRE-AM — Amazonas'),
+    ('tre-ap', 'TRE-AP — Amapá'),
+    ('tre-ba', 'TRE-BA — Bahia'),
+    ('tre-ce', 'TRE-CE — Ceará'),
+    ('tre-dft','TRE-DF — Distrito Federal'),
+    ('tre-es', 'TRE-ES — Espírito Santo'),
+    ('tre-go', 'TRE-GO — Goiás'),
+    ('tre-ma', 'TRE-MA — Maranhão'),
+    ('tre-mg', 'TRE-MG — Minas Gerais'),
+    ('tre-ms', 'TRE-MS — Mato Grosso do Sul'),
+    ('tre-mt', 'TRE-MT — Mato Grosso'),
+    ('tre-pa', 'TRE-PA — Pará'),
+    ('tre-pb', 'TRE-PB — Paraíba'),
+    ('tre-pe', 'TRE-PE — Pernambuco'),
+    ('tre-pi', 'TRE-PI — Piauí'),
+    ('tre-pr', 'TRE-PR — Paraná'),
+    ('tre-rj', 'TRE-RJ — Rio de Janeiro'),
+    ('tre-rn', 'TRE-RN — Rio Grande do Norte'),
+    ('tre-ro', 'TRE-RO — Rondônia'),
+    ('tre-rr', 'TRE-RR — Roraima'),
+    ('tre-rs', 'TRE-RS — Rio Grande do Sul'),
+    ('tre-sc', 'TRE-SC — Santa Catarina'),
+    ('tre-se', 'TRE-SE — Sergipe'),
+    ('tre-sp', 'TRE-SP — São Paulo'),
+    ('tre-to', 'TRE-TO — Tocantins'),
+    # Militares estaduais
+    ('tjmmg',  'TJM-MG — Tribunal de Justiça Militar de Minas Gerais'),
+    ('tjmrs',  'TJM-RS — Tribunal de Justiça Militar do Rio Grande do Sul'),
+    ('tjmsp',  'TJM-SP — Tribunal de Justiça Militar de São Paulo'),
+    # Outros
+    ('outro',  'Outro'),
+]
+
+
 class EncryptedCharField(models.TextField):
     """Armazena valor criptografado com Fernet. Requer FIELD_ENCRYPTION_KEY no .env"""
 
@@ -21,6 +125,54 @@ class EncryptedCharField(models.TextField):
         if value:
             return self._cipher().encrypt(value.encode()).decode()
         return value
+
+class Processo(models.Model):
+
+    STATUS_CHOICES = [
+        ('ativo',     'Ativo'),
+        ('suspenso',  'Suspenso'),
+        ('arquivado', 'Arquivado'),
+    ]
+
+    numero_cnj        = models.CharField(max_length=30, verbose_name='Número CNJ')
+    tribunal          = models.CharField(max_length=20, choices=TRIBUNAL_CHOICES, verbose_name='Tribunal')
+    tribunal_outro    = models.CharField(max_length=100, blank=True, verbose_name='Tribunal (outro)',
+                                         help_text='Preencha apenas se selecionou "Outro" acima.')
+    vara              = models.CharField(max_length=150, blank=True, verbose_name='Vara')
+    comarca           = models.CharField(max_length=150, blank=True, verbose_name='Comarca')
+    tipo_acao         = models.CharField(max_length=150, blank=True, verbose_name='Tipo de ação')
+    polo_ativo        = models.CharField(max_length=255, blank=True, verbose_name='Polo ativo')
+    polo_passivo      = models.CharField(max_length=255, blank=True, verbose_name='Polo passivo')
+    status            = models.CharField(max_length=15, choices=STATUS_CHOICES, default='ativo',
+                                         verbose_name='Status')
+    data_distribuicao = models.DateField(null=True, blank=True, verbose_name='Data de distribuição')
+    valor_causa       = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True,
+                                            verbose_name='Valor da causa (R$)')
+
+    cliente           = models.ForeignKey('Cliente', on_delete=models.CASCADE, related_name='processos')
+    user              = models.ForeignKey(User, on_delete=models.CASCADE, related_name='processos')
+
+    criado_em         = models.DateTimeField(auto_now_add=True)
+    atualizado_em     = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        unique_together = ('numero_cnj', 'user')
+        verbose_name = 'Processo'
+        verbose_name_plural = 'Processos'
+
+    def __str__(self):
+        n = self.numero_cnj.replace('-', '').replace('.', '')
+        if len(n) == 20:
+            return f"{n[:7]}-{n[7:9]}.{n[9:13]}.{n[13]}.{n[14:16]}.{n[16:]}"
+        return self.numero_cnj
+
+    def get_tribunal_display_completo(self):
+        """Retorna o label do tribunal, ou o campo livre se for 'outro'."""
+        if self.tribunal == 'outro' and self.tribunal_outro:
+            return self.tribunal_outro
+        return self.get_tribunal_display()
+
 
 class Cliente(models.Model):
     # a classe model esencial para criar a tabela no banco de dados, 
@@ -52,7 +204,9 @@ class Documentos(models.Model):
         ('R', 'Recursos'),
         ('O', 'Outro'),
     ]
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    cliente  = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    processo = models.ForeignKey('Processo', on_delete=models.SET_NULL,
+                                  null=True, blank=True, related_name='documentos')
     tipo = models.CharField(max_length=255, choices=TIPO_CHOICES, default='O')
     arquivo = models.FileField(upload_to='documentos/')
     data_upload = models.DateTimeField()
@@ -84,6 +238,7 @@ class ConsentimentoLGPD(models.Model):
         return f"Consentimento — {self.user.username} ({self.aceito_em.date()})"
 
 
+auditlog.register(Processo)
 auditlog.register(Cliente)
 auditlog.register(Documentos)
 auditlog.register(ConfiguracaoWhatsApp)
