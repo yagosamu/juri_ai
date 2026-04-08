@@ -9,4 +9,5 @@ urlpatterns = [
     path("cliente/<int:id>", views.cliente, name='cliente'),
     path("configuracao_whatsapp/", views.configuracao_whatsapp, name='configuracao_whatsapp'),
     path("logout/", views.logout, name='logout'),
+    path("excluir-conta/", views.excluir_conta, name='excluir_conta'),
 ]

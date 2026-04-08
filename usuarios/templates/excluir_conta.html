@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Excluir conta — JuriAI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-50">
+
+<div class="min-h-screen flex flex-col items-center justify-center px-4 py-16">
+  <div class="w-full max-w-md">
+
+    <!-- Logo -->
+    <a href="{% url 'dashboard' %}" class="flex items-center justify-center gap-0.5 mb-10">
+      <span class="font-bold text-xl tracking-tight text-slate-900">Juri</span>
+      <span class="font-bold text-xl tracking-tight text-indigo-600">AI</span>
+    </a>
+
+    <!-- Card -->
+    <div class="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
+
+      <!-- Header vermelho -->
+      <div class="bg-red-50 border-b border-red-100 px-6 py-5 flex items-start gap-4">
+        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="text-red-600">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base font-semibold text-red-900">Excluir conta permanentemente</h1>
+          <p class="text-sm text-red-700 mt-0.5 leading-snug">
+            Esta ação é <strong>irreversível</strong>. Todos os seus dados serão apagados permanentemente,
+            incluindo clientes, documentos e análises.
+          </p>
+        </div>
+      </div>
+
+      <!-- Mensagens de erro -->
+      {% if messages %}
+      <div class="px-6 pt-5 space-y-2">
+        {% for message in messages %}
+        <div class="rounded-xl px-4 py-3 text-sm font-medium bg-red-50 text-red-800 border border-red-200">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Form -->
+      <div class="px-6 py-6 space-y-5">
+
+        <div class="bg-slate-50 rounded-xl border border-slate-100 px-4 py-3 text-sm text-slate-600 space-y-1">
+          <p class="font-medium text-slate-700">O que será excluído:</p>
+          <ul class="list-disc list-inside space-y-0.5 text-slate-500 pl-1">
+            <li>Sua conta de usuário (<strong class="text-slate-700">{{ request.user.username }}</strong>)</li>
+            <li>Todos os clientes cadastrados e seus documentos</li>
+            <li>Todas as análises jurídicas e de jurisprudência</li>
+            <li>Configuração WhatsApp</li>
+            <li>Dados vetoriais no banco de conhecimento (LanceDB)</li>
+          </ul>
+        </div>
+
+        <form action="{% url 'excluir_conta' %}" method="POST">
+          {% csrf_token %}
+          <div class="space-y-4">
+            <div>
+              <label for="senha_confirmacao" class="block text-sm font-medium text-slate-700 mb-1.5">
+                Confirme sua senha para continuar
+              </label>
+              <input id="senha_confirmacao" type="password" name="senha_confirmacao" required
+                autocomplete="current-password"
+                placeholder="••••••••"
+                class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                       placeholder-slate-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-300
+                       outline-none transition-colors" />
+            </div>
+            <button type="submit"
+              class="w-full bg-red-600 hover:bg-red-500 text-white py-2.5 rounded-xl text-sm font-semibold
+                     transition-colors">
+              Confirmar exclusão permanente
+            </button>
+          </div>
+        </form>
+
+        <a href="{% url 'dashboard' %}"
+           class="block w-full text-center border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium
+                  text-slate-600 hover:bg-slate-50 transition-colors">
+          Cancelar, quero manter minha conta
+        </a>
+
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-6">
+      <a href="{% url 'privacidade' %}" class="hover:text-slate-600 transition-colors">Política de Privacidade</a>
+      &middot;
+      <a href="{% url 'termos' %}" class="hover:text-slate-600 transition-colors">Termos de Uso</a>
+    </p>
+
+  </div>
+</div>
+</body>
+</html>

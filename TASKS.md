@@ -69,30 +69,31 @@
   - Não pode ser similar ao username
   - Não pode ser senha comum (lista de senhas fracas)
 
-### Sprint 0.2 — Conformidade LGPD
+### Sprint 0.2 — Conformidade LGPD ✅
 
-- [ ] **Criar página /privacidade/**
+- [x] **Criar página /privacidade/**
   - Template standalone (sem sidebar)
   - Conteúdo: quais dados são coletados, finalidade, prazo de retenção, direitos do titular
   - Link no footer de todas as páginas
 
-- [ ] **Criar página /termos/**
+- [x] **Criar página /termos/**
   - Template standalone
   - Conteúdo: termos de uso do serviço, limitações de responsabilidade
   - Link no footer de todas as páginas
 
-- [ ] **Adicionar consentimento no cadastro**
+- [x] **Adicionar consentimento no cadastro**
   - Checkbox obrigatório: "Li e aceito os Termos de Uso e a Política de Privacidade"
-  - Salvar data e versão do consentimento no model `User` ou tabela separada
+  - Salvar data e versão do consentimento no model `ConsentimentoLGPD` (tabela separada)
   - Bloquear cadastro se checkbox não marcado
 
-- [ ] **Implementar exclusão de conta**
+- [x] **Implementar exclusão de conta**
   - View `/usuarios/excluir-conta/` com `@login_required`
   - Confirmação por senha antes de excluir
   - Deletar todos os dados do usuário: clientes, documentos, análises, configurações
+  - Limpeza silenciosa (try/except) dos registros LanceDB antes do delete
   - Redirecionar para landing page após exclusão
 
-- [ ] **Adicionar links LGPD no rodapé da landing page**
+- [x] **Adicionar links LGPD no rodapé da landing page**
   - Link para /privacidade/
   - Link para /termos/
   - Texto: "© 2026 JuriAI · Privacidade · Termos"
@@ -100,7 +101,7 @@
 ---
 
 ## 🟠 FASE 1 — MVP Comercializável
-> O advogado não assina sem essas funcionalidades
+
 
 ### Sprint 1.1 — Model de Processos
 
@@ -342,7 +343,7 @@
 
 | Fase | Status | Progresso |
 |---|---|---|
-| Fase 0 — Segurança | 🔴 Em andamento | 70% (Sprint 0.1 concluída, Sprint 0.2 LGPD pendente) |
+| Fase 0 — Segurança | ✅ Concluída | 100% (Sprint 0.1 e Sprint 0.2 LGPD concluídas) |
 | Fase 1 — MVP | ⬜ Não iniciada | 0% |
 | Fase 2 — Financeiro | ⬜ Não iniciada | 0% |
 | Fase 3 — Geração Docs | ⬜ Não iniciada | 0% |

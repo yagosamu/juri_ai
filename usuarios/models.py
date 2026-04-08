@@ -73,6 +73,17 @@ class ConfiguracaoWhatsApp(models.Model):
         return f"WhatsApp — {self.user.username}"
 
 
+class ConsentimentoLGPD(models.Model):
+    """Registra data, versão e IP do consentimento LGPD obtido no cadastro."""
+    user      = models.OneToOneField(User, on_delete=models.CASCADE, related_name='consentimento')
+    aceito_em = models.DateTimeField(auto_now_add=True)
+    versao    = models.CharField(max_length=10, default='1.0')
+    ip        = models.GenericIPAddressField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Consentimento — {self.user.username} ({self.aceito_em.date()})"
+
+
 auditlog.register(Cliente)
 auditlog.register(Documentos)
 auditlog.register(ConfiguracaoWhatsApp)

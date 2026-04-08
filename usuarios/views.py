@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.messages import constants
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Cliente, Documentos, ConfiguracaoWhatsApp
+from .models import Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD
 from ia.models import AnaliseJurisprudencia
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -18,6 +18,14 @@ def home(request):
     return render(request, 'home.html')
 
 
+def privacidade(request):
+    return render(request, 'privacidade.html')
+
+
+def termos(request):
+    return render(request, 'termos.html')
+
+
 def cadastro(request):
     if request.method == 'GET':
         return render(request, 'cadastro.html')
@@ -25,25 +33,35 @@ def cadastro(request):
         username = request.POST.get('username')
         senha = request.POST.get('senha')
         confirmar_senha = request.POST.get('confirmar_senha')
-        
+        aceito_termos = request.POST.get('aceito_termos')
+
+        if not aceito_termos:
+            messages.add_message(request, constants.ERROR, 'Você precisa aceitar os Termos de Uso e a Política de Privacidade para criar uma conta.')
+            return redirect('cadastro')
+
         if not senha == confirmar_senha:
             messages.add_message(request, constants.ERROR, 'Senha e confirmar senha não são iguais.')
             return redirect('cadastro')
-            
+
         if len(senha) < 6:
             messages.add_message(request, constants.ERROR, 'Sua senha deve ter pelo meno 6 caracteres.')
             return redirect('cadastro')
 
         users = User.objects.filter(username=username)
-        
+
         if users.exists():
             messages.add_message(request, constants.ERROR, 'Já existe um usuário com esse username.')
             return redirect('cadastro')
-        
-        User.objects.create_user(
+
+        user = User.objects.create_user(
             username=username,
             password=senha
         )
+
+        ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR'))
+        if ip and ',' in ip:
+            ip = ip.split(',')[0].strip()
+        ConsentimentoLGPD.objects.create(user=user, versao='1.0', ip=ip)
 
         return redirect('login')
 
@@ -192,6 +210,45 @@ def configuracao_whatsapp(request):
 
         messages.add_message(request, constants.SUCCESS, 'Configuração salva com sucesso!')
         return redirect('configuracao_whatsapp')
+
+
+@login_required
+def excluir_conta(request):
+    if request.method == 'GET':
+        return render(request, 'excluir_conta.html')
+
+    senha_confirmacao = request.POST.get('senha_confirmacao')
+    user = authenticate(request, username=request.user.username, password=senha_confirmacao)
+
+    if user is None:
+        messages.add_message(request, constants.ERROR, 'Senha incorreta. A conta não foi excluída.')
+        return redirect('excluir_conta')
+
+    # Tenta limpar registros no LanceDB silenciosamente antes de deletar o User
+    try:
+        import lancedb
+        from django.conf import settings as django_settings
+        import os
+
+        lancedb_path = os.path.join(django_settings.BASE_DIR, 'lancedb')
+        db = lancedb.connect(lancedb_path)
+
+        cliente_ids = list(
+            Cliente.objects.filter(user=user).values_list('id', flat=True)
+        )
+        if cliente_ids and 'documentos' in db.table_names():
+            table = db.open_table('documentos')
+            ids_str = ', '.join(str(cid) for cid in cliente_ids)
+            table.delete(f"cliente_id IN ({ids_str})")
+    except Exception:
+        pass  # Falha no LanceDB não bloqueia a exclusão da conta
+
+    # Deleta dados do usuário (CASCADE cobre: Cliente → Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD)
+    auth.logout(request)
+    user.delete()
+
+    messages.add_message(request, constants.SUCCESS, 'Sua conta foi excluída com sucesso.')
+    return redirect('home')
 
 
 @login_required
