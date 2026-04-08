@@ -238,7 +238,48 @@ class ConsentimentoLGPD(models.Model):
         return f"Consentimento — {self.user.username} ({self.aceito_em.date()})"
 
 
+class Prazo(models.Model):
+    TIPO_CHOICES = [
+        ('audiencia',  'Audiência'),
+        ('protocolo',  'Protocolo'),
+        ('recurso',    'Recurso'),
+        ('diligencia', 'Diligência'),
+        ('outro',      'Outro'),
+    ]
+    STATUS_CHOICES = [
+        ('pendente',  'Pendente'),
+        ('concluido', 'Concluído'),
+        ('cancelado', 'Cancelado'),
+    ]
+
+    descricao         = models.CharField(max_length=255, verbose_name='Descrição')
+    data_prazo        = models.DateField(db_index=True, verbose_name='Data do prazo')
+    tipo              = models.CharField(max_length=20, choices=TIPO_CHOICES, verbose_name='Tipo')
+    processo          = models.ForeignKey(Processo, on_delete=models.CASCADE,
+                                          related_name='prazos', verbose_name='Processo')
+    alerta_dias_antes = models.PositiveSmallIntegerField(default=3,
+                                                          verbose_name='Alertar X dias antes')
+    status            = models.CharField(max_length=15, choices=STATUS_CHOICES,
+                                         default='pendente', verbose_name='Status')
+    google_event_id   = models.CharField(max_length=255, blank=True,
+                                          verbose_name='ID do evento no Google Calendar')
+    user              = models.ForeignKey(User, on_delete=models.CASCADE,
+                                          related_name='prazos', verbose_name='Advogado')
+    criado_em         = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['data_prazo']
+        verbose_name = 'Prazo'
+        verbose_name_plural = 'Prazos'
+
+    def __str__(self):
+        data = self.data_prazo
+        data_str = data.strftime('%d/%m/%Y') if hasattr(data, 'strftime') else data
+        return f"{self.get_tipo_display()} — {self.descricao} ({data_str})"
+
+
 auditlog.register(Processo)
+auditlog.register(Prazo)
 auditlog.register(Cliente)
 auditlog.register(Documentos)
 auditlog.register(ConfiguracaoWhatsApp)

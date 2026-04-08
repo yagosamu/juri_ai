@@ -176,8 +176,19 @@ if not DEBUG:
 Q_CLUSTER = {
     "name": "pythonando",
     "workers": 1,
-    "retry": 200,        
-    "timeout": 180,       
+    "retry": 200,
+    "timeout": 180,
     "queue_limit": 50,
     "orm": "default",
 }
+
+# ── E-mail (alertas de prazo via django-q) ───────────────────────────────────
+# Por padrão usa o backend de console (imprime no terminal).
+# Preencha as variáveis no .env para enviar e-mails reais via SMTP.
+EMAIL_BACKEND  = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST     = os.environ.get('EMAIL_HOST', '')
+EMAIL_PORT     = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS  = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL', 'JuriAI <noreply@juriai.com.br>')

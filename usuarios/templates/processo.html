@@ -140,6 +140,12 @@
         Análises de Risco
         <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ analises|length }}</span>
       </a>
+      <a href="?tab=prazos"
+         class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
+                {% if tab == 'prazos' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
+        Prazos
+        <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ prazos|length }}</span>
+      </a>
     </nav>
   </div>
 
@@ -293,6 +299,126 @@
   {% endif %}
 
   {% endif %}{# /tab analises #}
+
+  <!-- ── TAB: PRAZOS ── -->
+  {% if tab == 'prazos' %}
+
+  <div class="flex items-center justify-between mb-5">
+    <p class="text-sm text-slate-500">{{ prazos|length }} prazo{{ prazos|length|pluralize:"s" }} cadastrado{{ prazos|length|pluralize:"s" }}</p>
+    <a href="{% url 'criar_prazo' processo.id %}"
+       class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white
+              text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+      </svg>
+      Novo prazo
+    </a>
+  </div>
+
+  {% if prazos %}
+  <div class="space-y-3">
+    {% for prazo in prazos %}
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm px-5 py-4">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex items-start gap-3 min-w-0">
+          {# Ícone de tipo #}
+          <div class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center mt-0.5
+            {% if prazo.tipo == 'audiencia' %}bg-indigo-50
+            {% elif prazo.tipo == 'protocolo' %}bg-amber-50
+            {% elif prazo.tipo == 'recurso' %}bg-violet-50
+            {% elif prazo.tipo == 'diligencia' %}bg-emerald-50
+            {% else %}bg-slate-100{% endif %}">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"
+              class="{% if prazo.tipo == 'audiencia' %}text-indigo-600
+                     {% elif prazo.tipo == 'protocolo' %}text-amber-600
+                     {% elif prazo.tipo == 'recurso' %}text-violet-600
+                     {% elif prazo.tipo == 'diligencia' %}text-emerald-600
+                     {% else %}text-slate-500{% endif %}">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+              <span class="text-sm font-semibold text-slate-800">{{ prazo.descricao }}</span>
+              {# Badge tipo #}
+              {% if prazo.tipo == 'audiencia' %}
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">Audiência</span>
+              {% elif prazo.tipo == 'protocolo' %}
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Protocolo</span>
+              {% elif prazo.tipo == 'recurso' %}
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-100 text-violet-700">Recurso</span>
+              {% elif prazo.tipo == 'diligencia' %}
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Diligência</span>
+              {% else %}
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Outro</span>
+              {% endif %}
+              {# Badge status #}
+              {% if prazo.status == 'pendente' %}
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Pendente</span>
+              {% elif prazo.status == 'concluido' %}
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Concluído</span>
+              {% else %}
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-600">Cancelado</span>
+              {% endif %}
+            </div>
+            <p class="text-xs text-slate-400">
+              Vence em <span class="font-medium text-slate-600">{{ prazo.data_prazo|date:"d/m/Y" }}</span>
+              &middot; Alerta {{ prazo.alerta_dias_antes }} dia{{ prazo.alerta_dias_antes|pluralize:"s" }} antes
+              {% if prazo.google_event_id %}
+                &middot; <span class="text-indigo-500">Sincronizado</span>
+              {% endif %}
+            </p>
+          </div>
+        </div>
+
+        {# Ações #}
+        {% if prazo.status == 'pendente' %}
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <a href="{% url 'editar_prazo' prazo.id %}"
+             class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 text-xs font-medium
+                    px-3 py-1.5 rounded-lg transition-colors">
+            Editar
+          </a>
+          <form method="POST" action="{% url 'concluir_prazo' prazo.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="?tab=prazos">
+            <button type="submit"
+              class="border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700
+                     text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+              Concluir
+            </button>
+          </form>
+          <form method="POST" action="{% url 'cancelar_prazo' prazo.id %}"
+                onsubmit="return confirm('Cancelar este prazo?')">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="?tab=prazos">
+            <button type="submit"
+              class="border border-red-200 bg-red-50 hover:bg-red-100 text-red-600
+                     text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+              Cancelar
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm px-8 py-12 text-center">
+    <div class="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center mx-auto mb-3">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" class="text-violet-400">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+      </svg>
+    </div>
+    <p class="text-slate-500 text-sm">Nenhum prazo cadastrado.</p>
+    <p class="text-slate-400 text-xs mt-1">Clique em "Novo prazo" para adicionar audiências, protocolos e prazos processuais.</p>
+  </div>
+  {% endif %}
+
+  {% endif %}{# /tab prazos #}
 
 </div>
 {% endblock %}

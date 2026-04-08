@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.messages import constants
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD, Processo, TRIBUNAL_CHOICES
+from .models import Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD, Processo, Prazo, TRIBUNAL_CHOICES
 from ia.models import AnaliseJurisprudencia
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -128,6 +128,14 @@ def dashboard(request):
 
     proximos_eventos = _get_proximos_eventos()
 
+    hoje    = datetime.date.today()
+    semana  = hoje + datetime.timedelta(days=7)
+    prazos_semana = (Prazo.objects
+                     .filter(user=request.user, status='pendente',
+                             data_prazo__gte=hoje, data_prazo__lte=semana)
+                     .select_related('processo')
+                     .order_by('data_prazo'))
+
     return render(request, 'dashboard.html', {
         'total_clientes': total_clientes,
         'clientes_ativos': clientes_ativos,
@@ -136,6 +144,8 @@ def dashboard(request):
         'documentos_processados': documentos_processados,
         'alertas': alertas,
         'proximos_eventos': proximos_eventos,
+        'prazos_semana': prazos_semana,
+        'hoje': hoje,
     })
 
 
@@ -324,7 +334,10 @@ def processo(request, id):
         documento__processo=processo_obj
     ).select_related('documento').order_by('-data_criacao')
 
-    # Tab ativa (querystring ?tab=documentos|analises)
+    # Prazos do processo
+    prazos = Prazo.objects.filter(processo=processo_obj)
+
+    # Tab ativa (querystring ?tab=documentos|analises|prazos)
     tab = request.GET.get('tab', 'documentos')
 
     return render(request, 'processo.html', {
@@ -332,6 +345,7 @@ def processo(request, id):
         'docs_vinculados':  docs_vinculados,
         'docs_disponiveis': docs_disponiveis,
         'analises':         analises,
+        'prazos':           prazos,
         'tab':              tab,
     })
 
@@ -437,6 +451,151 @@ def arquivar_processo(request, id):
     messages.add_message(request, constants.SUCCESS,
                          f'Processo {processo_obj} arquivado.')
     return redirect('lista_processos')
+
+
+@login_required
+def lista_prazos(request):
+    """Agenda — prazos dos próximos 30 dias."""
+    hoje  = datetime.date.today()
+    limite = hoje + datetime.timedelta(days=30)
+
+    tipo_filtro   = request.GET.get('tipo', '')
+    status_filtro = request.GET.get('status', 'pendente')
+
+    qs = Prazo.objects.filter(
+        user=request.user,
+        data_prazo__gte=hoje,
+        data_prazo__lte=limite,
+    ).select_related('processo', 'processo__cliente')
+
+    if tipo_filtro:
+        qs = qs.filter(tipo=tipo_filtro)
+    if status_filtro:
+        qs = qs.filter(status=status_filtro)
+
+    return render(request, 'prazos.html', {
+        'prazos':        qs,
+        'tipo_filtro':   tipo_filtro,
+        'status_filtro': status_filtro,
+        'tipo_choices':  Prazo.TIPO_CHOICES,
+        'hoje':          hoje,
+        'limite':        limite,
+    })
+
+
+@login_required
+def criar_prazo(request, processo_id):
+    processo_obj = get_object_or_404(Processo, id=processo_id, user=request.user)
+
+    if request.method == 'GET':
+        return render(request, 'criar_prazo.html', {
+            'processo':    processo_obj,
+            'tipo_choices': Prazo.TIPO_CHOICES,
+        })
+
+    descricao         = request.POST.get('descricao', '').strip()
+    data_prazo        = request.POST.get('data_prazo', '').strip()
+    tipo              = request.POST.get('tipo', '').strip()
+    alerta_dias_antes = request.POST.get('alerta_dias_antes', '3').strip()
+
+    if not descricao or not data_prazo or not tipo:
+        messages.add_message(request, constants.ERROR, 'Preencha todos os campos obrigatórios.')
+        return render(request, 'criar_prazo.html', {
+            'processo':    processo_obj,
+            'tipo_choices': Prazo.TIPO_CHOICES,
+            'form_data':   request.POST,
+        })
+
+    prazo = Prazo.objects.create(
+        descricao         = descricao,
+        data_prazo        = data_prazo,
+        tipo              = tipo,
+        processo          = processo_obj,
+        alerta_dias_antes = int(alerta_dias_antes) if alerta_dias_antes.isdigit() else 3,
+        user              = request.user,
+    )
+
+    from usuarios.calendar_utils import criar_evento_prazo
+    event_id = criar_evento_prazo(prazo)
+    if event_id:
+        prazo.google_event_id = event_id
+        prazo.save(update_fields=['google_event_id'])
+
+    messages.add_message(request, constants.SUCCESS, 'Prazo cadastrado com sucesso!')
+    return redirect(reverse('processo', kwargs={'id': processo_id}) + '?tab=prazos')
+
+
+@login_required
+def editar_prazo(request, id):
+    prazo = get_object_or_404(Prazo, id=id, user=request.user)
+
+    if request.method == 'GET':
+        return render(request, 'editar_prazo.html', {
+            'prazo':        prazo,
+            'tipo_choices': Prazo.TIPO_CHOICES,
+        })
+
+    descricao         = request.POST.get('descricao', '').strip()
+    data_prazo        = request.POST.get('data_prazo', '').strip()
+    tipo              = request.POST.get('tipo', '').strip()
+    alerta_dias_antes = request.POST.get('alerta_dias_antes', str(prazo.alerta_dias_antes)).strip()
+
+    if not descricao or not data_prazo or not tipo:
+        messages.add_message(request, constants.ERROR, 'Preencha todos os campos obrigatórios.')
+        return render(request, 'editar_prazo.html', {
+            'prazo':        prazo,
+            'tipo_choices': Prazo.TIPO_CHOICES,
+        })
+
+    prazo.descricao         = descricao
+    prazo.data_prazo        = data_prazo
+    prazo.tipo              = tipo
+    prazo.alerta_dias_antes = int(alerta_dias_antes) if alerta_dias_antes.isdigit() else prazo.alerta_dias_antes
+    prazo.save()
+
+    from usuarios.calendar_utils import atualizar_evento_prazo
+    atualizar_evento_prazo(prazo)
+
+    messages.add_message(request, constants.SUCCESS, 'Prazo atualizado com sucesso!')
+    return redirect(reverse('processo', kwargs={'id': prazo.processo.id}) + '?tab=prazos')
+
+
+@login_required
+def concluir_prazo(request, id):
+    if request.method != 'POST':
+        return redirect('lista_prazos')
+
+    prazo = get_object_or_404(Prazo, id=id, user=request.user)
+    prazo.status = 'concluido'
+    prazo.save(update_fields=['status'])
+
+    from usuarios.calendar_utils import atualizar_evento_prazo
+    atualizar_evento_prazo(prazo)
+
+    messages.add_message(request, constants.SUCCESS, f'Prazo "{prazo.descricao}" marcado como concluído.')
+    next_url = request.POST.get('next', '')
+    if next_url and next_url.startswith('/'):
+        return redirect(next_url)
+    return redirect(reverse('processo', kwargs={'id': prazo.processo.id}) + '?tab=prazos')
+
+
+@login_required
+def cancelar_prazo(request, id):
+    if request.method != 'POST':
+        return redirect('lista_prazos')
+
+    prazo = get_object_or_404(Prazo, id=id, user=request.user)
+    prazo.status = 'cancelado'
+    prazo.save(update_fields=['status'])
+
+    from usuarios.calendar_utils import cancelar_evento_prazo
+    cancelar_evento_prazo(prazo)
+
+    messages.add_message(request, constants.SUCCESS, f'Prazo "{prazo.descricao}" cancelado.')
+    next_url = request.POST.get('next', '')
+    if next_url and next_url.startswith('/'):
+        return redirect(next_url)
+    return redirect(reverse('processo', kwargs={'id': prazo.processo.id}) + '?tab=prazos')
 
 
 @login_required

@@ -14,6 +14,12 @@ urlpatterns = [
     path("processos/<int:id>/editar/", views.editar_processo, name='editar_processo'),
     path("processos/<int:id>/arquivar/", views.arquivar_processo, name='arquivar_processo'),
     path("processos/<int:id>/vincular-documento/", views.vincular_documento, name='vincular_documento'),
+    # ── Prazos ────────────────────────────────────────────────────────────────
+    path("prazos/", views.lista_prazos, name='lista_prazos'),
+    path("processos/<int:processo_id>/prazos/novo/", views.criar_prazo, name='criar_prazo'),
+    path("prazos/<int:id>/editar/", views.editar_prazo, name='editar_prazo'),
+    path("prazos/<int:id>/concluir/", views.concluir_prazo, name='concluir_prazo'),
+    path("prazos/<int:id>/cancelar/", views.cancelar_prazo, name='cancelar_prazo'),
     # ─────────────────────────────────────────────────────────────────────────
     path("configuracao_whatsapp/", views.configuracao_whatsapp, name='configuracao_whatsapp'),
     path("logout/", views.logout, name='logout'),
