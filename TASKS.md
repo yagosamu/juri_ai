@@ -100,7 +100,7 @@
 
 ---
 
-## 🟠 FASE 1 — MVP Comercializável
+## ✅ FASE 1 — MVP Comercializável
 
 
 ### Sprint 1.1 — Model de Processos ✅
@@ -136,52 +136,60 @@
   - Vinculação via dropdown na aba Documentos da página do processo
   - Análises exibidas via `documento__processo` na aba Análises de Risco
 
-### Sprint 1.2 — Controle de Prazos
+### Sprint 1.2 — Controle de Prazos ✅
 
-- [ ] **Criar model `Prazo`**
+- [x] **Criar model `Prazo`**
   - Campos: `descricao`, `data_prazo`, `tipo` (audiência/protocolo/recurso/diligência/outro), `processo` (FK), `alerta_dias_antes` (default: 3), `status` (pendente/concluído/cancelado), `user` (FK)
   - Índice em `data_prazo` para queries de calendário
 
-- [ ] **CRUD de prazos**
+- [x] **CRUD de prazos**
   - Criar/editar/concluir prazo dentro da página do processo
   - Listar prazos da semana no dashboard (substituir card "Em breve")
   - Filtro por status e tipo
 
-- [ ] **View de agenda `/prazos/`**
+- [x] **View de agenda `/prazos/`**
   - Calendário mensal com prazos destacados por tipo (cor por tipo)
   - Lista de prazos dos próximos 30 dias
   - Adicionar "Agenda" na sidebar
 
-- [ ] **Integração com Google Calendar**
+- [x] **Integração com Google Calendar**
   - Ao criar prazo, criar evento correspondente no Google Calendar automaticamente
   - Ao concluir/cancelar prazo, atualizar evento no Calendar
   - Tratar silenciosamente se Calendar não configurado
 
-- [ ] **Alertas por e-mail**
+- [x] **Alertas por e-mail**
   - Task `django-q` rodando diariamente às 8h
   - Envia e-mail para o advogado com prazos dos próximos `alerta_dias_antes` dias
   - Configurar SMTP no `.env`
 
-### Sprint 1.3 — Andamentos DataJud
+### Sprint 1.3 — Andamentos DataJud ✅
 
-- [ ] **Criar model `AndamentoProcesso`**
-  - Campos: `processo` (FK), `data`, `descricao`, `tipo`, `fonte` (DataJud/Manual)
+- [x] **Criar model `AndamentoProcesso`**
+  - Campos: `processo` (FK), `data`, `descricao`, `tipo`, `fonte` (DataJud/Manual), `codigo_datajud`
   - Ordenado por data decrescente
+  - `auditlog.register(AndamentoProcesso)` adicionado
+  - Campo `ultima_consulta_datajud` adicionado ao model `Processo`
+  - Migration `0007_processo_ultima_consulta_datajud_andamentoprocesso` aplicada
 
-- [ ] **Task assíncrona de consulta DataJud**
-  - Task `django-q` que recebe `processo_id`
-  - Busca andamentos pelo `numero_cnj` na API DataJud
-  - Salva novos andamentos (evita duplicatas por data+descrição)
-  - Atualiza `processo.ultima_atualizacao`
+- [x] **Task assíncrona de consulta DataJud**
+  - `consultar_datajud(processo_id)` em `ia/tasks.py`
+  - Busca movimentos pelo `numeroProcesso` (20 dígitos) na API DataJud
+  - Deduplicação por `(processo, data, codigo_datajud)` — sem `unique_together`
+  - Atualiza `processo.ultima_consulta_datajud` via `timezone.now()`
+  - Fix aplicado: campo correto é `dataHora` (não `data`) na resposta da API
 
-- [ ] **Atualização automática diária**
-  - Schedule no `django-q` para consultar todos os processos ativos do usuário
-  - Log de última consulta por processo
+- [x] **Atualização automática diária**
+  - `atualizar_todos_processos_datajud()` despacha `async_task` para cada processo ativo
+  - Schedule `'D'` criado via `post_migrate` signal em `ia/apps.py` (idempotente)
 
-- [ ] **Timeline de andamentos na página do processo**
-  - Aba "Andamentos" com timeline vertical
-  - Badge "DataJud" ou "Manual" por andamento
-  - Botão "Atualizar agora" (dispara task manualmente)
+- [x] **Timeline de andamentos na página do processo**
+  - Aba "Andamentos" (4ª aba) com contador em `processo.html`
+  - Timeline vertical com linha cinza, dots coloridos (DataJud=azul, Manual=cinza)
+  - Badge de fonte + descrição por item
+  - Botão "Atualizar agora" (POST → `atualizar_datajud` view) ou aviso se tribunal "outro"
+  - Empty state e rodapé com data da última consulta
+  - View `atualizar_datajud()` com `@login_required` + ownership check
+  - URL `processos/<id>/atualizar-datajud/` registrada
 
 ---
 
@@ -348,7 +356,7 @@
 | Fase | Status | Progresso |
 |---|---|---|
 | Fase 0 — Segurança | ✅ Concluída | 100% (Sprint 0.1 e Sprint 0.2 LGPD concluídas) |
-| Fase 1 — MVP | ⬜ Não iniciada | 0% |
+| Fase 1 — MVP | ✅ Concluída | 100% (Sprints 1.1, 1.2 e 1.3 concluídos) |
 | Fase 2 — Financeiro | ⬜ Não iniciada | 0% |
 | Fase 3 — Geração Docs | ⬜ Não iniciada | 0% |
 | Fase 4 — CRM | ⬜ Não iniciada | 0% |
