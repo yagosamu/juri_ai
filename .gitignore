@@ -20,9 +20,13 @@ token.json
 # Database backups
 backup_*.json
 
-# Test artifacts
-test_migration.py
-test_screenshots/
+# Test / auditoria temporária
+test_*.py
+inspect_*.py
+audit_playwright.py
+playwright_*.py
+audit_results.json
+screenshots/
 
 # Virtual env
 venv/

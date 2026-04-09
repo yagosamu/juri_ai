@@ -28,7 +28,7 @@ from .agents import SecretariaAI
 @csrf_exempt
 @login_required
 def chat(request, id):
-    cliente = Cliente.objects.get(id=id)
+    cliente = get_object_or_404(Cliente, id=id, user=request.user)
     if request.method == 'GET':
         return render(request, 'chat.html', {'cliente': cliente})
     elif request.method == 'POST':
@@ -42,7 +42,7 @@ def chat(request, id):
 def stream_resposta(request):
     id_pergunta = request.POST.get('id_pergunta')
 
-    pergunta = get_object_or_404(Pergunta, id=id_pergunta)
+    pergunta = get_object_or_404(Pergunta, id=id_pergunta, cliente__user=request.user)
 
     def gerar_resposta():
         
@@ -68,7 +68,7 @@ def stream_resposta(request):
 
 @login_required
 def ver_referencias(request, id):
-    pergunta = get_object_or_404(Pergunta, id=id)
+    pergunta = get_object_or_404(Pergunta, id=id, cliente__user=request.user)
     contextos = ContextRag.objects.filter(pergunta=pergunta)
     return render(request, 'ver_referencias.html', {
         'pergunta': pergunta,
@@ -93,7 +93,7 @@ def processar_analise(request, id):
         return redirect('analise_jurisprudencia', id=id)
     
     try:
-        documento = get_object_or_404(Documentos, id=id)
+        documento = get_object_or_404(Documentos, id=id, cliente__user=request.user)
         start_time = time.time()
         
         agent = JurisprudenciaAI()
