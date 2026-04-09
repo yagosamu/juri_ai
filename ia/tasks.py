@@ -1,13 +1,18 @@
 import datetime
 from collections import defaultdict
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from usuarios.models import Documentos
 from .agents import JuriAI
 
 def ocr_and_markdown_file(instance_id):
     from docling.document_converter import DocumentConverter
+    import os
 
     documentos = get_object_or_404(Documentos, id=instance_id)
+
+    if not os.path.exists(documentos.arquivo.path):
+        return f'Arquivo não encontrado: {documentos.arquivo.path}'
 
     converter = DocumentConverter()
     result = converter.convert(documentos.arquivo.path)
@@ -91,3 +96,69 @@ def enviar_alertas_prazos():
             )
         except Exception:
             pass
+
+
+def consultar_datajud(processo_id):
+    """Busca movimentos no DataJud e persiste apenas os novos."""
+    import requests
+    from usuarios.models import Processo, AndamentoProcesso
+
+    proc = Processo.objects.filter(id=processo_id).first()
+    if not proc or proc.tribunal == 'outro':
+        return 'Tribunal inválido ou não selecionado'
+
+    numero = proc.numero_cnj.replace('-', '').replace('.', '')
+    url = f"https://api-publica.datajud.cnj.jus.br/api_publica_{proc.tribunal}/_search"
+    headers = {
+        'Authorization': 'APIKey cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==',
+        'Content-Type': 'application/json',
+    }
+    try:
+        resp = requests.post(
+            url, headers=headers,
+            json={'query': {'match': {'numeroProcesso': numero}}},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:
+        return f'Erro na API DataJud: {e}'
+
+    hits = data.get('hits', {}).get('hits', [])
+    if not hits:
+        return 'Nenhum resultado encontrado no DataJud'
+
+    movimentos = hits[0].get('_source', {}).get('movimentos', [])
+    novos = 0
+    for mov in movimentos:
+        try:
+            data_mov = datetime.date.fromisoformat(mov.get('dataHora', '')[:10])
+        except (KeyError, ValueError, TypeError):
+            continue
+        codigo = mov.get('codigo')
+        if not AndamentoProcesso.objects.filter(
+            processo=proc, data=data_mov, codigo_datajud=codigo
+        ).exists():
+            AndamentoProcesso.objects.create(
+                processo=proc,
+                data=data_mov,
+                descricao=mov.get('nome', ''),
+                tipo=mov.get('nome', ''),
+                codigo_datajud=codigo,
+                fonte='datajud',
+            )
+            novos += 1
+
+    Processo.objects.filter(id=processo_id).update(
+        ultima_consulta_datajud=timezone.now()
+    )
+    return f'{novos} andamento(s) novo(s) importado(s)'
+
+
+def atualizar_todos_processos_datajud():
+    """Schedule diário — dispara consultar_datajud para cada processo ativo."""
+    from django_q.tasks import async_task
+    from usuarios.models import Processo
+
+    for proc in Processo.objects.filter(status='ativo').exclude(tribunal='outro'):
+        async_task('ia.tasks.consultar_datajud', proc.id)

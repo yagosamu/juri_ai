@@ -154,6 +154,10 @@ class Processo(models.Model):
 
     criado_em         = models.DateTimeField(auto_now_add=True)
     atualizado_em     = models.DateTimeField(auto_now=True)
+    ultima_consulta_datajud = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name='Última consulta DataJud',
+    )
 
     class Meta:
         ordering = ['-criado_em']
@@ -172,6 +176,32 @@ class Processo(models.Model):
         if self.tribunal == 'outro' and self.tribunal_outro:
             return self.tribunal_outro
         return self.get_tribunal_display()
+
+
+class AndamentoProcesso(models.Model):
+    FONTE_CHOICES = [
+        ('datajud', 'DataJud'),
+        ('manual',  'Manual'),
+    ]
+
+    processo       = models.ForeignKey(Processo, on_delete=models.CASCADE,
+                                       related_name='andamentos')
+    data           = models.DateField(verbose_name='Data', db_index=True)
+    descricao      = models.TextField(verbose_name='Descrição')
+    tipo           = models.CharField(max_length=200, blank=True, verbose_name='Tipo')
+    codigo_datajud = models.IntegerField(null=True, blank=True,
+                                         verbose_name='Código DataJud')
+    fonte          = models.CharField(max_length=10, choices=FONTE_CHOICES,
+                                      default='datajud', verbose_name='Fonte')
+    criado_em      = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-data', '-criado_em']
+        verbose_name = 'Andamento'
+        verbose_name_plural = 'Andamentos'
+
+    def __str__(self):
+        return f"{self.data} — {self.descricao[:60]}"
 
 
 class Cliente(models.Model):
@@ -279,6 +309,7 @@ class Prazo(models.Model):
 
 
 auditlog.register(Processo)
+auditlog.register(AndamentoProcesso)
 auditlog.register(Prazo)
 auditlog.register(Cliente)
 auditlog.register(Documentos)

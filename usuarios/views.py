@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.messages import constants
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD, Processo, Prazo, TRIBUNAL_CHOICES
+from .models import Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD, Processo, Prazo, AndamentoProcesso, TRIBUNAL_CHOICES
 from ia.models import AnaliseJurisprudencia
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -337,7 +337,10 @@ def processo(request, id):
     # Prazos do processo
     prazos = Prazo.objects.filter(processo=processo_obj)
 
-    # Tab ativa (querystring ?tab=documentos|analises|prazos)
+    # Andamentos DataJud
+    andamentos = AndamentoProcesso.objects.filter(processo=processo_obj)
+
+    # Tab ativa (querystring ?tab=documentos|analises|prazos|andamentos)
     tab = request.GET.get('tab', 'documentos')
 
     return render(request, 'processo.html', {
@@ -346,6 +349,7 @@ def processo(request, id):
         'docs_disponiveis': docs_disponiveis,
         'analises':         analises,
         'prazos':           prazos,
+        'andamentos':       andamentos,
         'tab':              tab,
     })
 
@@ -363,6 +367,24 @@ def vincular_documento(request, id):
         messages.add_message(request, constants.SUCCESS, 'Documento vinculado ao processo.')
 
     return redirect(reverse('processo', kwargs={'id': id}) + '?tab=documentos')
+
+
+@login_required
+def atualizar_datajud(request, id):
+    """Dispara consulta DataJud assíncrona para o processo."""
+    processo_obj = get_object_or_404(Processo, id=id, user=request.user)
+
+    if request.method == 'POST':
+        if processo_obj.tribunal == 'outro':
+            messages.add_message(request, constants.ERROR,
+                                 'Processos com tribunal "Outro" não podem ser consultados no DataJud.')
+        else:
+            from django_q.tasks import async_task
+            async_task('ia.tasks.consultar_datajud', processo_obj.id)
+            messages.add_message(request, constants.SUCCESS,
+                                 'Consulta ao DataJud iniciada. Os andamentos aparecerão em instantes.')
+
+    return redirect(reverse('processo', kwargs={'id': id}) + '?tab=andamentos')
 
 
 @login_required

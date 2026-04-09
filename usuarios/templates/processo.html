@@ -146,6 +146,12 @@
         Prazos
         <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ prazos|length }}</span>
       </a>
+      <a href="?tab=andamentos"
+         class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
+                {% if tab == 'andamentos' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
+        Andamentos
+        <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ andamentos|length }}</span>
+      </a>
     </nav>
   </div>
 
@@ -419,6 +425,118 @@
   {% endif %}
 
   {% endif %}{# /tab prazos #}
+
+  <!-- ── TAB: ANDAMENTOS ── -->
+  {% if tab == 'andamentos' %}
+
+  <!-- Header: contador + botão -->
+  <div class="flex items-center justify-between mb-5">
+    <p class="text-sm text-slate-500">
+      {{ andamentos|length }} andamento{{ andamentos|length|pluralize:"s" }}
+    </p>
+    {% if processo.tribunal == 'outro' %}
+    <div class="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200
+                text-amber-700 text-xs font-medium px-3.5 py-2 rounded-xl">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874
+             1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+      </svg>
+      Tribunal "Outro" não é suportado pelo DataJud
+    </div>
+    {% else %}
+    <form method="POST" action="{% url 'atualizar_datajud' processo.id %}">
+      {% csrf_token %}
+      <button type="submit"
+        class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500
+               text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0
+               3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1
+               13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+        </svg>
+        Atualizar agora
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if andamentos %}
+  <!-- Timeline -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 py-6">
+    <div class="relative">
+      <!-- Linha vertical conectando os pontos -->
+      <div class="absolute top-[1.125rem] bottom-[1.125rem] w-px bg-slate-200"
+           style="left: 7.75rem;"></div>
+
+      <div class="space-y-5">
+        {% for andamento in andamentos %}
+        <div class="flex items-start">
+
+          <!-- Data -->
+          <time class="w-28 flex-shrink-0 text-right pr-4 pt-0.5 text-xs font-medium text-slate-400">
+            {{ andamento.data|date:"d/m/Y" }}
+          </time>
+
+          <!-- Ponto -->
+          <div class="flex-shrink-0 w-6 flex justify-center pt-[0.2rem]">
+            <div class="w-2.5 h-2.5 rounded-full ring-2 ring-white
+              {% if andamento.fonte == 'datajud' %}bg-blue-500{% else %}bg-slate-400{% endif %}">
+            </div>
+          </div>
+
+          <!-- Conteúdo -->
+          <div class="flex-1 pl-3">
+            <span class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full
+              {% if andamento.fonte == 'datajud' %}bg-blue-50 text-blue-700
+              {% else %}bg-slate-100 text-slate-600{% endif %}">
+              {{ andamento.get_fonte_display }}
+            </span>
+            <p class="text-sm text-slate-700 mt-1 leading-relaxed">{{ andamento.descricao }}</p>
+          </div>
+
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- Empty state -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm px-8 py-12 text-center">
+    <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+           stroke-width="1.5" class="text-slate-400">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375
+             0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12zm.375
+             0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375
+             0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+      </svg>
+    </div>
+    <p class="text-slate-500 text-sm">Nenhum andamento registrado.</p>
+    <p class="text-slate-400 text-xs mt-1">
+      {% if processo.tribunal == 'outro' %}
+        Selecione um tribunal válido para habilitar a consulta ao DataJud.
+      {% else %}
+        Clique em "Atualizar agora" para buscar no DataJud.
+      {% endif %}
+    </p>
+  </div>
+  {% endif %}
+
+  <!-- Rodapé: última consulta -->
+  <p class="text-xs text-slate-400 mt-4 text-right">
+    Última consulta:
+    {% if processo.ultima_consulta_datajud %}
+      {{ processo.ultima_consulta_datajud|date:"d/m/Y H:i" }}
+    {% else %}
+      Nunca consultado
+    {% endif %}
+  </p>
+
+  {% endif %}{# /tab andamentos #}
 
 </div>
 {% endblock %}
