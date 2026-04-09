@@ -155,6 +155,61 @@ def consultar_datajud(processo_id):
     return f'{novos} andamento(s) novo(s) importado(s)'
 
 
+def alertar_honorarios_atrasados():
+    """
+    Task diária — notifica o advogado via WhatsApp sobre honorários em atraso.
+    Silenciosa se ConfiguracaoWhatsApp não configurada ou telefone_advogado vazio.
+    """
+    import datetime
+    from collections import defaultdict
+    from usuarios.models import Honorario, ConfiguracaoWhatsApp
+
+    hoje = datetime.date.today()
+
+    atrasados = (
+        Honorario.objects
+        .filter(status='pendente', vencimento__lt=hoje)
+        .select_related('user', 'cliente')
+    )
+
+    por_usuario = defaultdict(list)
+    for h in atrasados:
+        por_usuario[h.user].append(h)
+
+    for user, lista in por_usuario.items():
+        try:
+            config = ConfiguracaoWhatsApp.objects.get(user=user)
+            if not config.telefone_advogado:
+                continue
+        except ConfiguracaoWhatsApp.DoesNotExist:
+            continue
+
+        linhas = []
+        for h in lista:
+            dias   = (hoje - h.vencimento).days
+            sufixo = 'dia' if dias == 1 else 'dias'
+            linhas.append(
+                f'• {h.cliente.nome} — R$ {h.valor_total} '
+                f'(venceu há {dias} {sufixo})'
+            )
+
+        mensagem = (
+            f'⚠️ JuriAI — {len(lista)} honorário(s) em atraso:\n\n'
+            + '\n'.join(linhas)
+            + '\n\nAcesse o sistema para regularizar.'
+        )
+
+        try:
+            from ia.wrapper_evolution_api import SendMessage
+            api = SendMessage(base_url=config.base_url, api_key=config.api_key)
+            api.send_message(
+                instance=config.instancia,
+                body={'number': config.telefone_advogado, 'text': mensagem},
+            )
+        except Exception:
+            pass
+
+
 def atualizar_todos_processos_datajud():
     """Schedule diário — dispara consultar_datajud para cada processo ativo."""
     from django_q.tasks import async_task

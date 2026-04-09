@@ -193,19 +193,19 @@
 
 ---
 
-## 🟡 FASE 2 — Gestão Financeira
+## ✅ FASE 2 — Gestão Financeira
 
 ### Sprint 2.1 — Honorários
 
-- [ ] **Criar model `Honorario`**
+- [x] **Criar model `Honorario`**
   - Campos: `cliente` (FK), `processo` (FK nullable), `descricao`, `valor_total`, `tipo` (fixo/êxito/hora/mensalidade), `vencimento`, `status` (pendente/pago/atrasado/cancelado), `user` (FK)
   - Property `esta_atrasado`: `vencimento < today and status == pendente`
 
-- [ ] **CRUD de honorários**
+- [x] **CRUD de honorários**
   - Criar/editar/marcar como pago dentro da página do cliente e do processo
   - Listar todos os honorários em `/financeiro/`
 
-- [ ] **Dashboard financeiro**
+- [x] **Dashboard financeiro**
   - Card: Receita do mês (honorários pagos no mês atual)
   - Card: A receber (honorários pendentes)
   - Card: Em atraso (honorários atrasados)
@@ -213,23 +213,23 @@
 
 ### Sprint 2.2 — Recebimentos e Relatórios
 
-- [ ] **Model `Pagamento`**
+- [x] **Model `Pagamento`**
   - Campos: `honorario` (FK), `valor_pago`, `data_pagamento`, `observacao`
   - Suporte a pagamentos parciais
 
-- [ ] **Marcar como pago**
+- [x] **Marcar como pago**
   - Botão na lista de honorários
   - Modal com: valor pago, data, observação
   - Atualiza status automaticamente se valor_pago >= valor_total
 
-- [ ] **Relatório de fluxo de caixa**
+- [x] **Relatório de fluxo de caixa**
   - View `/financeiro/relatorio/` com filtro por período
   - Tabela: entradas x saídas x saldo
-  - Exportar como PDF (`reportlab` ou `weasyprint`)
+  - Exportar como PDF (reportlab) e Excel (openpyxl)
 
-- [ ] **Alerta de honorários vencidos via WhatsApp**
+- [x] **Alerta de honorários vencidos via WhatsApp**
   - Task diária que verifica honorários atrasados
-  - SecretariaAI envia mensagem ao advogado no WhatsApp
+  - Envia mensagem ao advogado via Evolution API
 
 ---
 
@@ -357,7 +357,7 @@
 |---|---|---|
 | Fase 0 — Segurança | ✅ Concluída | 100% (Sprint 0.1 e Sprint 0.2 LGPD concluídas) |
 | Fase 1 — MVP | ✅ Concluída | 100% (Sprints 1.1, 1.2 e 1.3 concluídos) |
-| Fase 2 — Financeiro | ⬜ Não iniciada | 0% |
+| Fase 2 — Financeiro | ✅ Concluída | 100% |
 | Fase 3 — Geração Docs | ⬜ Não iniciada | 0% |
 | Fase 4 — CRM | ⬜ Não iniciada | 0% |
 | Fase 5 — Portal/Mobile | ⬜ Não iniciada | 0% |

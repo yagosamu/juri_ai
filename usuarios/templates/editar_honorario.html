@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block 'title' %}Editar honorário — JuriAI{% endblock %}
+
+{% block 'content' %}
+<div class="px-8 py-8 max-w-2xl mx-auto">
+
+  <div class="flex items-center gap-2 text-sm text-slate-500 mb-6">
+    <a href="{% url 'lista_financeiro' %}" class="hover:text-slate-700 transition-colors">Financeiro</a>
+    <span class="text-slate-300">/</span>
+    <span class="text-slate-700 font-medium">Editar honorário</span>
+  </div>
+
+  <h1 class="text-xl font-semibold text-slate-900 mb-6">Editar honorário</h1>
+
+  {% if messages %}
+  <div class="mb-6 space-y-2">
+    {% for message in messages %}
+    <div class="rounded-xl px-4 py-3 text-sm font-medium bg-red-50 text-red-800 border border-red-200">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form method="POST" action="{% url 'editar_honorario' honorario.id %}"
+        class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+    {% csrf_token %}
+
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1.5">
+        Cliente <span class="text-red-500">*</span>
+      </label>
+      <select name="cliente_id" id="id_cliente" required
+        class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
+               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+        {% for c in clientes %}
+        <option value="{{ c.id }}" {% if honorario.cliente.id == c.id %}selected{% endif %}>
+          {{ c.nome }}{% if c.tipo == 'PJ' %} (PJ){% endif %}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1.5">
+        Processo <span class="text-slate-400 font-normal">(opcional)</span>
+      </label>
+      <select name="processo_id" id="id_processo"
+        class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
+               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+        <option value="">Nenhum</option>
+        {% for p in processos %}
+        <option value="{{ p.id }}" data-cliente-id="{{ p.cliente.id }}"
+          {% if honorario.processo and honorario.processo.id == p.id %}selected{% endif %}>
+          {{ p }} — {{ p.cliente.nome }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <hr class="border-slate-100"/>
+
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1.5">
+        Descrição <span class="text-red-500">*</span>
+      </label>
+      <input type="text" name="descricao" required value="{{ honorario.descricao }}"
+        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
+          Tipo <span class="text-red-500">*</span>
+        </label>
+        <select name="tipo" required
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
+                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+          {% for value, label in tipo_choices %}
+          <option value="{{ value }}" {% if honorario.tipo == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
+        <select name="status"
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
+                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+          <option value="pendente"  {% if honorario.status == 'pendente' %}selected{% endif %}>Pendente</option>
+          <option value="pago"      {% if honorario.status == 'pago' %}selected{% endif %}>Pago</option>
+          <option value="atrasado"  {% if honorario.status == 'atrasado' %}selected{% endif %}>Atrasado</option>
+          <option value="cancelado" {% if honorario.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
+          Valor total (R$) <span class="text-red-500">*</span>
+        </label>
+        <input type="number" name="valor_total" step="0.01" min="0.01" required
+          value="{{ honorario.valor_total }}"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
+          Vencimento <span class="text-red-500">*</span>
+        </label>
+        <input type="date" name="vencimento" required value="{{ honorario.vencimento|date:'Y-m-d' }}"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 pt-2">
+      <button type="submit"
+        class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+        Salvar alterações
+      </button>
+      <a href="{% url 'lista_financeiro' %}"
+         class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">
+        Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+(function () {
+  const clienteSel  = document.getElementById('id_cliente');
+  const processoSel = document.getElementById('id_processo');
+  const todos = Array.from(processoSel.options).slice(1).map(o => ({
+    value: o.value, text: o.text, clienteId: o.dataset.clienteId,
+  }));
+
+  function filtrar() {
+    const cid     = clienteSel.value;
+    const current = processoSel.value;
+    processoSel.innerHTML = '<option value="">Nenhum</option>';
+    todos.forEach(p => {
+      if (!cid || p.clienteId === cid) {
+        processoSel.add(new Option(p.text, p.value, false, p.value === current));
+      }
+    });
+  }
+
+  clienteSel.addEventListener('change', filtrar);
+  filtrar();
+}());
+</script>
+{% endblock %}

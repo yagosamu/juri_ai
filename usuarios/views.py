@@ -4,7 +4,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.messages import constants
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD, Processo, Prazo, AndamentoProcesso, TRIBUNAL_CHOICES
+from .models import Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD, Processo, Prazo, AndamentoProcesso, TRIBUNAL_CHOICES, Honorario, Pagamento
+from django.db.models import Sum
 from ia.models import AnaliseJurisprudencia
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -177,7 +178,14 @@ def cliente(request, id):
     cliente = get_object_or_404(Cliente, id=id, user=request.user)
     if request.method == 'GET':
         documentos = Documentos.objects.filter(cliente=cliente)
-        return render(request, 'cliente.html', {'cliente': cliente, 'documentos': documentos})
+        honorarios = Honorario.objects.filter(cliente=cliente, user=request.user).order_by('vencimento')
+        tab = request.GET.get('tab', 'documentos')
+        return render(request, 'cliente.html', {
+            'cliente':    cliente,
+            'documentos': documentos,
+            'honorarios': honorarios,
+            'tab':        tab,
+        })
     elif request.method == 'POST':
         tipo = request.POST.get('tipo')
         documento = request.FILES.get('documento')
@@ -340,7 +348,10 @@ def processo(request, id):
     # Andamentos DataJud
     andamentos = AndamentoProcesso.objects.filter(processo=processo_obj)
 
-    # Tab ativa (querystring ?tab=documentos|analises|prazos|andamentos)
+    # Honorários do processo
+    honorarios = Honorario.objects.filter(processo=processo_obj, user=request.user).order_by('vencimento')
+
+    # Tab ativa (querystring ?tab=documentos|analises|prazos|andamentos|honorarios)
     tab = request.GET.get('tab', 'documentos')
 
     return render(request, 'processo.html', {
@@ -350,6 +361,7 @@ def processo(request, id):
         'analises':         analises,
         'prazos':           prazos,
         'andamentos':       andamentos,
+        'honorarios':       honorarios,
         'tab':              tab,
     })
 
@@ -657,6 +669,345 @@ def excluir_conta(request):
 
     messages.add_message(request, constants.SUCCESS, 'Sua conta foi excluída com sucesso.')
     return redirect('home')
+
+
+# ── Financeiro ───────────────────────────────────────────────────────────────
+
+@login_required
+def lista_financeiro(request):
+    hoje       = datetime.date.today()
+    inicio_mes = hoje.replace(day=1)
+
+    honorarios_qs = (Honorario.objects
+                     .filter(user=request.user)
+                     .select_related('cliente', 'processo'))
+
+    status_filtro = request.GET.get('status', '')
+    tipo_filtro   = request.GET.get('tipo', '')
+    if status_filtro:
+        honorarios_qs = honorarios_qs.filter(status=status_filtro)
+    if tipo_filtro:
+        honorarios_qs = honorarios_qs.filter(tipo=tipo_filtro)
+
+    base_qs = Honorario.objects.filter(user=request.user)
+
+    receita_mes = (Pagamento.objects
+                   .filter(honorario__user=request.user,
+                           data_pagamento__gte=inicio_mes,
+                           data_pagamento__lte=hoje)
+                   .aggregate(total=Sum('valor_pago'))['total'] or 0)
+
+    a_receber = (base_qs
+                 .filter(status='pendente', vencimento__gte=hoje)
+                 .aggregate(total=Sum('valor_total'))['total'] or 0)
+
+    em_atraso = (base_qs
+                 .filter(status='pendente', vencimento__lt=hoje)
+                 .aggregate(total=Sum('valor_total'))['total'] or 0)
+
+    return render(request, 'financeiro.html', {
+        'honorarios':     honorarios_qs,
+        'receita_mes':    receita_mes,
+        'a_receber':      a_receber,
+        'em_atraso':      em_atraso,
+        'status_filtro':  status_filtro,
+        'tipo_filtro':    tipo_filtro,
+        'status_choices': Honorario.STATUS_CHOICES,
+        'tipo_choices':   Honorario.TIPO_CHOICES,
+        'hoje':           hoje,
+    })
+
+
+@login_required
+def criar_honorario(request):
+    clientes_qs  = Cliente.objects.filter(user=request.user)
+    processos_qs = Processo.objects.filter(user=request.user).select_related('cliente')
+
+    # Pré-vinculação via querystring (?cliente_id=X&processo_id=Y)
+    cliente_id_pre  = request.GET.get('cliente_id') or request.POST.get('cliente_id_pre')
+    processo_id_pre = request.GET.get('processo_id') or request.POST.get('processo_id_pre')
+
+    if request.method == 'GET':
+        return render(request, 'criar_honorario.html', {
+            'clientes':        clientes_qs,
+            'processos':       processos_qs,
+            'cliente_id_pre':  cliente_id_pre,
+            'processo_id_pre': processo_id_pre,
+            'tipo_choices':    Honorario.TIPO_CHOICES,
+        })
+
+    descricao   = request.POST.get('descricao', '').strip()
+    valor_total = request.POST.get('valor_total', '').strip()
+    tipo        = request.POST.get('tipo', '').strip()
+    vencimento  = request.POST.get('vencimento', '').strip()
+    cliente_id  = request.POST.get('cliente_id')
+    processo_id = request.POST.get('processo_id') or None
+
+    if not all([descricao, valor_total, tipo, vencimento, cliente_id]):
+        messages.add_message(request, constants.ERROR, 'Preencha todos os campos obrigatórios.')
+        return render(request, 'criar_honorario.html', {
+            'clientes':     clientes_qs,
+            'processos':    processos_qs,
+            'tipo_choices': Honorario.TIPO_CHOICES,
+            'form_data':    request.POST,
+        })
+
+    cliente_obj  = get_object_or_404(Cliente, id=cliente_id, user=request.user)
+    processo_obj = None
+    if processo_id:
+        processo_obj = get_object_or_404(Processo, id=processo_id, user=request.user)
+
+    Honorario.objects.create(
+        cliente     = cliente_obj,
+        processo    = processo_obj,
+        descricao   = descricao,
+        valor_total = valor_total,
+        tipo        = tipo,
+        vencimento  = vencimento,
+        user        = request.user,
+    )
+    messages.add_message(request, constants.SUCCESS, 'Honorário cadastrado com sucesso!')
+    return redirect('lista_financeiro')
+
+
+@login_required
+def editar_honorario(request, id):
+    honorario    = get_object_or_404(Honorario, id=id, user=request.user)
+    clientes_qs  = Cliente.objects.filter(user=request.user)
+    processos_qs = Processo.objects.filter(user=request.user).select_related('cliente')
+
+    if request.method == 'GET':
+        return render(request, 'editar_honorario.html', {
+            'honorario':    honorario,
+            'clientes':     clientes_qs,
+            'processos':    processos_qs,
+            'tipo_choices': Honorario.TIPO_CHOICES,
+        })
+
+    descricao   = request.POST.get('descricao', '').strip()
+    valor_total = request.POST.get('valor_total', '').strip()
+    tipo        = request.POST.get('tipo', '').strip()
+    vencimento  = request.POST.get('vencimento', '').strip()
+    cliente_id  = request.POST.get('cliente_id')
+    processo_id = request.POST.get('processo_id') or None
+    status      = request.POST.get('status', honorario.status)
+
+    if not all([descricao, valor_total, tipo, vencimento, cliente_id]):
+        messages.add_message(request, constants.ERROR, 'Preencha todos os campos obrigatórios.')
+        return render(request, 'editar_honorario.html', {
+            'honorario':    honorario,
+            'clientes':     clientes_qs,
+            'processos':    processos_qs,
+            'tipo_choices': Honorario.TIPO_CHOICES,
+        })
+
+    honorario.cliente     = get_object_or_404(Cliente, id=cliente_id, user=request.user)
+    honorario.processo    = get_object_or_404(Processo, id=processo_id, user=request.user) if processo_id else None
+    honorario.descricao   = descricao
+    honorario.valor_total = valor_total
+    honorario.tipo        = tipo
+    honorario.vencimento  = vencimento
+    honorario.status      = status
+    honorario.save()
+
+    messages.add_message(request, constants.SUCCESS, 'Honorário atualizado com sucesso!')
+    return redirect('lista_financeiro')
+
+
+@login_required
+def marcar_pago(request, id):
+    if request.method != 'POST':
+        return redirect('lista_financeiro')
+
+    honorario      = get_object_or_404(Honorario, id=id, user=request.user)
+    valor_pago     = request.POST.get('valor_pago', '').strip()
+    data_pagamento = request.POST.get('data_pagamento', '').strip()
+    observacao     = request.POST.get('observacao', '').strip()
+
+    if not valor_pago or not data_pagamento:
+        messages.add_message(request, constants.ERROR, 'Informe o valor pago e a data.')
+        return redirect('lista_financeiro')
+
+    Pagamento.objects.create(
+        honorario      = honorario,
+        valor_pago     = valor_pago,
+        data_pagamento = data_pagamento,
+        observacao     = observacao,
+    )
+    # Honorario.status atualizado automaticamente pelo Pagamento.save()
+    messages.add_message(request, constants.SUCCESS, 'Pagamento registrado com sucesso!')
+
+    next_url = request.POST.get('next', '')
+    if next_url and next_url.startswith('/'):
+        return redirect(next_url)
+    return redirect('lista_financeiro')
+
+
+@login_required
+def cancelar_honorario(request, id):
+    if request.method != 'POST':
+        return redirect('lista_financeiro')
+
+    honorario = get_object_or_404(Honorario, id=id, user=request.user)
+    honorario.status = 'cancelado'
+    honorario.save(update_fields=['status'])
+
+    messages.add_message(request, constants.SUCCESS,
+                         f'Honorário "{honorario.descricao}" cancelado.')
+    next_url = request.POST.get('next', '')
+    if next_url and next_url.startswith('/'):
+        return redirect(next_url)
+    return redirect('lista_financeiro')
+
+
+@login_required
+def relatorio_financeiro(request):
+    hoje        = datetime.date.today()
+    data_inicio = (request.POST.get('data_inicio') or
+                   request.GET.get('data_inicio') or
+                   hoje.replace(day=1).isoformat())
+    data_fim    = (request.POST.get('data_fim') or
+                   request.GET.get('data_fim') or
+                   hoje.isoformat())
+
+    try:
+        data_inicio_obj = datetime.date.fromisoformat(data_inicio)
+        data_fim_obj    = datetime.date.fromisoformat(data_fim)
+    except ValueError:
+        data_inicio_obj = hoje.replace(day=1)
+        data_fim_obj    = hoje
+
+    honorarios = (Honorario.objects
+                  .filter(user=request.user,
+                          vencimento__gte=data_inicio_obj,
+                          vencimento__lte=data_fim_obj)
+                  .select_related('cliente', 'processo')
+                  .order_by('vencimento'))
+
+    total_geral    = honorarios.aggregate(total=Sum('valor_total'))['total'] or 0
+    total_recebido = (Pagamento.objects
+                     .filter(honorario__user=request.user,
+                             data_pagamento__gte=data_inicio_obj,
+                             data_pagamento__lte=data_fim_obj)
+                     .aggregate(total=Sum('valor_pago'))['total'] or 0)
+    total_pendente = (honorarios.filter(status='pendente')
+                     .aggregate(total=Sum('valor_total'))['total'] or 0)
+
+    formato = request.POST.get('formato', '')
+
+    if request.method == 'POST' and formato == 'pdf':
+        from io import BytesIO
+        from django.http import HttpResponse
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.lib.units import cm
+
+        buffer = BytesIO()
+        doc    = SimpleDocTemplate(buffer, pagesize=A4,
+                                   rightMargin=2*cm, leftMargin=2*cm,
+                                   topMargin=2*cm, bottomMargin=2*cm)
+        styles = getSampleStyleSheet()
+        story  = []
+
+        story.append(Paragraph('Relatório de Fluxo de Caixa — JuriAI', styles['Title']))
+        story.append(Paragraph(
+            f'Período: {data_inicio_obj.strftime("%d/%m/%Y")} a {data_fim_obj.strftime("%d/%m/%Y")}',
+            styles['Normal'],
+        ))
+        story.append(Spacer(1, 0.5*cm))
+
+        dados = [['Vencimento', 'Cliente', 'Descrição', 'Tipo', 'Valor (R$)', 'Status']]
+        for h in honorarios:
+            dados.append([
+                h.vencimento.strftime('%d/%m/%Y'),
+                h.cliente.nome,
+                h.descricao,
+                h.get_tipo_display(),
+                f'{h.valor_total:,.2f}',
+                h.get_status_display(),
+            ])
+        dados.append(['', '', '', 'TOTAL', f'{total_geral:,.2f}', ''])
+
+        tabela = Table(dados, repeatRows=1)
+        tabela.setStyle(TableStyle([
+            ('BACKGROUND',     (0, 0),  (-1, 0),  colors.HexColor('#1e293b')),
+            ('TEXTCOLOR',      (0, 0),  (-1, 0),  colors.white),
+            ('FONTNAME',       (0, 0),  (-1, 0),  'Helvetica-Bold'),
+            ('FONTSIZE',       (0, 0),  (-1, -1), 9),
+            ('ROWBACKGROUNDS', (0, 1),  (-1, -2), [colors.white, colors.HexColor('#f8fafc')]),
+            ('BACKGROUND',     (0, -1), (-1, -1), colors.HexColor('#f1f5f9')),
+            ('FONTNAME',       (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('GRID',           (0, 0),  (-1, -1), 0.5, colors.HexColor('#e2e8f0')),
+            ('ALIGN',          (4, 0),  (4, -1),  'RIGHT'),
+            ('VALIGN',         (0, 0),  (-1, -1), 'MIDDLE'),
+            ('PADDING',        (0, 0),  (-1, -1), 6),
+        ]))
+        story.append(tabela)
+        doc.build(story)
+
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = (
+            f'attachment; filename="fluxo_caixa_{data_inicio}_{data_fim}.pdf"'
+        )
+        return response
+
+    if request.method == 'POST' and formato == 'excel':
+        from io import BytesIO
+        from django.http import HttpResponse
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'Fluxo de Caixa'
+
+        ws.append(['Vencimento', 'Cliente', 'Descrição', 'Tipo', 'Valor (R$)', 'Status'])
+        fill       = PatternFill(fill_type='solid', fgColor='1e293b')
+        bold_white = Font(color='FFFFFF', bold=True)
+        for cell in ws[1]:
+            cell.fill      = fill
+            cell.font      = bold_white
+            cell.alignment = Alignment(horizontal='center')
+
+        for h in honorarios:
+            ws.append([
+                h.vencimento.strftime('%d/%m/%Y'),
+                h.cliente.nome,
+                h.descricao,
+                h.get_tipo_display(),
+                float(h.valor_total),
+                h.get_status_display(),
+            ])
+
+        ws.append(['', '', '', 'TOTAL', float(total_geral), ''])
+        for cell in ws[ws.max_row]:
+            cell.font = Font(bold=True)
+
+        for col in ws.columns:
+            width = max(len(str(cell.value or '')) for cell in col)
+            ws.column_dimensions[col[0].column_letter].width = width + 4
+
+        buffer = BytesIO()
+        wb.save(buffer)
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        response['Content-Disposition'] = (
+            f'attachment; filename="fluxo_caixa_{data_inicio}_{data_fim}.xlsx"'
+        )
+        return response
+
+    return render(request, 'relatorio_financeiro.html', {
+        'honorarios':     honorarios,
+        'total_geral':    total_geral,
+        'total_recebido': total_recebido,
+        'total_pendente': total_pendente,
+        'data_inicio':    data_inicio,
+        'data_fim':       data_fim,
+    })
 
 
 @login_required

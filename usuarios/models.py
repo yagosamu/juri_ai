@@ -248,10 +248,15 @@ class Documentos(models.Model):
 
 
 class ConfiguracaoWhatsApp(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='configuracao_whatsapp')
-    base_url = models.URLField(help_text="URL do servidor Evolution API (ex: http://meuservidor.com)")
-    api_key = EncryptedCharField(help_text="API Key da instância Evolution API")
-    instancia = models.CharField(max_length=100, help_text="Nome da instância no Evolution API")
+    user              = models.OneToOneField(User, on_delete=models.CASCADE, related_name='configuracao_whatsapp')
+    base_url          = models.URLField(help_text="URL do servidor Evolution API (ex: http://meuservidor.com)")
+    api_key           = EncryptedCharField(help_text="API Key da instância Evolution API")
+    instancia         = models.CharField(max_length=100, help_text="Nome da instância no Evolution API")
+    telefone_advogado = models.CharField(
+        max_length=20, blank=True,
+        verbose_name='Seu número WhatsApp',
+        help_text='DDD + número, sem espaços (ex: 11999999999). Usado para receber alertas.',
+    )
 
     def __str__(self):
         return f"WhatsApp — {self.user.username}"
@@ -308,6 +313,90 @@ class Prazo(models.Model):
         return f"{self.get_tipo_display()} — {self.descricao} ({data_str})"
 
 
+class Honorario(models.Model):
+    TIPO_CHOICES = [
+        ('fixo',        'Fixo'),
+        ('exito',       'Êxito'),
+        ('hora',        'Por Hora'),
+        ('mensalidade', 'Mensalidade'),
+    ]
+    STATUS_CHOICES = [
+        ('pendente',  'Pendente'),
+        ('pago',      'Pago'),
+        ('atrasado',  'Atrasado'),
+        ('cancelado', 'Cancelado'),
+    ]
+
+    cliente     = models.ForeignKey('Cliente', on_delete=models.CASCADE,
+                                    related_name='honorarios')
+    processo    = models.ForeignKey('Processo', on_delete=models.SET_NULL,
+                                    null=True, blank=True, related_name='honorarios')
+    descricao   = models.CharField(max_length=255, verbose_name='Descrição')
+    valor_total = models.DecimalField(max_digits=14, decimal_places=2,
+                                      verbose_name='Valor total (R$)')
+    tipo        = models.CharField(max_length=15, choices=TIPO_CHOICES,
+                                   verbose_name='Tipo')
+    vencimento  = models.DateField(db_index=True, verbose_name='Vencimento')
+    status      = models.CharField(max_length=15, choices=STATUS_CHOICES,
+                                   default='pendente', verbose_name='Status')
+    user        = models.ForeignKey(User, on_delete=models.CASCADE,
+                                    related_name='honorarios')
+    criado_em   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['vencimento']
+        verbose_name = 'Honorário'
+        verbose_name_plural = 'Honorários'
+
+    def __str__(self):
+        return f"{self.descricao} — {self.cliente.nome} (R$ {self.valor_total})"
+
+    @property
+    def esta_atrasado(self):
+        from django.utils import timezone
+        return self.vencimento < timezone.now().date() and self.status == 'pendente'
+
+    @property
+    def valor_pago(self):
+        return self.pagamentos.aggregate(
+            total=models.Sum('valor_pago')
+        )['total'] or 0
+
+    @property
+    def valor_restante(self):
+        return self.valor_total - self.valor_pago
+
+
+class Pagamento(models.Model):
+    honorario      = models.ForeignKey(Honorario, on_delete=models.CASCADE,
+                                       related_name='pagamentos')
+    valor_pago     = models.DecimalField(max_digits=14, decimal_places=2,
+                                         verbose_name='Valor pago (R$)')
+    data_pagamento = models.DateField(verbose_name='Data do pagamento')
+    observacao     = models.TextField(blank=True, verbose_name='Observação')
+    criado_em      = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-data_pagamento']
+        verbose_name = 'Pagamento'
+        verbose_name_plural = 'Pagamentos'
+
+    def __str__(self):
+        return f"R$ {self.valor_pago} em {self.data_pagamento} — {self.honorario.descricao}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        honorario = self.honorario
+        total_pago = honorario.pagamentos.aggregate(
+            total=models.Sum('valor_pago')
+        )['total'] or 0
+        if total_pago >= honorario.valor_total:
+            honorario.status = 'pago'
+        elif honorario.status == 'pago':
+            honorario.status = 'pendente'
+        honorario.save(update_fields=['status'])
+
+
 auditlog.register(Processo)
 auditlog.register(AndamentoProcesso)
 auditlog.register(Prazo)
@@ -315,3 +404,5 @@ auditlog.register(Cliente)
 auditlog.register(Documentos)
 auditlog.register(ConfiguracaoWhatsApp)
 auditlog.register(User)
+auditlog.register(Honorario)
+auditlog.register(Pagamento)

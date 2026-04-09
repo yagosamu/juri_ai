@@ -26,6 +26,13 @@ urlpatterns = [
     path("prazos/<int:id>/editar/", views.editar_prazo, name='editar_prazo'),
     path("prazos/<int:id>/concluir/", views.concluir_prazo, name='concluir_prazo'),
     path("prazos/<int:id>/cancelar/", views.cancelar_prazo, name='cancelar_prazo'),
+    # ── Financeiro ───────────────────────────────────────────────────────────
+    path("financeiro/", views.lista_financeiro, name='lista_financeiro'),
+    path("financeiro/honorario/novo/", views.criar_honorario, name='criar_honorario'),
+    path("financeiro/honorario/<int:id>/editar/", views.editar_honorario, name='editar_honorario'),
+    path("financeiro/honorario/<int:id>/pagar/", views.marcar_pago, name='marcar_pago'),
+    path("financeiro/honorario/<int:id>/cancelar/", views.cancelar_honorario, name='cancelar_honorario'),
+    path("financeiro/relatorio/", views.relatorio_financeiro, name='relatorio_financeiro'),
     # ─────────────────────────────────────────────────────────────────────────
     path("configuracao_whatsapp/", views.configuracao_whatsapp, name='configuracao_whatsapp'),
     path("logout/", views.logout, name='logout'),

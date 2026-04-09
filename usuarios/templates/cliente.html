@@ -41,6 +41,26 @@
 
   {# ── Body ── #}
   <div class="px-8 py-8">
+
+  {# ── Tabs ── #}
+  <div class="border-b border-slate-200 mb-6">
+    <nav class="flex gap-1 -mb-px">
+      <a href="?tab=documentos"
+         class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
+                {% if tab == 'documentos' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
+        Documentos
+        <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ documentos|length }}</span>
+      </a>
+      <a href="?tab=honorarios"
+         class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
+                {% if tab == 'honorarios' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
+        Honorários
+        <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ honorarios|length }}</span>
+      </a>
+    </nav>
+  </div>
+
+  {% if tab == 'documentos' %}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
       {# ── Upload de Documento (2/3) ── #}
@@ -151,6 +171,131 @@
       </div>
 
     </div>
+  {% endif %}
+
+  {% if tab == 'honorarios' %}
+  <div class="flex items-center justify-between mb-5">
+    <p class="text-sm text-slate-500">{{ honorarios|length }} honorário{{ honorarios|length|pluralize }}</p>
+    <a href="{% url 'criar_honorario' %}?cliente_id={{ cliente.id }}"
+       class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white
+              text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+      </svg>
+      Novo honorário
+    </a>
+  </div>
+
+  {% if honorarios %}
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-slate-100 bg-slate-50/60">
+          <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Vencimento</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Descrição</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Tipo</th>
+          <th class="text-right px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Valor (R$)</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+          <th class="px-5 py-3.5"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-50">
+        {% for h in honorarios %}
+        <tr class="hover:bg-slate-50/50 transition-colors">
+          <td class="px-5 py-4 text-slate-600">{{ h.vencimento|date:"d/m/Y" }}</td>
+          <td class="px-5 py-4 font-medium text-slate-800">{{ h.descricao }}</td>
+          <td class="px-5 py-4 text-slate-500">{{ h.get_tipo_display }}</td>
+          <td class="px-5 py-4 text-right font-medium text-slate-800">{{ h.valor_total|floatformat:2 }}</td>
+          <td class="px-5 py-4">
+            {% if h.status == 'pago' %}
+              <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium px-2.5 py-1 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Pago
+              </span>
+            {% elif h.status == 'cancelado' %}
+              <span class="inline-flex items-center gap-1.5 bg-slate-100 text-slate-500 border border-slate-200 text-xs font-medium px-2.5 py-1 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Cancelado
+              </span>
+            {% elif h.status == 'atrasado' or h.esta_atrasado %}
+              <span class="inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200 text-xs font-medium px-2.5 py-1 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Atrasado
+              </span>
+            {% else %}
+              <span class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium px-2.5 py-1 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Pendente
+              </span>
+            {% endif %}
+          </td>
+          <td class="px-5 py-4">
+            <div class="flex items-center gap-2 justify-end">
+              <a href="{% url 'editar_honorario' h.id %}"
+                 class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 text-xs font-medium
+                        px-3 py-1.5 rounded-lg transition-colors">Editar</a>
+              {% if h.status == 'pendente' or h.esta_atrasado %}
+              <button type="button" onclick="document.getElementById('modal-{{ h.id }}').classList.remove('hidden')"
+                class="border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700
+                       text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">Pagar</button>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# Modals de pagamento #}
+  {% for h in honorarios %}
+  {% if h.status == 'pendente' or h.esta_atrasado %}
+  <div id="modal-{{ h.id }}" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-100 w-full max-w-sm mx-4 p-6">
+      <h3 class="text-base font-semibold text-slate-900 mb-1">Registrar pagamento</h3>
+      <p class="text-xs text-slate-400 mb-5">{{ h.descricao }} · R$ {{ h.valor_total|floatformat:2 }}</p>
+      <form method="POST" action="{% url 'marcar_pago' h.id %}" class="space-y-4">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'cliente' cliente.id %}?tab=honorarios">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Valor pago (R$)</label>
+          <input type="number" name="valor_pago" step="0.01" min="0.01" required value="{{ h.valor_total }}"
+            class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none"/>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Data do pagamento</label>
+          <input type="date" name="data_pagamento" required
+            class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none"/>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Observação <span class="text-slate-400 font-normal">(opcional)</span></label>
+          <input type="text" name="observacao"
+            class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none"/>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button type="submit"
+            class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
+            Confirmar pagamento
+          </button>
+          <button type="button" onclick="document.getElementById('modal-{{ h.id }}').classList.add('hidden')"
+            class="flex-1 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-sm font-medium py-2.5 rounded-xl transition-colors">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  {% else %}
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm px-8 py-12 text-center">
+    <p class="text-slate-500 text-sm">Nenhum honorário cadastrado para este cliente.</p>
+    <p class="text-slate-400 text-xs mt-1">
+      <a href="{% url 'criar_honorario' %}?cliente_id={{ cliente.id }}"
+         class="text-indigo-500 hover:text-indigo-600 underline">Cadastrar primeiro honorário</a>
+    </p>
+  </div>
+  {% endif %}
+
+  {% endif %}{# /tab honorarios #}
+
   </div>
 
 {% endblock 'content' %}
