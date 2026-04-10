@@ -397,6 +397,68 @@ class Pagamento(models.Model):
         honorario.save(update_fields=['status'])
 
 
+# ── Geração de Documentos com IA ────────────────────────────────────────────────
+
+class TemplateDocumento(models.Model):
+    TIPO_CHOICES = [
+        ('contrato',    'Contrato de Honorários'),
+        ('procuracao',  'Procuração'),
+        ('notificacao', 'Notificação Extrajudicial'),
+        ('acordo',      'Acordo Extrajudicial'),
+        ('peticao',     'Petição'),
+        ('outro',       'Outro'),
+    ]
+
+    nome              = models.CharField(max_length=200, verbose_name='Nome do template')
+    tipo              = models.CharField(max_length=20, choices=TIPO_CHOICES,
+                                         verbose_name='Tipo')
+    conteudo_markdown = models.TextField(verbose_name='Conteúdo (Markdown)')
+    is_global         = models.BooleanField(default=False,
+                                             verbose_name='Template global (padrão do sistema)')
+    user              = models.ForeignKey(User, on_delete=models.CASCADE,
+                                          null=True, blank=True,
+                                          related_name='templates_documento',
+                                          verbose_name='Advogado')
+    criado_em         = models.DateTimeField(auto_now_add=True)
+    atualizado_em     = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['tipo', 'nome']
+        verbose_name = 'Template de Documento'
+        verbose_name_plural = 'Templates de Documentos'
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} — {self.nome}"
+
+
+class DocumentoGerado(models.Model):
+    template   = models.ForeignKey(TemplateDocumento, on_delete=models.SET_NULL,
+                                    null=True, blank=True,
+                                    related_name='documentos_gerados',
+                                    verbose_name='Template utilizado')
+    conteudo   = models.TextField(verbose_name='Conteúdo gerado')
+    cliente    = models.ForeignKey('Cliente', on_delete=models.CASCADE,
+                                    related_name='documentos_gerados',
+                                    verbose_name='Cliente')
+    processo   = models.ForeignKey('Processo', on_delete=models.SET_NULL,
+                                    null=True, blank=True,
+                                    related_name='documentos_gerados',
+                                    verbose_name='Processo')
+    instrucoes = models.TextField(blank=True, verbose_name='Instruções adicionais')
+    user       = models.ForeignKey(User, on_delete=models.CASCADE,
+                                    related_name='documentos_gerados',
+                                    verbose_name='Advogado')
+    criado_em  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        verbose_name = 'Documento Gerado'
+        verbose_name_plural = 'Documentos Gerados'
+
+    def __str__(self):
+        return f"{self.cliente.nome} — {self.criado_em.strftime('%d/%m/%Y %H:%M')}"
+
+
 auditlog.register(Processo)
 auditlog.register(AndamentoProcesso)
 auditlog.register(Prazo)
@@ -406,3 +468,5 @@ auditlog.register(ConfiguracaoWhatsApp)
 auditlog.register(User)
 auditlog.register(Honorario)
 auditlog.register(Pagamento)
+auditlog.register(TemplateDocumento)
+auditlog.register(DocumentoGerado)

@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% block 'title' %}Editar Documento — JuriAI{% endblock %}
+
+{% block 'head' %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+{% endblock %}
+
+{% block 'content' %}
+
+{# ── Page Header ── #}
+<div class="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between sticky top-0 z-10">
+  <div>
+    <div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium mb-1">
+      <a href="{% url 'gerar_documento' %}" class="hover:text-slate-600 transition-colors">Documentos</a>
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+      </svg>
+      <span class="text-slate-600">{{ doc.cliente.nome }}</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <h1 class="text-slate-900 text-xl font-semibold tracking-tight">{{ doc.cliente.nome }}</h1>
+      {% if doc.template %}
+      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+        {{ doc.template.get_tipo_display }}
+      </span>
+      {% endif %}
+      <span class="text-xs text-slate-400">{{ doc.criado_em|date:"d/m/Y H:i" }}</span>
+    </div>
+  </div>
+</div>
+
+{# ── Body ── #}
+<div class="px-8 py-8">
+
+  {% if messages %}
+  <div class="mb-6 space-y-2">
+    {% for message in messages %}
+    <div class="rounded-xl px-4 py-3 text-sm font-medium
+      {% if 'success' in message.tags %}bg-emerald-50 text-emerald-800 border border-emerald-200
+      {% else %}bg-red-50 text-red-800 border border-red-200{% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+
+    {# ── Editor (2/3) ── #}
+    <div class="lg:col-span-2 space-y-4">
+
+      {# Tabs #}
+      <div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+        <button id="btn_tab_edit"
+          class="px-4 py-1.5 rounded-lg text-sm font-medium transition-colors bg-white text-slate-800 shadow-sm">
+          Editar
+        </button>
+        <button id="btn_tab_preview"
+          class="px-4 py-1.5 rounded-lg text-sm font-medium transition-colors text-slate-500 hover:text-slate-700">
+          Preview
+        </button>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm">
+
+        {# Tab Editar #}
+        <div id="tab_edit">
+          <form method="POST" action="{% url 'editar_documento' doc.id %}">
+            {% csrf_token %}
+            <textarea name="conteudo" id="editor_textarea" rows="32"
+              class="w-full px-6 py-5 text-sm font-mono text-slate-800 rounded-t-2xl resize-y
+                     border-none outline-none leading-relaxed bg-transparent">{{ doc.conteudo }}</textarea>
+            <div class="px-6 py-4 border-t border-slate-100 flex items-center gap-3">
+              <button type="submit"
+                class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white
+                       text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                </svg>
+                Salvar alterações
+              </button>
+              <a href="{% url 'gerar_documento' %}"
+                 class="text-sm text-slate-500 hover:text-slate-700 px-3 py-2.5 transition-colors">
+                Novo documento
+              </a>
+            </div>
+          </form>
+        </div>
+
+        {# Tab Preview #}
+        <div id="tab_preview" class="hidden px-6 py-6">
+          <div id="preview_content"
+               class="prose prose-slate prose-sm max-w-none text-slate-800 leading-relaxed
+                      [&_h1]:text-xl [&_h1]:font-bold [&_h1]:text-slate-900 [&_h1]:mb-4 [&_h1]:mt-6
+                      [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-slate-800 [&_h2]:mb-3 [&_h2]:mt-5
+                      [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-slate-700 [&_h3]:mb-2 [&_h3]:mt-4
+                      [&_p]:text-sm [&_p]:text-slate-700 [&_p]:leading-relaxed [&_p]:mb-3
+                      [&_hr]:border-slate-200 [&_hr]:my-4
+                      [&_strong]:font-semibold [&_strong]:text-slate-900
+                      [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
+                      [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1"></div>
+        </div>
+
+      </div>
+    </div>
+
+    {# ── Painel lateral (1/3) ── #}
+    <div class="space-y-4">
+
+      {# Informações #}
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <h3 class="text-sm font-semibold text-slate-900 mb-3">Informações</h3>
+        <dl class="space-y-2.5 text-sm">
+          <div class="flex justify-between gap-2">
+            <dt class="text-slate-500 flex-shrink-0">Cliente</dt>
+            <dd class="text-slate-800 font-medium text-right truncate">
+              <a href="{% url 'cliente' doc.cliente.id %}"
+                 class="hover:text-indigo-600 transition-colors">{{ doc.cliente.nome }}</a>
+            </dd>
+          </div>
+          {% if doc.processo %}
+          <div class="flex justify-between gap-2">
+            <dt class="text-slate-500 flex-shrink-0">Processo</dt>
+            <dd class="text-slate-800 text-xs font-mono text-right">{{ doc.processo }}</dd>
+          </div>
+          {% endif %}
+          {% if doc.template %}
+          <div class="flex justify-between gap-2">
+            <dt class="text-slate-500 flex-shrink-0">Template</dt>
+            <dd class="text-slate-700 text-right truncate">{{ doc.template.nome }}</dd>
+          </div>
+          {% endif %}
+          <div class="flex justify-between gap-2">
+            <dt class="text-slate-500 flex-shrink-0">Criado em</dt>
+            <dd class="text-slate-600 text-right">{{ doc.criado_em|date:"d/m/Y H:i" }}</dd>
+          </div>
+        </dl>
+        {% if doc.instrucoes %}
+        <div class="mt-3 pt-3 border-t border-slate-100">
+          <p class="text-xs font-medium text-slate-500 mb-1">Instruções usadas</p>
+          <p class="text-xs text-slate-600 leading-relaxed">{{ doc.instrucoes|truncatechars:120 }}</p>
+        </div>
+        {% endif %}
+      </div>
+
+      {# Exportar #}
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <h3 class="text-sm font-semibold text-slate-900 mb-3">Exportar</h3>
+        <form id="form_exportar" method="POST" action="{% url 'exportar_documento' doc.id %}">
+          {% csrf_token %}
+          <input type="hidden" id="export_formato" name="formato" value="pdf">
+          <div class="space-y-2">
+            <button type="button" onclick="exportar('docx')"
+              class="w-full inline-flex items-center gap-2.5 border border-slate-200 bg-white
+                     hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2.5
+                     rounded-xl transition-colors">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25M9 16.5v.75m3-3v3M15 12v5.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+              </svg>
+              Exportar DOCX
+            </button>
+            <button type="button" onclick="exportar('pdf')"
+              class="w-full inline-flex items-center gap-2.5 border border-slate-200 bg-white
+                     hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2.5
+                     rounded-xl transition-colors">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+              </svg>
+              Exportar PDF
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {# Vincular ao cliente #}
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <h3 class="text-sm font-semibold text-slate-900 mb-1.5">Vincular ao cliente</h3>
+        <p class="text-xs text-slate-500 leading-relaxed mb-3">
+          Adiciona este documento ao repositório do cliente para uso no Chat Jurídico e na análise de risco.
+        </p>
+        <form method="POST" action="{% url 'vincular_doc_gerado' doc.id %}">
+          {% csrf_token %}
+          <button type="submit"
+            class="w-full inline-flex items-center justify-center gap-2 border border-indigo-200
+                   bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm font-medium px-4 py-2.5
+                   rounded-xl transition-colors">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/>
+            </svg>
+            Vincular ao cliente
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const btnEdit    = document.getElementById('btn_tab_edit');
+  const btnPreview = document.getElementById('btn_tab_preview');
+  const tabEdit    = document.getElementById('tab_edit');
+  const tabPreview = document.getElementById('tab_preview');
+  const editorTA   = document.getElementById('editor_textarea');
+  const previewEl  = document.getElementById('preview_content');
+
+  const activeClass   = ['bg-white', 'text-slate-800', 'shadow-sm'];
+  const inactiveClass = ['text-slate-500', 'hover:text-slate-700'];
+
+  function showTab(tab) {
+    if (tab === 'preview') {
+      previewEl.innerHTML = marked.parse(editorTA.value);
+      tabEdit.classList.add('hidden');
+      tabPreview.classList.remove('hidden');
+      btnPreview.classList.add(...activeClass);
+      btnPreview.classList.remove(...inactiveClass);
+      btnEdit.classList.remove(...activeClass);
+      btnEdit.classList.add(...inactiveClass);
+    } else {
+      tabEdit.classList.remove('hidden');
+      tabPreview.classList.add('hidden');
+      btnEdit.classList.add(...activeClass);
+      btnEdit.classList.remove(...inactiveClass);
+      btnPreview.classList.remove(...activeClass);
+      btnPreview.classList.add(...inactiveClass);
+    }
+  }
+
+  btnEdit.addEventListener('click',    function () { showTab('edit'); });
+  btnPreview.addEventListener('click', function () { showTab('preview'); });
+
+  window.exportar = function (fmt) {
+    document.getElementById('export_formato').value = fmt;
+    document.getElementById('form_exportar').submit();
+  };
+}());
+</script>
+
+{% endblock 'content' %}

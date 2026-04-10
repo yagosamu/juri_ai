@@ -33,6 +33,11 @@ urlpatterns = [
     path("financeiro/honorario/<int:id>/pagar/", views.marcar_pago, name='marcar_pago'),
     path("financeiro/honorario/<int:id>/cancelar/", views.cancelar_honorario, name='cancelar_honorario'),
     path("financeiro/relatorio/", views.relatorio_financeiro, name='relatorio_financeiro'),
+    # ── Templates de Documentos ──────────────────────────────────────────────
+    path("templates/",                  views.lista_templates,  name='lista_templates'),
+    path("templates/novo/",             views.criar_template,   name='criar_template'),
+    path("templates/<int:id>/editar/",  views.editar_template,  name='editar_template'),
+    path("templates/<int:id>/deletar/", views.deletar_template, name='deletar_template'),
     # ─────────────────────────────────────────────────────────────────────────
     path("configuracao_whatsapp/", views.configuracao_whatsapp, name='configuracao_whatsapp'),
     path("logout/", views.logout, name='logout'),

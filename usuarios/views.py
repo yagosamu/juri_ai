@@ -4,7 +4,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.messages import constants
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD, Processo, Prazo, AndamentoProcesso, TRIBUNAL_CHOICES, Honorario, Pagamento
+from .models import (Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD,
+                      Processo, Prazo, AndamentoProcesso, TRIBUNAL_CHOICES,
+                      Honorario, Pagamento, TemplateDocumento, DocumentoGerado)
 from django.db.models import Sum
 from ia.models import AnaliseJurisprudencia
 from django.urls import reverse
@@ -1033,6 +1035,72 @@ def relatorio_financeiro(request):
         'data_inicio':    data_inicio_obj.strftime('%d/%m/%Y'),
         'data_fim':       data_fim_obj.strftime('%d/%m/%Y'),
     })
+
+
+# ── CRUD de Templates de Documentos ─────────────────────────────────────────────
+
+@login_required
+def lista_templates(request):
+    from django.db.models import Q
+    templates = (TemplateDocumento.objects
+                 .filter(Q(is_global=True) | Q(user=request.user))
+                 .order_by('tipo', 'nome'))
+    return render(request, 'lista_templates.html', {'templates': templates})
+
+
+@login_required
+def criar_template(request):
+    if request.method == 'POST':
+        nome     = request.POST.get('nome', '').strip()
+        tipo     = request.POST.get('tipo', 'outro')
+        conteudo = request.POST.get('conteudo_markdown', '').strip()
+        if not nome or not conteudo:
+            messages.add_message(request, constants.ERROR, 'Nome e conteúdo são obrigatórios.')
+        else:
+            TemplateDocumento.objects.create(
+                nome=nome, tipo=tipo, conteudo_markdown=conteudo,
+                user=request.user, is_global=False,
+            )
+            messages.add_message(request, constants.SUCCESS, 'Template criado com sucesso.')
+            return redirect('lista_templates')
+    return render(request, 'template_form.html', {
+        'tipo_choices': TemplateDocumento.TIPO_CHOICES,
+        'action': 'criar',
+    })
+
+
+@login_required
+def editar_template(request, id):
+    template = get_object_or_404(TemplateDocumento, id=id)
+    if template.is_global or template.user != request.user:
+        messages.add_message(request, constants.ERROR, 'Você não pode editar este template.')
+        return redirect('lista_templates')
+    if request.method == 'POST':
+        template.nome              = request.POST.get('nome', template.nome).strip()
+        template.tipo              = request.POST.get('tipo', template.tipo)
+        template.conteudo_markdown = request.POST.get('conteudo_markdown',
+                                                       template.conteudo_markdown).strip()
+        template.save()
+        messages.add_message(request, constants.SUCCESS, 'Template atualizado.')
+        return redirect('lista_templates')
+    return render(request, 'template_form.html', {
+        'template': template,
+        'tipo_choices': TemplateDocumento.TIPO_CHOICES,
+        'action': 'editar',
+    })
+
+
+@login_required
+def deletar_template(request, id):
+    if request.method != 'POST':
+        return redirect('lista_templates')
+    template = get_object_or_404(TemplateDocumento, id=id)
+    if template.is_global or template.user != request.user:
+        messages.add_message(request, constants.ERROR, 'Você não pode excluir este template.')
+        return redirect('lista_templates')
+    template.delete()
+    messages.add_message(request, constants.SUCCESS, 'Template excluído.')
+    return redirect('lista_templates')
 
 
 @login_required
