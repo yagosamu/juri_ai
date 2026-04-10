@@ -141,5 +141,28 @@
   </main>
 
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('input[data-mask="date"]').forEach(function (el) {
+    el.addEventListener('input', function (e) {
+      var v = e.target.value.replace(/\D/g, '').slice(0, 8);
+      if (v.length >= 5) v = v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);
+      else if (v.length >= 3) v = v.slice(0,2)+'/'+v.slice(2);
+      e.target.value = v;
+    });
+  });
+
+  document.querySelectorAll('input[data-mask="currency"]').forEach(function (el) {
+    function fmt(el) {
+      var digits = el.value.replace(/\D/g, '');
+      if (!digits) { el.value = ''; return; }
+      var num = parseInt(digits, 10) / 100;
+      el.value = num.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+    el.addEventListener('input', function () { fmt(el); });
+    if (el.value) fmt(el);
+  });
+});
+</script>
 </body>
 </html>

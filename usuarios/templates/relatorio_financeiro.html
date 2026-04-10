@@ -59,13 +59,15 @@
     <div class="flex flex-wrap items-end gap-4">
       <div>
         <label class="block text-xs font-medium text-slate-500 mb-1.5">Data início</label>
-        <input type="date" name="data_inicio" value="{{ data_inicio }}"
+        <input type="text" name="data_inicio" value="{{ data_inicio }}"
+          placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
           class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
                  focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
       </div>
       <div>
         <label class="block text-xs font-medium text-slate-500 mb-1.5">Data fim</label>
-        <input type="date" name="data_fim" value="{{ data_fim }}"
+        <input type="text" name="data_fim" value="{{ data_fim }}"
+          placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
           class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
                  focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
       </div>
@@ -79,17 +81,17 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
       <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Total Geral</p>
-      <p class="text-2xl font-bold text-slate-900">R$ {{ total_geral|floatformat:2 }}</p>
+      <p class="text-2xl font-bold text-slate-900">R$ {{ total_geral|floatformat:"2g" }}</p>
       <p class="text-xs text-slate-400 mt-1">no período selecionado</p>
     </div>
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
       <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Total Recebido</p>
-      <p class="text-2xl font-bold text-emerald-600">R$ {{ total_recebido|floatformat:2 }}</p>
+      <p class="text-2xl font-bold text-emerald-600">R$ {{ total_recebido|floatformat:"2g" }}</p>
       <p class="text-xs text-slate-400 mt-1">pagamentos confirmados</p>
     </div>
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
       <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Total Pendente</p>
-      <p class="text-2xl font-bold text-amber-600">R$ {{ total_pendente|floatformat:2 }}</p>
+      <p class="text-2xl font-bold text-amber-600">R$ {{ total_pendente|floatformat:"2g" }}</p>
       <p class="text-xs text-slate-400 mt-1">a receber no período</p>
     </div>
   </div>
@@ -115,7 +117,7 @@
           <td class="px-5 py-4 font-medium text-slate-800">{{ h.cliente.nome }}</td>
           <td class="px-5 py-4 text-slate-600">{{ h.descricao }}</td>
           <td class="px-5 py-4 text-slate-500">{{ h.get_tipo_display }}</td>
-          <td class="px-5 py-4 text-right font-medium text-slate-800">{{ h.valor_total|floatformat:2 }}</td>
+          <td class="px-5 py-4 text-right font-medium text-slate-800">R$ {{ h.valor_total|floatformat:"2g" }}</td>
           <td class="px-5 py-4">
             {% if h.status == 'pago' %}
               <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium px-2.5 py-1 rounded-full">
@@ -143,7 +145,7 @@
           <td colspan="4" class="px-5 py-3.5 text-xs font-semibold text-slate-600 uppercase tracking-wide">
             Total — {{ honorarios|length }} honorário{{ honorarios|length|pluralize }}
           </td>
-          <td class="px-5 py-3.5 text-right font-bold text-slate-900">{{ total_geral|floatformat:2 }}</td>
+          <td class="px-5 py-3.5 text-right font-bold text-slate-900">R$ {{ total_geral|floatformat:"2g" }}</td>
           <td></td>
         </tr>
       </tfoot>

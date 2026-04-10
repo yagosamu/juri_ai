@@ -93,7 +93,8 @@
           {# Data #}
           <div>
             <label for="data" class="block text-sm font-medium text-slate-700 mb-1">Data</label>
-            <input type="date" id="data" name="data" required
+            <input type="text" id="data" name="data" required
+              placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
               class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors" />
           </div>
 
@@ -205,7 +206,7 @@
           <td class="px-5 py-4 text-slate-600">{{ h.vencimento|date:"d/m/Y" }}</td>
           <td class="px-5 py-4 font-medium text-slate-800">{{ h.descricao }}</td>
           <td class="px-5 py-4 text-slate-500">{{ h.get_tipo_display }}</td>
-          <td class="px-5 py-4 text-right font-medium text-slate-800">{{ h.valor_total|floatformat:2 }}</td>
+          <td class="px-5 py-4 text-right font-medium text-slate-800">{{ h.valor_total|floatformat:"2g" }}</td>
           <td class="px-5 py-4">
             {% if h.status == 'pago' %}
               <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium px-2.5 py-1 rounded-full">
@@ -249,18 +250,21 @@
   <div id="modal-{{ h.id }}" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-xl border border-slate-100 w-full max-w-sm mx-4 p-6">
       <h3 class="text-base font-semibold text-slate-900 mb-1">Registrar pagamento</h3>
-      <p class="text-xs text-slate-400 mb-5">{{ h.descricao }} · R$ {{ h.valor_total|floatformat:2 }}</p>
+      <p class="text-xs text-slate-400 mb-5">{{ h.descricao }} · R$ {{ h.valor_total|floatformat:"2g" }}</p>
       <form method="POST" action="{% url 'marcar_pago' h.id %}" class="space-y-4">
         {% csrf_token %}
         <input type="hidden" name="next" value="{% url 'cliente' cliente.id %}?tab=honorarios">
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Valor pago (R$)</label>
-          <input type="number" name="valor_pago" step="0.01" min="0.01" required value="{{ h.valor_total }}"
+          <input type="text" name="valor_pago" required
+            value="{{ h.valor_total|floatformat:'2g' }}" placeholder="0,00"
+            data-mask="currency"
             class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none"/>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Data do pagamento</label>
-          <input type="date" name="data_pagamento" required
+          <input type="text" name="data_pagamento" required
+            placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
             class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none"/>
         </div>
         <div>

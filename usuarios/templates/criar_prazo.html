@@ -73,8 +73,9 @@
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
           Data do prazo <span class="text-red-500">*</span>
         </label>
-        <input type="date" name="data_prazo" required
+        <input type="text" name="data_prazo" required
           value="{{ form_data.data_prazo|default:'' }}"
+          placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
                  focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
       </div>

@@ -14,6 +14,36 @@ import datetime
 import os
 
 
+def _parse_decimal_br(value):
+    """Converte '15.000,00' (BR) ou '15000.00' (ISO) em Decimal. Retorna None se inválido."""
+    if not value:
+        return None
+    from decimal import Decimal, InvalidOperation
+    v = value.strip()
+    if ',' in v:
+        # Formato BR: ponto é separador de milhar, vírgula é decimal
+        cleaned = v.replace('.', '').replace(',', '.')
+    else:
+        # Formato ISO ou inteiro: '1500.00', '1500'
+        cleaned = v
+    try:
+        return Decimal(cleaned)
+    except InvalidOperation:
+        return None
+
+
+def _parse_date_br(value):
+    """Aceita dd/mm/yyyy ou YYYY-MM-DD. Retorna date ou None."""
+    if not value:
+        return None
+    for fmt in ('%d/%m/%Y', '%Y-%m-%d'):
+        try:
+            return datetime.datetime.strptime(value.strip(), fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
 
 def home(request):
     return render(request, 'home.html')
@@ -195,7 +225,7 @@ def cliente(request, id):
             cliente=cliente,
             tipo=tipo,
             arquivo=documento,
-            data_upload=data
+            data_upload=_parse_date_br(data)
         )
         documentos.save()
 
@@ -271,7 +301,7 @@ def criar_processo(request):
     polo_ativo        = request.POST.get('polo_ativo', '').strip()
     polo_passivo      = request.POST.get('polo_passivo', '').strip()
     status            = request.POST.get('status', 'ativo')
-    data_distribuicao = request.POST.get('data_distribuicao') or None
+    data_distribuicao = _parse_date_br(request.POST.get('data_distribuicao'))
     valor_causa       = request.POST.get('valor_causa') or None
     cliente_id        = request.POST.get('cliente_id')
 
@@ -421,7 +451,7 @@ def editar_processo(request, id):
     polo_ativo        = request.POST.get('polo_ativo', '').strip()
     polo_passivo      = request.POST.get('polo_passivo', '').strip()
     status            = request.POST.get('status', processo_obj.status)
-    data_distribuicao = request.POST.get('data_distribuicao') or None
+    data_distribuicao = _parse_date_br(request.POST.get('data_distribuicao'))
     valor_causa       = request.POST.get('valor_causa') or None
     cliente_id        = request.POST.get('cliente_id')
 
@@ -542,7 +572,7 @@ def criar_prazo(request, processo_id):
 
     prazo = Prazo.objects.create(
         descricao         = descricao,
-        data_prazo        = data_prazo,
+        data_prazo        = _parse_date_br(data_prazo),
         tipo              = tipo,
         processo          = processo_obj,
         alerta_dias_antes = int(alerta_dias_antes) if alerta_dias_antes.isdigit() else 3,
@@ -582,7 +612,7 @@ def editar_prazo(request, id):
         })
 
     prazo.descricao         = descricao
-    prazo.data_prazo        = data_prazo
+    prazo.data_prazo        = _parse_date_br(data_prazo)
     prazo.tipo              = tipo
     prazo.alerta_dias_antes = int(alerta_dias_antes) if alerta_dias_antes.isdigit() else prazo.alerta_dias_antes
     prazo.save()
@@ -761,9 +791,9 @@ def criar_honorario(request):
         cliente     = cliente_obj,
         processo    = processo_obj,
         descricao   = descricao,
-        valor_total = valor_total,
+        valor_total = _parse_decimal_br(valor_total),
         tipo        = tipo,
-        vencimento  = vencimento,
+        vencimento  = _parse_date_br(vencimento),
         user        = request.user,
     )
     messages.add_message(request, constants.SUCCESS, 'Honorário cadastrado com sucesso!')
@@ -804,9 +834,9 @@ def editar_honorario(request, id):
     honorario.cliente     = get_object_or_404(Cliente, id=cliente_id, user=request.user)
     honorario.processo    = get_object_or_404(Processo, id=processo_id, user=request.user) if processo_id else None
     honorario.descricao   = descricao
-    honorario.valor_total = valor_total
+    honorario.valor_total = _parse_decimal_br(valor_total)
     honorario.tipo        = tipo
-    honorario.vencimento  = vencimento
+    honorario.vencimento  = _parse_date_br(vencimento)
     honorario.status      = status
     honorario.save()
 
@@ -830,8 +860,8 @@ def marcar_pago(request, id):
 
     Pagamento.objects.create(
         honorario      = honorario,
-        valor_pago     = valor_pago,
-        data_pagamento = data_pagamento,
+        valor_pago     = _parse_decimal_br(valor_pago),
+        data_pagamento = _parse_date_br(data_pagamento),
         observacao     = observacao,
     )
     # Honorario.status atualizado automaticamente pelo Pagamento.save()
@@ -863,19 +893,14 @@ def cancelar_honorario(request, id):
 @login_required
 def relatorio_financeiro(request):
     hoje        = datetime.date.today()
-    data_inicio = (request.POST.get('data_inicio') or
-                   request.GET.get('data_inicio') or
-                   hoje.replace(day=1).isoformat())
-    data_fim    = (request.POST.get('data_fim') or
-                   request.GET.get('data_fim') or
-                   hoje.isoformat())
-
-    try:
-        data_inicio_obj = datetime.date.fromisoformat(data_inicio)
-        data_fim_obj    = datetime.date.fromisoformat(data_fim)
-    except ValueError:
-        data_inicio_obj = hoje.replace(day=1)
-        data_fim_obj    = hoje
+    data_inicio_obj = (_parse_date_br(request.POST.get('data_inicio') or
+                                      request.GET.get('data_inicio'))
+                       or hoje.replace(day=1))
+    data_fim_obj    = (_parse_date_br(request.POST.get('data_fim') or
+                                      request.GET.get('data_fim'))
+                       or hoje)
+    data_inicio = data_inicio_obj.isoformat()   # usado nos nomes de arquivo dos exports
+    data_fim    = data_fim_obj.isoformat()
 
     honorarios = (Honorario.objects
                   .filter(user=request.user,
@@ -1005,8 +1030,8 @@ def relatorio_financeiro(request):
         'total_geral':    total_geral,
         'total_recebido': total_recebido,
         'total_pendente': total_pendente,
-        'data_inicio':    data_inicio,
-        'data_fim':       data_fim,
+        'data_inicio':    data_inicio_obj.strftime('%d/%m/%Y'),
+        'data_fim':       data_fim_obj.strftime('%d/%m/%Y'),
     })
 
 

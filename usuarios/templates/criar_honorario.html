@@ -99,8 +99,9 @@
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
           Valor total (R$) <span class="text-red-500">*</span>
         </label>
-        <input type="number" name="valor_total" step="0.01" min="0.01" required
+        <input type="text" name="valor_total" required
           value="{{ form_data.valor_total|default:'' }}" placeholder="0,00"
+          data-mask="currency"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
                  placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
       </div>
@@ -108,10 +109,30 @@
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
           Vencimento <span class="text-red-500">*</span>
         </label>
-        <input type="date" name="vencimento" required
+        <input type="text" name="vencimento" required
           value="{{ form_data.vencimento|default:'' }}"
+          placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
                  focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+      </div>
+    </div>
+
+    {# ── Campos extras: Por Hora ── #}
+    <div id="campos-hora" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-indigo-50/60 rounded-xl border border-indigo-100">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
+          Preço por hora (R$/h) <span class="text-red-500">*</span>
+        </label>
+        <input type="text" id="preco_hora" placeholder="0,00" data-mask="currency"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors bg-white"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Estimativa de horas</label>
+        <input type="text" id="horas_total" placeholder="0" inputmode="decimal"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
+                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors bg-white"/>
+        <p class="text-xs text-slate-400 mt-1">O valor total é calculado automaticamente.</p>
       </div>
     </div>
 
@@ -130,6 +151,7 @@
 
 <script>
 (function () {
+  // ── Filtro de processo por cliente ──
   const clienteSel  = document.getElementById('id_cliente');
   const processoSel = document.getElementById('id_processo');
   const todos = Array.from(processoSel.options).slice(1).map(o => ({
@@ -149,8 +171,35 @@
 
   clienteSel.addEventListener('change', filtrar);
   filtrar();
-
   {% if processo_id_pre %}processoSel.value = '{{ processo_id_pre }}';{% endif %}
+
+  // ── Tipo "Por Hora" ──
+  const tipoSel     = document.querySelector('[name="tipo"]');
+  const camposHora  = document.getElementById('campos-hora');
+  const precoHoraEl = document.getElementById('preco_hora');
+  const horasEl     = document.getElementById('horas_total');
+  const valorTotalEl = document.querySelector('[name="valor_total"]');
+
+  function parseBR(v) {
+    return parseFloat((v || '').replace(/\./g, '').replace(',', '.')) || 0;
+  }
+
+  function calcularHora() {
+    if (tipoSel.value !== 'hora') return;
+    const total = parseBR(precoHoraEl.value) * parseBR(horasEl.value);
+    valorTotalEl.value = total > 0
+      ? total.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+      : '';
+  }
+
+  function toggleHora() {
+    camposHora.classList.toggle('hidden', tipoSel.value !== 'hora');
+  }
+
+  tipoSel.addEventListener('change', toggleHora);
+  precoHoraEl.addEventListener('input', calcularHora);
+  horasEl.addEventListener('input', calcularHora);
+  toggleHora();
 }());
 </script>
 {% endblock %}

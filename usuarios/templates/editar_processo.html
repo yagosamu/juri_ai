@@ -137,8 +137,9 @@
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Data de distribuição</label>
-        <input type="date" name="data_distribuicao"
-          value="{{ processo.data_distribuicao|date:'Y-m-d'|default:'' }}"
+        <input type="text" name="data_distribuicao"
+          value="{{ processo.data_distribuicao|date:'d/m/Y'|default:'' }}"
+          placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
                  focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
       </div>

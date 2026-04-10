@@ -52,7 +52,7 @@
           </svg>
         </span>
       </div>
-      <p class="text-3xl font-bold text-slate-900 tracking-tight">R$ {{ receita_mes|floatformat:2 }}</p>
+      <p class="text-3xl font-bold text-slate-900 tracking-tight">R$ {{ receita_mes|floatformat:"2g" }}</p>
       <p class="text-xs text-emerald-600 mt-1.5 font-medium">pagamentos recebidos no mês</p>
     </div>
 
@@ -65,7 +65,7 @@
           </svg>
         </span>
       </div>
-      <p class="text-3xl font-bold text-slate-900 tracking-tight">R$ {{ a_receber|floatformat:2 }}</p>
+      <p class="text-3xl font-bold text-slate-900 tracking-tight">R$ {{ a_receber|floatformat:"2g" }}</p>
       <p class="text-xs text-blue-600 mt-1.5 font-medium">honorários pendentes com vencimento futuro</p>
     </div>
 
@@ -78,7 +78,7 @@
           </svg>
         </span>
       </div>
-      <p class="text-3xl font-bold text-slate-900 tracking-tight">R$ {{ em_atraso|floatformat:2 }}</p>
+      <p class="text-3xl font-bold text-slate-900 tracking-tight">R$ {{ em_atraso|floatformat:"2g" }}</p>
       <p class="text-xs text-red-500 mt-1.5 font-medium">honorários pendentes vencidos</p>
     </div>
 
@@ -139,7 +139,7 @@
             {{ h.vencimento|date:"d/m/Y" }}
             {% if h.esta_atrasado %}<span class="ml-1 text-xs text-red-500 font-medium">vencido</span>{% endif %}
           </td>
-          <td class="px-5 py-4 font-medium text-slate-800">R$ {{ h.valor_total|floatformat:2 }}</td>
+          <td class="px-5 py-4 font-medium text-slate-800">R$ {{ h.valor_total|floatformat:"2g" }}</td>
           <td class="px-5 py-4">
             {% if h.status == 'pago' %}
               <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium px-2.5 py-1 rounded-full">
@@ -245,7 +245,7 @@
     </div>
     <p class="text-sm text-slate-500 mb-5 bg-slate-50 rounded-xl px-3 py-2.5">
       <span class="font-medium text-slate-700">{{ h.descricao }}</span> — {{ h.cliente.nome }}<br>
-      <span class="text-xs text-slate-400">Valor total: R$ {{ h.valor_total|floatformat:2 }}</span>
+      <span class="text-xs text-slate-400">Valor total: R$ {{ h.valor_total|floatformat:"2g" }}</span>
     </p>
     <form method="POST" action="{% url 'marcar_pago' h.id %}" class="space-y-4">
       {% csrf_token %}
@@ -254,8 +254,9 @@
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
           Valor pago (R$) <span class="text-red-500">*</span>
         </label>
-        <input type="number" name="valor_pago" step="0.01" min="0.01" required
-          value="{{ h.valor_total|floatformat:2 }}"
+        <input type="text" name="valor_pago" required
+          value="{{ h.valor_total|floatformat:'2g' }}" placeholder="0,00"
+          data-mask="currency"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
                  focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
       </div>
@@ -263,7 +264,8 @@
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
           Data do pagamento <span class="text-red-500">*</span>
         </label>
-        <input type="date" name="data_pagamento" required value="{{ hoje|date:'Y-m-d' }}"
+        <input type="text" name="data_pagamento" required value="{{ hoje|date:'d/m/Y' }}"
+          placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
                  focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
       </div>
