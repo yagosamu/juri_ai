@@ -235,6 +235,22 @@ def cliente(request, id):
 
 
 @login_required
+def editar_cliente(request, id):
+    cliente = get_object_or_404(Cliente, id=id, user=request.user)
+    if request.method == 'GET':
+        return render(request, 'editar_cliente.html', {'cliente': cliente})
+    elif request.method == 'POST':
+        cliente.nome     = request.POST.get('nome', '').strip()
+        cliente.email    = request.POST.get('email', '').strip()
+        cliente.tipo     = request.POST.get('tipo', 'PF')
+        cliente.telefone = request.POST.get('telefone', '').strip()
+        cliente.status   = request.POST.get('status') == 'on'
+        cliente.save()
+        messages.success(request, 'Cliente atualizado com sucesso!')
+        return redirect(reverse('cliente', kwargs={'id': cliente.id}))
+
+
+@login_required
 def configuracao_whatsapp(request):
     config = ConfiguracaoWhatsApp.objects.filter(user=request.user).first()
     if request.method == 'GET':

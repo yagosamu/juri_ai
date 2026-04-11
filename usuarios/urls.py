@@ -12,6 +12,7 @@ urlpatterns = [
     path("dashboard/", views.dashboard, name='dashboard'),
     path("clientes/", views.clientes, name='clientes'),
     path("cliente/<int:id>", views.cliente, name='cliente'),
+    path("cliente/<int:id>/editar/", views.editar_cliente, name='editar_cliente'),
     # ── Processos ─────────────────────────────────────────────────────────────
     path("processos/", views.lista_processos, name='lista_processos'),
     path("processos/novo/", views.criar_processo, name='criar_processo'),
