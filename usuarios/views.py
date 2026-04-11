@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import (Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD,
                       Processo, Prazo, AndamentoProcesso, TRIBUNAL_CHOICES,
-                      Honorario, Pagamento, TemplateDocumento, DocumentoGerado)
+                      Honorario, Pagamento, TemplateDocumento, DocumentoGerado, Lead)
 from django.db.models import Sum
 from ia.models import AnaliseJurisprudencia
 from django.urls import reverse
@@ -1107,3 +1107,123 @@ def deletar_template(request, id):
 def logout(request):
     auth.logout(request)
     return redirect('login')
+
+
+# ── CRM e Captação ──────────────────────────────────────────────────────────────
+
+@login_required
+def lista_crm(request):
+    status_order = ['novo', 'qualificado', 'proposta', 'fechado', 'perdido']
+    todos = Lead.objects.filter(user=request.user)
+    colunas = {s: [] for s in status_order}
+    for lead in todos:
+        colunas[lead.status].append(lead)
+    contagens = {s: len(colunas[s]) for s in status_order}
+    return render(request, 'crm.html', {
+        'colunas': colunas,
+        'contagens': contagens,
+        'status_labels': dict(Lead.STATUS_CHOICES),
+    })
+
+
+@login_required
+def criar_lead(request):
+    if request.method == 'POST':
+        nome        = request.POST.get('nome', '').strip()
+        telefone    = request.POST.get('telefone', '').strip()
+        email       = request.POST.get('email', '').strip()
+        origem      = request.POST.get('origem', 'outro')
+        observacoes = request.POST.get('observacoes', '').strip()
+        if not nome:
+            messages.error(request, 'Nome é obrigatório.')
+        else:
+            Lead.objects.create(
+                nome=nome, telefone=telefone, email=email,
+                origem=origem, status='novo',
+                observacoes=observacoes, user=request.user,
+            )
+            messages.success(request, 'Lead criado com sucesso.')
+            return redirect('lista_crm')
+    return render(request, 'criar_lead.html', {
+        'origem_choices': Lead.ORIGEM_CHOICES,
+    })
+
+
+@login_required
+def editar_lead(request, id):
+    lead = get_object_or_404(Lead, id=id, user=request.user)
+    if request.method == 'POST':
+        lead.nome        = request.POST.get('nome', lead.nome).strip()
+        lead.telefone    = request.POST.get('telefone', lead.telefone).strip()
+        lead.email       = request.POST.get('email', lead.email).strip()
+        lead.origem      = request.POST.get('origem', lead.origem)
+        lead.status      = request.POST.get('status', lead.status)
+        lead.observacoes = request.POST.get('observacoes', lead.observacoes).strip()
+        lead.save()
+        messages.success(request, 'Lead atualizado.')
+        return redirect('lista_crm')
+    return render(request, 'editar_lead.html', {
+        'lead': lead,
+        'origem_choices': Lead.ORIGEM_CHOICES,
+        'status_choices': Lead.STATUS_CHOICES,
+    })
+
+
+@login_required
+def mover_lead(request, id):
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'erro': 'método inválido'}, status=405)
+    lead = get_object_or_404(Lead, id=id, user=request.user)
+    novo_status = request.POST.get('novo_status', '').strip()
+    status_validos = [s for s, _ in Lead.STATUS_CHOICES]
+    if novo_status not in status_validos:
+        return JsonResponse({'ok': False, 'erro': 'status inválido'}, status=400)
+    lead.status = novo_status
+    lead.save(update_fields=['status', 'atualizado_em'])
+    return JsonResponse({'ok': True})
+
+
+@login_required
+def converter_lead(request, id):
+    if request.method != 'POST':
+        return redirect('lista_crm')
+    lead = get_object_or_404(Lead, id=id, user=request.user)
+    cliente = Cliente.objects.create(
+        nome=lead.nome,
+        email=lead.email,
+        telefone=lead.telefone,
+        user=lead.user,
+    )
+    lead.status = 'fechado'
+    lead.save(update_fields=['status', 'atualizado_em'])
+    messages.success(request, f'Lead convertido em cliente: {cliente.nome}.')
+    return redirect('cliente', id=cliente.id)
+
+
+@login_required
+def relatorio_crm(request):
+    leads = Lead.objects.filter(user=request.user)
+    total = leads.count()
+    por_status = {s: leads.filter(status=s).count() for s, _ in Lead.STATUS_CHOICES}
+    por_origem = {}
+    for origem, label in Lead.ORIGEM_CHOICES:
+        qs = leads.filter(origem=origem)
+        total_origem = qs.count()
+        fechados_origem = qs.filter(status='fechado').count()
+        taxa = round(fechados_origem / total_origem * 100, 1) if total_origem else 0
+        por_origem[origem] = {
+            'label': label,
+            'total': total_origem,
+            'fechados': fechados_origem,
+            'taxa': taxa,
+        }
+    perdidos = por_status.get('perdido', 0)
+    base_conversao = total - perdidos
+    taxa_geral = round(por_status.get('fechado', 0) / base_conversao * 100, 1) if base_conversao else 0
+    return render(request, 'relatorio_crm.html', {
+        'total': total,
+        'por_status': por_status,
+        'por_origem': por_origem,
+        'taxa_geral': taxa_geral,
+        'status_labels': dict(Lead.STATUS_CHOICES),
+    })

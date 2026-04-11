@@ -38,6 +38,13 @@ urlpatterns = [
     path("templates/novo/",             views.criar_template,   name='criar_template'),
     path("templates/<int:id>/editar/",  views.editar_template,  name='editar_template'),
     path("templates/<int:id>/deletar/", views.deletar_template, name='deletar_template'),
+    # ── CRM ───────────────────────────────────────────────────────────────────
+    path('crm/',                       views.lista_crm,      name='lista_crm'),
+    path('crm/criar/',                 views.criar_lead,     name='criar_lead'),
+    path('crm/relatorio/',             views.relatorio_crm,  name='relatorio_crm'),
+    path('crm/<int:id>/editar/',       views.editar_lead,    name='editar_lead'),
+    path('crm/<int:id>/mover/',        views.mover_lead,     name='mover_lead'),
+    path('crm/<int:id>/converter/',    views.converter_lead, name='converter_lead'),
     # ─────────────────────────────────────────────────────────────────────────
     path("configuracao_whatsapp/", views.configuracao_whatsapp, name='configuracao_whatsapp'),
     path("logout/", views.logout, name='logout'),

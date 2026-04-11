@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Max
 from django.views.decorators.csrf import csrf_exempt
 from usuarios.models import (ConfiguracaoWhatsApp, Cliente, Documentos,
-                              Processo, Honorario, TemplateDocumento, DocumentoGerado)
+                              Processo, Honorario, TemplateDocumento, DocumentoGerado,
+                              Lead)
 from mpire import context
 from semchunk.semchunk import chunk
 from ia.models import Pergunta
@@ -166,6 +167,18 @@ def webhook_whatsapp(request):
     message = data.get('data').get('message').get('extendedTextMessage').get('text')
 
     config = get_object_or_404(ConfiguracaoWhatsApp, instancia=instancia)
+
+    # Cria Lead automaticamente se o número for desconhecido
+    cliente_existe = Cliente.objects.filter(user=config.user, telefone=phone).exists()
+    lead_existe    = Lead.objects.filter(user=config.user, telefone=phone).exists()
+    if not cliente_existe and not lead_existe:
+        Lead.objects.create(
+            nome=f'WhatsApp {phone}',
+            telefone=phone,
+            origem='whatsapp',
+            status='novo',
+            user=config.user,
+        )
 
     agent = SecretariaAI.build_agent(session_id=phone)
     response: RunOutput = agent.run(message)

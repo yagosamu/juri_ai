@@ -217,6 +217,7 @@ class Cliente(models.Model):
     nome = models.CharField(max_length=255)
     email = models.EmailField(max_length=255)
     tipo = models.CharField(max_length=2, choices=TIPO_CHOICES, default='PF')
+    telefone = models.CharField(max_length=20, blank=True, verbose_name='Telefone')
     status = models.BooleanField(default=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     # o campo user é uma chave estrangeira que se relaciona com o modelo User do Django, 
@@ -459,6 +460,45 @@ class DocumentoGerado(models.Model):
         return f"{self.cliente.nome} — {self.criado_em.strftime('%d/%m/%Y %H:%M')}"
 
 
+# ── CRM e Captação ──────────────────────────────────────────────────────────────
+
+class Lead(models.Model):
+    ORIGEM_CHOICES = [
+        ('whatsapp',  'WhatsApp'),
+        ('indicacao', 'Indicação'),
+        ('site',      'Site'),
+        ('outro',     'Outro'),
+    ]
+    STATUS_CHOICES = [
+        ('novo',        'Novo'),
+        ('qualificado', 'Qualificado'),
+        ('proposta',    'Proposta Enviada'),
+        ('fechado',     'Fechado'),
+        ('perdido',     'Perdido'),
+    ]
+
+    nome          = models.CharField(max_length=255, verbose_name='Nome')
+    telefone      = models.CharField(max_length=20, blank=True, verbose_name='Telefone')
+    email         = models.EmailField(blank=True, verbose_name='E-mail')
+    origem        = models.CharField(max_length=15, choices=ORIGEM_CHOICES,
+                                     default='outro', verbose_name='Origem')
+    status        = models.CharField(max_length=15, choices=STATUS_CHOICES,
+                                     default='novo', verbose_name='Status')
+    observacoes   = models.TextField(blank=True, verbose_name='Observações')
+    user          = models.ForeignKey(User, on_delete=models.CASCADE,
+                                      related_name='leads', verbose_name='Advogado')
+    criado_em     = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        verbose_name = 'Lead'
+        verbose_name_plural = 'Leads'
+
+    def __str__(self):
+        return f"{self.nome} ({self.get_origem_display()})"
+
+
 auditlog.register(Processo)
 auditlog.register(AndamentoProcesso)
 auditlog.register(Prazo)
@@ -470,3 +510,4 @@ auditlog.register(Honorario)
 auditlog.register(Pagamento)
 auditlog.register(TemplateDocumento)
 auditlog.register(DocumentoGerado)
+auditlog.register(Lead)
