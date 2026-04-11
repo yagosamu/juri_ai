@@ -197,6 +197,7 @@
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
   </style>
 </head>
 
@@ -506,6 +507,189 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     MOCKUP DUPLO — IA em Ação
+══════════════════════════════════════════ -->
+<section style="background:#ffffff;padding:5rem 2rem 4.5rem;">
+  <div style="max-width:1100px;margin:0 auto;">
+
+    <!-- Título da seção -->
+    <div style="text-align:center;margin-bottom:3rem;">
+      <p class="section-label" style="margin-bottom:.75rem;">IA aplicada ao direito</p>
+      <h2 class="serif" style="font-size:clamp(1.75rem,3.2vw,2.5rem);font-weight:500;color:#0f172a;line-height:1.15;letter-spacing:-.022em;">
+        Inteligência artificial aplicada ao direito.
+      </h2>
+      <p style="margin-top:.75rem;font-size:.9375rem;font-weight:300;color:#64748b;line-height:1.65;">
+        Do rascunho ao protocolo, a IA trabalha ao seu lado.
+      </p>
+    </div>
+
+    <!-- Grid 2 colunas -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;">
+
+      <!-- ══ MOCKUP 1 — Geração de Documento ══ -->
+      <div>
+        <div style="margin-bottom:1.25rem;">
+          <h3 style="font-size:1.05rem;font-weight:600;color:#0f172a;letter-spacing:-.015em;">Documentos jurídicos em segundos</h3>
+          <p style="margin-top:.35rem;font-size:.875rem;font-weight:300;color:#64748b;line-height:1.6;">Selecione um template, informe o contexto e a IA redige o documento completo.</p>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;box-shadow:0 20px 50px -10px rgba(15,23,42,.14),0 0 0 1px rgba(15,23,42,.07);">
+          <!-- Window bar -->
+          <div style="background:#1e293b;padding:.45rem .85rem;display:flex;align-items:center;gap:.4rem;">
+            <span style="width:9px;height:9px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
+            <span style="width:9px;height:9px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+            <span style="width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+            <span style="flex:1;background:#334155;border-radius:3px;height:16px;margin-left:.4rem;display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:.58rem;color:#94a3b8;font-family:monospace;">app.juriai.com.br/gerar-documento</span>
+            </span>
+          </div>
+          <!-- App -->
+          <div style="height:340px;background:#f8fafc;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+            <!-- Header -->
+            <div style="background:#ffffff;border-bottom:1px solid #e2e8f0;padding:.6rem 1.1rem;flex-shrink:0;">
+              <p style="font-size:.75rem;font-weight:700;color:#0f172a;">Gerar Documento com IA</p>
+              <p style="font-size:.6rem;color:#94a3b8;margin-top:1px;">Preencha os campos e clique em gerar</p>
+            </div>
+            <!-- Body: 2 col -->
+            <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;">
+              <!-- Form col -->
+              <div style="padding:.85rem 1rem;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;gap:.6rem;overflow:hidden;">
+                <div>
+                  <label style="font-size:.58rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.25rem;">Template</label>
+                  <div style="border:1px solid #c7d2fe;border-radius:6px;padding:.35rem .6rem;background:#eef2ff;display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:.63rem;font-weight:500;color:#3730a3;">Contrato de Honorários</span>
+                    <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="#6366f1" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                  </div>
+                </div>
+                <div>
+                  <label style="font-size:.58rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.25rem;">Cliente</label>
+                  <div style="border:1px solid #e2e8f0;border-radius:6px;padding:.35rem .6rem;background:#ffffff;display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:.63rem;color:#0f172a;">Agropecuária São Jorge</span>
+                    <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                  </div>
+                </div>
+                <div>
+                  <label style="font-size:.58rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.25rem;">Processo</label>
+                  <div style="border:1px solid #e2e8f0;border-radius:6px;padding:.35rem .6rem;background:#ffffff;">
+                    <span style="font-size:.58rem;color:#475569;font-family:monospace;">4003526-34.2025.8.26.0032</span>
+                  </div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;">
+                  <label style="font-size:.58rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.25rem;">Instruções</label>
+                  <div style="flex:1;border:1px solid #e2e8f0;border-radius:6px;padding:.4rem .6rem;background:#ffffff;font-size:.6rem;color:#475569;line-height:1.55;overflow:hidden;">
+                    Contrato de honorários advocatícios com cláusula de êxito de 20%. Partes: escritório Dr. Rafael Mendes e Agropecuária São Jorge LTDA. Vigência de 12 meses...
+                  </div>
+                </div>
+                <button style="width:100%;padding:.45rem;background:#4f46e5;border:none;border-radius:7px;color:#ffffff;font-size:.65rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.35rem;">
+                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+                  Gerar documento
+                </button>
+              </div>
+              <!-- Output col -->
+              <div style="padding:.85rem 1rem;display:flex;flex-direction:column;overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.5rem;">
+                  <div style="width:6px;height:6px;border-radius:50%;background:#22c55e;"></div>
+                  <span style="font-size:.6rem;font-weight:600;color:#16a34a;">Gerando...</span>
+                </div>
+                <div style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:.6rem .7rem;overflow:hidden;font-size:.6rem;color:#1e293b;line-height:1.7;">
+                  <p style="font-weight:700;margin-bottom:.3rem;font-size:.62rem;">CONTRATO DE HONORÁRIOS ADVOCATÍCIOS</p>
+                  <p style="margin-bottom:.3rem;color:#475569;">Pelo presente instrumento particular, de um lado <strong>Dr. Rafael Mendes</strong>, OAB/SP 98.234, e de outro lado <strong>Agropecuária São Jorge LTDA</strong>, CNPJ 12.345.678/0001-90...</p>
+                  <p style="margin-bottom:.3rem;color:#475569;"><strong>Cláusula 1ª — Do Objeto:</strong> O presente contrato tem por objeto a prestação de serviços advocatícios referentes ao processo nº 4003526-34.2025...</p>
+                  <p style="color:#475569;"><strong>Cláusula 2ª — Dos Honorários:</strong> A remuneração pelos serviços será de R$ 8.000,00 (oito mil reais) mensais, acrescida de 20% de honorários de êxito<span style="display:inline-block;width:2px;height:.75em;background:#4f46e5;margin-left:1px;animation:blink 1s step-end infinite;vertical-align:text-bottom;"></span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ MOCKUP 2 — Análise de Risco ══ -->
+      <div>
+        <div style="margin-bottom:1.25rem;">
+          <h3 style="font-size:1.05rem;font-weight:600;color:#0f172a;letter-spacing:-.015em;">Análise de risco antes do protocolo</h3>
+          <p style="margin-top:.35rem;font-size:.875rem;font-weight:300;color:#64748b;line-height:1.6;">Score 0–100, red flags e inconsistências identificadas automaticamente.</p>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;box-shadow:0 20px 50px -10px rgba(15,23,42,.14),0 0 0 1px rgba(15,23,42,.07);">
+          <!-- Window bar -->
+          <div style="background:#1e293b;padding:.45rem .85rem;display:flex;align-items:center;gap:.4rem;">
+            <span style="width:9px;height:9px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
+            <span style="width:9px;height:9px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+            <span style="width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+            <span style="flex:1;background:#334155;border-radius:3px;height:16px;margin-left:.4rem;display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:.58rem;color:#94a3b8;font-family:monospace;">app.juriai.com.br/analise-risco</span>
+            </span>
+          </div>
+          <!-- App -->
+          <div style="height:340px;background:#f8fafc;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden;">
+            <!-- Header -->
+            <div style="background:#ffffff;border-bottom:1px solid #e2e8f0;padding:.6rem 1.1rem;flex-shrink:0;">
+              <p style="font-size:.75rem;font-weight:700;color:#0f172a;">Análise de Risco — Contestação</p>
+              <p style="font-size:.6rem;color:#94a3b8;margin-top:1px;">JurisprudênciaAI · Processado em 4.2s</p>
+            </div>
+            <!-- Body -->
+            <div style="flex:1;overflow:hidden;padding:.85rem 1.1rem;display:flex;flex-direction:column;gap:.75rem;">
+              <!-- Score -->
+              <div style="background:#ffffff;border:1px solid #fecaca;border-radius:10px;padding:.75rem 1rem;display:flex;align-items:center;gap:1rem;flex-shrink:0;">
+                <div style="text-align:center;flex-shrink:0;">
+                  <p style="font-size:2.25rem;font-weight:800;color:#dc2626;line-height:1;letter-spacing:-.04em;">82</p>
+                  <span style="font-size:.55rem;font-weight:700;color:#dc2626;background:#fee2e2;border-radius:3px;padding:1px 5px;display:inline-block;margin-top:2px;">CRÍTICO</span>
+                </div>
+                <div style="flex:1;">
+                  <p style="font-size:.6rem;font-weight:600;color:#64748b;margin-bottom:.3rem;">Índice de risco</p>
+                  <div style="background:#fee2e2;border-radius:99px;height:7px;overflow:hidden;">
+                    <div style="width:82%;height:100%;background:linear-gradient(90deg,#f87171,#dc2626);border-radius:99px;"></div>
+                  </div>
+                  <p style="font-size:.57rem;color:#94a3b8;margin-top:.3rem;">Requer revisão imediata antes do protocolo</p>
+                </div>
+              </div>
+              <!-- Red Flags -->
+              <div style="flex-shrink:0;">
+                <p style="font-size:.62rem;font-weight:700;color:#0f172a;margin-bottom:.4rem;display:flex;align-items:center;gap:.3rem;">
+                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="#dc2626" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3l1.664 1.664M21 21l-1.5-1.5m-5.485-1.242L13.5 11.5M12 12L3 21m9-9l4.5-4.5M4.5 4.5L12 12"/></svg>
+                  Red Flags identificados
+                </p>
+                <div style="display:flex;flex-direction:column;gap:.3rem;">
+                  <div style="display:flex;align-items:flex-start;gap:.4rem;padding:.4rem .6rem;background:#fef2f2;border-radius:6px;border-left:2px solid #dc2626;">
+                    <span style="font-size:.6rem;color:#dc2626;flex-shrink:0;margin-top:.05rem;">●</span>
+                    <p style="font-size:.6rem;color:#1e293b;line-height:1.4;">Ausência de fundamentação legal no pedido principal</p>
+                  </div>
+                  <div style="display:flex;align-items:flex-start;gap:.4rem;padding:.4rem .6rem;background:#fef2f2;border-radius:6px;border-left:2px solid #dc2626;">
+                    <span style="font-size:.6rem;color:#dc2626;flex-shrink:0;margin-top:.05rem;">●</span>
+                    <p style="font-size:.6rem;color:#1e293b;line-height:1.4;">Prazo prescricional em risco — verificar art. 206 CC</p>
+                  </div>
+                  <div style="display:flex;align-items:flex-start;gap:.4rem;padding:.4rem .6rem;background:#fef2f2;border-radius:6px;border-left:2px solid #dc2626;">
+                    <span style="font-size:.6rem;color:#dc2626;flex-shrink:0;margin-top:.05rem;">●</span>
+                    <p style="font-size:.6rem;color:#1e293b;line-height:1.4;">Contradição entre cláusula 3ª e pedido liminar</p>
+                  </div>
+                </div>
+              </div>
+              <!-- Recomendações -->
+              <div>
+                <p style="font-size:.62rem;font-weight:700;color:#0f172a;margin-bottom:.4rem;display:flex;align-items:center;gap:.3rem;">
+                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Recomendações
+                </p>
+                <div style="display:flex;flex-direction:column;gap:.3rem;">
+                  <div style="display:flex;align-items:flex-start;gap:.4rem;padding:.4rem .6rem;background:#f0fdf4;border-radius:6px;border-left:2px solid #16a34a;">
+                    <span style="font-size:.6rem;color:#16a34a;flex-shrink:0;margin-top:.05rem;">●</span>
+                    <p style="font-size:.6rem;color:#1e293b;line-height:1.4;">Incluir citação dos arts. 319 e 320 do CPC na contestação</p>
+                  </div>
+                  <div style="display:flex;align-items:flex-start;gap:.4rem;padding:.4rem .6rem;background:#f0fdf4;border-radius:6px;border-left:2px solid #16a34a;">
+                    <span style="font-size:.6rem;color:#16a34a;flex-shrink:0;margin-top:.05rem;">●</span>
+                    <p style="font-size:.6rem;color:#1e293b;line-height:1.4;">Revisar coerência entre pedido subsidiário e documentos anexados</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
