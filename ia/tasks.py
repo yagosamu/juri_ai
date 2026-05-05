@@ -3,7 +3,6 @@ from collections import defaultdict
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from usuarios.models import Documentos
-from .agents import JuriAI
 
 def ocr_and_markdown_file(instance_id):
     from docling.document_converter import DocumentConverter
@@ -25,6 +24,8 @@ def ocr_and_markdown_file(instance_id):
 
 
 def rag_documentos(instance_id):
+    from .agents import JuriAI
+
     documentos = get_object_or_404(Documentos, id=instance_id)
     JuriAI.knowledge.insert(
         name=documentos.arquivo.name,

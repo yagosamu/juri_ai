@@ -11,19 +11,12 @@ from ia.models import Pergunta
 from .models import ContextRag, Pergunta, AnaliseJurisprudencia
 from django.http import JsonResponse, StreamingHttpResponse
 from django.db.models import Q
-from .agents import JuriAI, SecretariaAI, RedacaoAI
-from typing import Iterator
-from agno.agent import RunOutputEvent, RunEvent
-from ia.agente_langchain import JurisprudenciaAI
 from .models import AnaliseJurisprudencia
 from django.contrib import messages
 from django.contrib.messages import constants
 import time
-from agno.agent import RunOutput
 import json
 from .wrapper_evolution_api import SendMessage
-from agno.agent import RunOutput
-from .agents import SecretariaAI
 
 
 
@@ -47,6 +40,9 @@ def stream_resposta(request):
     pergunta = get_object_or_404(Pergunta, id=id_pergunta, cliente__user=request.user)
 
     def gerar_resposta():
+        from typing import Iterator
+        from agno.agent import RunOutputEvent, RunEvent
+        from .agents import JuriAI
         
         agent = JuriAI.build_agent(knowledge_filters={'cliente_id': pergunta.cliente.id})
         
@@ -95,6 +91,8 @@ def processar_analise(request, id):
         return redirect('analise_jurisprudencia', id=id)
     
     try:
+        from ia.agente_langchain import JurisprudenciaAI
+
         documento = get_object_or_404(Documentos, id=id, cliente__user=request.user)
         start_time = time.time()
         
@@ -180,8 +178,10 @@ def webhook_whatsapp(request):
             user=config.user,
         )
 
+    from .agents import SecretariaAI
+
     agent = SecretariaAI.build_agent(session_id=phone)
-    response: RunOutput = agent.run(message)
+    response = agent.run(message)
 
     SendMessage(base_url=config.base_url, api_key=config.api_key).send_message(
         config.instancia,
@@ -262,6 +262,9 @@ def gerar_documento(request):
     )
 
     def stream():
+        from agno.agent import RunEvent
+        from .agents import RedacaoAI
+
         agent = RedacaoAI.build_agent()
         for chunk in agent.run(prompt, stream=True, stream_events=True):
             if chunk.event == RunEvent.run_content:
