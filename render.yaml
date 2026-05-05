@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: juri-ai
+    runtime: python
+    buildCommand: bash build.sh
+    startCommand: bash start.sh
+    disk:
+      name: juri-ai-data
+      mountPath: /var/data
+      sizeGB: 5
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.2
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://*.onrender.com"
+      - key: DATA_DIR
+        value: /var/data
+      - key: GOOGLE_CLIENT_SECRET_PATH
+        value: /var/data/client_secret.json
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: juri-ai-db
+          property: connectionString
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: FIELD_ENCRYPTION_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET_JSON
+        sync: false
+
+databases:
+  - name: juri-ai-db
+    plan: basic-256mb

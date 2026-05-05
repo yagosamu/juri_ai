@@ -12,12 +12,18 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = Path(os.environ.get('DATA_DIR', BASE_DIR))
+try:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    pass
 
 
 # Quick-start development settings - unsuitable for production
@@ -27,10 +33,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes', 'on')
 
 # Produção: adicionar o domínio real aqui (ex: 'meusite.com.br')
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get(
+        'ALLOWED_HOSTS',
+        'localhost,127.0.0.1,.onrender.com',
+    ).split(',')
+    if host.strip()
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        'CSRF_TRUSTED_ORIGINS',
+        'https://*.onrender.com',
+    ).split(',')
+    if origin.strip()
+]
 
 
 # Application definition
@@ -52,6 +74,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'axes.middleware.AxesMiddleware',
     'auditlog.middleware.AuditlogMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -95,6 +118,14 @@ DATABASES = {
         'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES['default'] = dj_database_url.parse(
+        DATABASE_URL,
+        conn_max_age=600,
+        ssl_require=not DEBUG,
+    )
 
 
 # Password validation
@@ -143,9 +174,17 @@ FIELD_ENCRYPTION_KEY = os.environ.get('FIELD_ENCRYPTION_KEY', '')
 STATIC_URL = 'static/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'templates/static'),)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(DATA_DIR, 'media')
 MEDIA_URL = '/media/'
+
+GOOGLE_CLIENT_SECRET_PATH = os.environ.get(
+    'GOOGLE_CLIENT_SECRET_PATH',
+    str(BASE_DIR / 'client_secret.json'),
+)
+LANCEDB_URI = os.environ.get('LANCEDB_URI', str(DATA_DIR / 'lancedb'))
+AGNO_MEMORY_DB_FILE = os.environ.get('AGNO_MEMORY_DB_FILE', str(DATA_DIR / 'agno_memory.sqlite3'))
 
 
 from django.contrib.messages import constants
@@ -174,6 +213,7 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     X_FRAME_OPTIONS = 'DENY'

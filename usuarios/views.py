@@ -696,10 +696,8 @@ def excluir_conta(request):
     try:
         import lancedb
         from django.conf import settings as django_settings
-        import os
 
-        lancedb_path = os.path.join(django_settings.BASE_DIR, 'lancedb')
-        db = lancedb.connect(lancedb_path)
+        db = lancedb.connect(django_settings.LANCEDB_URI)
 
         cliente_ids = list(
             Cliente.objects.filter(user=user).values_list('id', flat=True)

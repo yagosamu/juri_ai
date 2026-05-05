@@ -66,8 +66,8 @@ class JuriAI:
     DATAJUD_BASE_URL = "https://api-publica.datajud.cnj.jus.br"
     DATAJUD_API_KEY = "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw=="
     VECTOR_DB_TABLE = "documentos"
-    VECTOR_DB_URI = "lancedb"
-    MEMORY_DB_FILE = "db.sqlite3"
+    VECTOR_DB_URI = settings.LANCEDB_URI
+    MEMORY_DB_FILE = settings.AGNO_MEMORY_DB_FILE
     MEMORY_TABLE = "my_memory_table"
     AGENT_NAME = "Assistente Jurídico Virtual"
     AGENT_DESCRIPTION = (
@@ -118,10 +118,10 @@ class JuriAI:
 
 
 class SecretariaAI:
-    CREDENTIALS_PATH = settings.BASE_DIR / "client_secret_1005629069583-862kme7at0id4q5ev4lfhc2g63hgba6c.apps.googleusercontent.com.json"
+    CREDENTIALS_PATH = settings.GOOGLE_CLIENT_SECRET_PATH
     VECTOR_DB_TABLE = "empresa"
-    VECTOR_DB_URI = "lancedb"
-    MEMORY_DB_FILE = "db.sqlite3"
+    VECTOR_DB_URI = settings.LANCEDB_URI
+    MEMORY_DB_FILE = settings.AGNO_MEMORY_DB_FILE
     MEMORY_TABLE = "secretaria_memory_table"
     
     INSTRUCTIONS = f"""
