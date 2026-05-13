@@ -15,7 +15,14 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
-from usuarios.services.calculo import calcular_debito, calcular_debito_multiplo, comparar_cenarios
+from usuarios.services.calculo import (
+    calcular_debito,
+    calcular_debito_multiplo,
+    calcular_debito_tabela_tj,
+    comparar_cenarios,
+)
+from usuarios.services.calculo_trabalhista import calcular_verbas_trabalhistas
+from usuarios.services.tabelas_tj import listar_tribunais_disponiveis
 from decimal import Decimal
 import json
 import datetime
@@ -110,6 +117,7 @@ def _parametros_calculo(data):
         'data_inicio': data_inicio,
         'data_fim': data_fim,
         'indice_correcao': data.get('indice_correcao') or 'ipca_e',
+        'tribunal': data.get('tribunal', '').strip(),
         'juros_tipo': data.get('juros_tipo') or 'simples_1',
         'juros_percentual': juros_percentual,
         'multa_523': _bool_payload(data, 'multa_523'),
@@ -165,6 +173,32 @@ def _cenarios_payload(data):
     if len(cenarios) < 2 or len(cenarios) > 3:
         raise ValueError('Informe de 2 a 3 cenários para comparação.')
     return cenarios
+
+
+def _parametros_trabalhistas(data):
+    salario_base = _parse_decimal_br(str(data.get('salario_base', '')))
+    data_admissao = _parse_date_br(str(data.get('data_admissao', '')))
+    data_demissao = _parse_date_br(str(data.get('data_demissao', '')))
+    saldo_fgts = _parse_decimal_br(str(data.get('saldo_fgts', ''))) or Decimal('0')
+
+    if salario_base is None:
+        raise ValueError('Informe um salário base válido.')
+    if data_admissao is None:
+        raise ValueError('Informe uma data de admissão válida.')
+    if data_demissao is None:
+        raise ValueError('Informe uma data de demissão válida.')
+
+    return {
+        'salario_base': salario_base,
+        'data_admissao': data_admissao,
+        'data_demissao': data_demissao,
+        'tipo_demissao': data.get('tipo_demissao') or 'sem_justa_causa',
+        'horas_extras_50': int(data.get('horas_extras_50') or 0),
+        'horas_extras_100': int(data.get('horas_extras_100') or 0),
+        'meses_trabalhados': int(data.get('meses_trabalhados') or 0),
+        'aviso_previo': data.get('aviso_previo') or 'indenizado',
+        'saldo_fgts': saldo_fgts,
+    }
 
 
 
@@ -1184,11 +1218,14 @@ def calculadora(request):
         processo_obj = _processo_por_payload(request, {})
         hoje = timezone.now().date()
         data_inicio = processo_obj.data_distribuicao if processo_obj and processo_obj.data_distribuicao else None
+        tribunal_selecionado = processo_obj.tribunal if processo_obj else ''
 
         return render(request, 'calculadora.html', {
             'processo': processo_obj,
             'indice_choices': CalculoJudicial.INDICE_CHOICES,
             'juros_choices': CalculoJudicial.JUROS_CHOICES,
+            'tribunais_tj': listar_tribunais_disponiveis(),
+            'tribunal_selecionado': tribunal_selecionado,
             'valor_principal': _format_decimal_br(processo_obj.valor_causa) if processo_obj else '',
             'data_inicio': data_inicio.strftime('%d/%m/%Y') if data_inicio else '',
             'data_fim': hoje.strftime('%d/%m/%Y'),
@@ -1200,7 +1237,9 @@ def calculadora(request):
     try:
         data = _json_body(request)
         _processo_por_payload(request, data)
-        if _bool_payload(data, 'comparar'):
+        if _bool_payload(data, 'trabalhista'):
+            resultado = calcular_verbas_trabalhistas(**_parametros_trabalhistas(data))
+        elif _bool_payload(data, 'comparar'):
             parametros = _parametros_calculo(data)
             resultado = comparar_cenarios(
                 valor_principal=parametros['valor_principal'],
@@ -1215,7 +1254,12 @@ def calculadora(request):
             parcelas = _parcelas_payload(data)
             if not parcelas:
                 parametros = _parametros_calculo(data)
-                resultado = calcular_debito(**parametros)
+                tribunal = parametros.pop('tribunal', '')
+                if tribunal:
+                    parametros.pop('indice_correcao', None)
+                    resultado = calcular_debito_tabela_tj(tribunal=tribunal, **parametros)
+                else:
+                    resultado = calcular_debito(**parametros)
             else:
                 parametros = _parametros_comuns_calculo(data)
                 resultado = calcular_debito_multiplo(parcelas=parcelas, **parametros)
@@ -1241,6 +1285,7 @@ def salvar_calculo(request):
             parametros = _parametros_calculo(data)
             valor_principal = parametros['valor_principal']
             data_inicio = parametros['data_inicio']
+        tribunal = parametros.pop('tribunal', '')
         resultado_json = data.get('resultado_json') or {}
 
         calculo = CalculoJudicial.objects.create(
@@ -1249,7 +1294,7 @@ def salvar_calculo(request):
             valor_principal=valor_principal,
             data_inicio=data_inicio,
             data_fim=parametros['data_fim'],
-            indice_correcao=parametros['indice_correcao'],
+            indice_correcao=parametros.get('indice_correcao') or 'ipca_e',
             juros_tipo=parametros['juros_tipo'],
             juros_percentual=parametros['juros_percentual'],
             multa_523=parametros['multa_523'],
@@ -1258,6 +1303,9 @@ def salvar_calculo(request):
             resultado_json=resultado_json,
             user=request.user,
         )
+        if tribunal and not calculo.resultado_json.get('tribunal'):
+            calculo.resultado_json['tribunal'] = tribunal
+            calculo.save(update_fields=['resultado_json'])
         return JsonResponse({'ok': True, 'id': calculo.id})
     except Exception as exc:
         return JsonResponse({'ok': False, 'erro': str(exc)}, status=400)
@@ -1323,6 +1371,10 @@ def exportar_calculo(request, id):
     story.append(Spacer(1, 0.4 * cm))
 
     resultado = calculo.resultado_json or {}
+    if resultado.get('tribunal_nome'):
+        story.append(Paragraph(f'Tabela do tribunal: {resultado.get("tribunal_nome")}', styles['Normal']))
+        story.append(Spacer(1, 0.3 * cm))
+
     if resultado.get('parcelas'):
         story.append(Paragraph('Parcelas individuais', styles['Heading2']))
         parcelas = [['Descrição', 'Data', 'Principal', 'Corrigido', 'Juros', 'Subtotal']]
@@ -1346,6 +1398,29 @@ def exportar_calculo(request, id):
             ('PADDING', (0, 0), (-1, -1), 5),
         ]))
         story.append(parcelas_table)
+        story.append(Spacer(1, 0.4 * cm))
+
+    if resultado.get('periodos_aplicados'):
+        story.append(Paragraph('Índices aplicados por período', styles['Heading2']))
+        periodos = [['Início', 'Fim', 'Índice', 'Meses']]
+        for item in resultado.get('periodos_aplicados', []):
+            periodos.append([
+                item.get('inicio', ''),
+                item.get('fim', ''),
+                str(item.get('indice', '')).upper(),
+                item.get('meses', 0),
+            ])
+        periodos_table = Table(periodos, repeatRows=1)
+        periodos_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#334155')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+            ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#e2e8f0')),
+            ('PADDING', (0, 0), (-1, -1), 5),
+        ]))
+        story.append(periodos_table)
         story.append(Spacer(1, 0.4 * cm))
 
     linhas = [['Mês', 'Índice %', 'Correção acum.', 'Corrigido', 'Juros acum.', 'Subtotal']]

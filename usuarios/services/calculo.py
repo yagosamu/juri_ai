@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 
 from usuarios.models import IndiceEconomico
+from usuarios.services.tabelas_tj import TABELAS_TJ, obter_indice_por_periodo
 
 
 MOEDA = Decimal('0.01')
@@ -228,6 +229,100 @@ def comparar_cenarios(
     }
 
 
+def calcular_debito_tabela_tj(
+    valor_principal: Decimal,
+    data_inicio: date,
+    data_fim: date,
+    tribunal: str,
+    juros_tipo: str,
+    juros_percentual: Decimal = Decimal('1.00'),
+    multa_523: bool = False,
+    honorarios_sucumb: bool = False,
+    honorarios_percent: Decimal = Decimal('10.00'),
+) -> dict:
+    """
+    Calcula débito usando a tabela prática do tribunal.
+    """
+    valor_principal = Decimal(valor_principal)
+    juros_percentual = Decimal(juros_percentual)
+    honorarios_percent = Decimal(honorarios_percent)
+    _validar_parametros(valor_principal, data_inicio, data_fim)
+
+    meses_ref = list(_iterar_meses(data_inicio, data_fim))
+    indices_por_tipo = {}
+    fator_correcao = UM
+    tabela_mensal = []
+    periodos_aplicados = []
+
+    for mes_ref in meses_ref:
+        indice_tipo = obter_indice_por_periodo(tribunal, mes_ref)
+        if indice_tipo not in indices_por_tipo:
+            indices_por_tipo[indice_tipo] = _indices_por_mes(indice_tipo, meses_ref)
+
+        indice_mensal = indices_por_tipo[indice_tipo].get(mes_ref, ZERO)
+        fator_correcao *= _fator_percentual(indice_mensal)
+        valor_corrigido_mes = valor_principal * fator_correcao
+
+        _adicionar_periodo_aplicado(periodos_aplicados, mes_ref, indice_tipo)
+        tabela_mensal.append({
+            'mes': f'{mes_ref:%m/%Y}',
+            'indice_tipo': indice_tipo,
+            'indice_mensal': _arredondar_percentual(indice_mensal),
+            'correcao_acumulada': _arredondar_fator(fator_correcao),
+            'valor_corrigido': _arredondar_moeda(valor_corrigido_mes),
+            'juros_mes': _arredondar_moeda(ZERO),
+            'juros_acumulado': _arredondar_moeda(ZERO),
+            'subtotal': _arredondar_moeda(valor_corrigido_mes),
+        })
+
+    valor_corrigido = valor_principal * fator_correcao
+    juros_valor = _calcular_juros_final(
+        valor_principal=valor_principal,
+        valor_corrigido=valor_corrigido,
+        meses_ref=meses_ref,
+        juros_tipo=juros_tipo,
+        juros_percentual=juros_percentual,
+    )
+    subtotal = valor_corrigido + juros_valor
+    multa_valor = subtotal * Decimal('0.10') if multa_523 else ZERO
+    base_honorarios = subtotal + multa_valor
+    honorarios_valor = base_honorarios * (honorarios_percent / CEM) if honorarios_sucumb else ZERO
+    total = subtotal + multa_valor + honorarios_valor
+
+    juros_anterior = ZERO
+    for posicao, item in enumerate(tabela_mensal, start=1):
+        valor_corrigido_mes = Decimal(str(item['valor_corrigido']))
+        juros_acumulado = _calcular_juros_final(
+            valor_principal=valor_principal,
+            valor_corrigido=valor_corrigido_mes,
+            meses_ref=meses_ref[:posicao],
+            juros_tipo=juros_tipo,
+            juros_percentual=juros_percentual,
+        )
+        item['juros_acumulado'] = _arredondar_moeda(juros_acumulado)
+        item['juros_mes'] = _arredondar_moeda(juros_acumulado - juros_anterior)
+        item['subtotal'] = _arredondar_moeda(valor_corrigido_mes + juros_acumulado)
+        juros_anterior = juros_acumulado
+
+    tribunal_nome = TABELAS_TJ.get(tribunal, {}).get('nome', 'Tabela padrão')
+    return {
+        'valor_principal': _arredondar_moeda(valor_principal),
+        'valor_corrigido': _arredondar_moeda(valor_corrigido),
+        'correcao_acumulada_percent': _arredondar_percentual((fator_correcao - UM) * CEM),
+        'juros_valor': _arredondar_moeda(juros_valor),
+        'juros_acumulado_percent': _arredondar_percentual(_percentual_juros(valor_corrigido, juros_valor)),
+        'subtotal': _arredondar_moeda(subtotal),
+        'multa_valor': _arredondar_moeda(multa_valor),
+        'honorarios_valor': _arredondar_moeda(honorarios_valor),
+        'total': _arredondar_moeda(total),
+        'meses': len(meses_ref),
+        'tabela_mensal': tabela_mensal,
+        'tribunal': tribunal,
+        'tribunal_nome': tribunal_nome,
+        'periodos_aplicados': periodos_aplicados,
+    }
+
+
 def _calcular_selic_integral(
     valor_principal,
     meses_ref,
@@ -276,6 +371,39 @@ def _calcular_selic_integral(
         'meses': len(meses_ref),
         'tabela_mensal': tabela_mensal,
     }
+
+
+def _adicionar_periodo_aplicado(periodos, mes_ref, indice_tipo):
+    if periodos and periodos[-1]['indice'] == indice_tipo:
+        periodos[-1]['fim'] = mes_ref
+        periodos[-1]['meses'] += 1
+        return
+
+    periodos.append({
+        'inicio': mes_ref,
+        'fim': mes_ref,
+        'indice': indice_tipo,
+        'meses': 1,
+    })
+
+
+def _calcular_juros_final(valor_principal, valor_corrigido, meses_ref, juros_tipo, juros_percentual):
+    if juros_tipo == 'selic':
+        indices_selic = _indices_por_mes('selic', meses_ref)
+        fator_selic = UM
+        for mes_ref in meses_ref:
+            fator_selic *= _fator_percentual(indices_selic.get(mes_ref, ZERO))
+        return (valor_principal * fator_selic) - valor_principal
+
+    if juros_tipo == 'taxa_legal':
+        indices_juros = _indices_por_mes('taxa_legal', meses_ref)
+        fator_juros = UM
+        for mes_ref in meses_ref:
+            fator_juros *= _fator_percentual(indices_juros.get(mes_ref, ZERO))
+        return valor_corrigido * (fator_juros - UM)
+
+    taxa_juros = _taxa_juros_simples(juros_tipo, juros_percentual)
+    return valor_corrigido * (taxa_juros / CEM) * Decimal(len(meses_ref))
 
 
 def _validar_parametros(valor_principal, data_inicio, data_fim):

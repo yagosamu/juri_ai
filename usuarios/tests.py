@@ -10,12 +10,19 @@ from django.test import TestCase
 from django.urls import reverse
 
 from usuarios.models import CalculoJudicial, Cliente, IndiceEconomico, Processo
-from usuarios.services.calculo import calcular_debito, calcular_debito_multiplo, comparar_cenarios
+from usuarios.services.calculo import (
+    calcular_debito,
+    calcular_debito_multiplo,
+    calcular_debito_tabela_tj,
+    comparar_cenarios,
+)
 from usuarios.services.indices import (
     _calcular_taxa_legal,
     _janelas_consulta,
     importar_indices_bcb,
 )
+from usuarios.services.calculo_trabalhista import calcular_verbas_trabalhistas
+from usuarios.services.tabelas_tj import listar_tribunais_disponiveis, obter_indice_por_periodo
 
 
 class ImportarIndicesCommandTests(TestCase):
@@ -108,6 +115,97 @@ class ImportarIndicesCommandTests(TestCase):
 
 
 class CalculoDebitoTests(TestCase):
+    def test_calcula_verbas_trabalhistas_sem_justa_causa(self):
+        resultado = calcular_verbas_trabalhistas(
+            salario_base=Decimal('5000.00'),
+            data_admissao=date(2020, 3, 1),
+            data_demissao=date(2024, 11, 15),
+            tipo_demissao='sem_justa_causa',
+            horas_extras_50=30,
+            horas_extras_100=8,
+            aviso_previo='indenizado',
+        )
+
+        verbas = {verba['nome']: verba for verba in resultado['verbas']}
+        deducoes = {deducao['nome']: deducao for deducao in resultado['deducoes']}
+
+        self.assertEqual(resultado['dados_entrada']['meses_trabalhados'], 57)
+        self.assertEqual(verbas['Saldo de salário']['valor'], Decimal('2500.00'))
+        self.assertEqual(verbas['13º proporcional']['avos'], 11)
+        self.assertEqual(verbas['13º proporcional']['valor'], Decimal('4583.33'))
+        self.assertEqual(verbas['Férias proporcionais']['avos'], 9)
+        self.assertEqual(verbas['Férias proporcionais']['valor'], Decimal('3750.00'))
+        self.assertEqual(verbas['1/3 constitucional']['valor'], Decimal('1250.00'))
+        self.assertEqual(verbas['Aviso prévio indenizado']['dias'], 42)
+        self.assertEqual(verbas['Aviso prévio indenizado']['valor'], Decimal('7000.00'))
+        self.assertEqual(verbas['Horas extras 50%']['valor'], Decimal('1022.73'))
+        self.assertEqual(verbas['Horas extras 100%']['valor'], Decimal('363.64'))
+        self.assertEqual(verbas['DSR sobre horas extras']['valor'], Decimal('231.06'))
+        self.assertEqual(verbas['Multa 40% FGTS']['valor'], Decimal('9120.00'))
+        self.assertEqual(resultado['total_bruto'], Decimal('29820.76'))
+        self.assertIn('INSS (estimativa)', deducoes)
+        self.assertIn('IRRF (estimativa)', deducoes)
+        self.assertLess(resultado['total_liquido'], resultado['total_bruto'])
+
+    def test_justa_causa_nao_calcula_aviso_multa_e_decimo(self):
+        resultado = calcular_verbas_trabalhistas(
+            salario_base=Decimal('3000.00'),
+            data_admissao=date(2024, 1, 1),
+            data_demissao=date(2024, 6, 10),
+            tipo_demissao='com_justa_causa',
+        )
+
+        nomes = [verba['nome'] for verba in resultado['verbas']]
+        self.assertIn('Saldo de salário', nomes)
+        self.assertNotIn('13º proporcional', nomes)
+        self.assertNotIn('Aviso prévio indenizado', nomes)
+        self.assertNotIn('Multa 40% FGTS', nomes)
+
+    def test_obtem_indice_por_periodo_do_tjsp_e_fallback(self):
+        self.assertEqual(obter_indice_por_periodo('tjsp', date(2004, 1, 1)), 'igpm')
+        self.assertEqual(obter_indice_por_periodo('tjsp', date(2006, 4, 1)), 'ipca_e')
+        self.assertEqual(obter_indice_por_periodo('nao_existe', date(2024, 1, 1)), 'ipca_e')
+
+        tribunais = listar_tribunais_disponiveis()
+        self.assertIn({'codigo': 'tjsp', 'nome': 'Tabela Prática TJSP'}, tribunais)
+
+    def test_calcula_debito_com_tabela_tj_e_periodos_aplicados(self):
+        IndiceEconomico.objects.create(
+            tipo='igpm',
+            data=date(2006, 3, 1),
+            valor=Decimal('1.00'),
+            fonte='bcb',
+        )
+        IndiceEconomico.objects.create(
+            tipo='ipca_e',
+            data=date(2006, 4, 1),
+            valor=Decimal('2.00'),
+            fonte='bcb',
+        )
+
+        resultado = calcular_debito_tabela_tj(
+            valor_principal=Decimal('1000.00'),
+            data_inicio=date(2006, 3, 1),
+            data_fim=date(2006, 4, 30),
+            tribunal='tjsp',
+            juros_tipo='simples_1',
+        )
+
+        self.assertEqual(resultado['tribunal'], 'tjsp')
+        self.assertEqual(resultado['tribunal_nome'], 'Tabela Prática TJSP')
+        self.assertEqual(resultado['valor_corrigido'], Decimal('1030.20'))
+        self.assertEqual(resultado['juros_valor'], Decimal('20.60'))
+        self.assertEqual(resultado['total'], Decimal('1050.80'))
+        self.assertEqual(len(resultado['periodos_aplicados']), 2)
+        self.assertEqual(resultado['periodos_aplicados'][0]['inicio'], date(2006, 3, 1))
+        self.assertEqual(resultado['periodos_aplicados'][0]['fim'], date(2006, 3, 1))
+        self.assertEqual(resultado['periodos_aplicados'][0]['indice'], 'igpm')
+        self.assertEqual(resultado['periodos_aplicados'][0]['meses'], 1)
+        self.assertEqual(resultado['periodos_aplicados'][1]['inicio'], date(2006, 4, 1))
+        self.assertEqual(resultado['periodos_aplicados'][1]['indice'], 'ipca_e')
+        self.assertEqual(resultado['tabela_mensal'][0]['indice_tipo'], 'igpm')
+        self.assertEqual(resultado['tabela_mensal'][1]['indice_tipo'], 'ipca_e')
+
     def test_compara_cenarios_com_maior_menor_e_diferenca(self):
         resultado = comparar_cenarios(
             valor_principal=Decimal('1000.00'),
@@ -345,6 +443,9 @@ class CalculadoraViewsTests(TestCase):
         self.assertContains(response, 'value="10.000,00"')
         self.assertContains(response, 'value="10/01/2024"')
         self.assertContains(response, 'Comparar cenários')
+        self.assertContains(response, 'Calculadora Trabalhista')
+        self.assertContains(response, 'Tabela Prática TJSP')
+        self.assertContains(response, 'value="tjsp" selected')
 
     def test_calculadora_post_retorna_resultado_json(self):
         IndiceEconomico.objects.create(
@@ -377,6 +478,66 @@ class CalculadoraViewsTests(TestCase):
         self.assertTrue(data['ok'])
         self.assertEqual(data['resultado']['valor_corrigido'], 1010.0)
         self.assertEqual(data['resultado']['tabela_mensal'][0]['mes'], '01/2024')
+
+    def test_calculadora_post_usa_tabela_tj(self):
+        IndiceEconomico.objects.create(
+            tipo='ipca_e',
+            data=date(2024, 1, 1),
+            valor=Decimal('1.00'),
+            fonte='bcb',
+        )
+        payload = {
+            'valor_principal': '1.000,00',
+            'data_inicio': '01/01/2024',
+            'data_fim': '31/01/2024',
+            'tribunal': 'tjsp',
+            'indice_correcao': 'igpm',
+            'juros_tipo': 'simples_1',
+            'juros_percentual': '1,00',
+            'multa_523': False,
+            'honorarios_sucumb': False,
+            'honorarios_percent': '10,00',
+        }
+
+        response = self.client.post(
+            reverse('calculadora'),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['ok'])
+        self.assertEqual(data['resultado']['tribunal'], 'tjsp')
+        self.assertEqual(data['resultado']['tribunal_nome'], 'Tabela Prática TJSP')
+        self.assertEqual(data['resultado']['periodos_aplicados'][0]['indice'], 'ipca_e')
+        self.assertEqual(data['resultado']['valor_corrigido'], 1010.0)
+
+    def test_calculadora_post_calcula_verbas_trabalhistas(self):
+        payload = {
+            'trabalhista': True,
+            'salario_base': '5.000,00',
+            'data_admissao': '01/03/2020',
+            'data_demissao': '15/11/2024',
+            'tipo_demissao': 'sem_justa_causa',
+            'horas_extras_50': 30,
+            'horas_extras_100': 8,
+            'aviso_previo': 'indenizado',
+            'saldo_fgts': '',
+        }
+
+        response = self.client.post(
+            reverse('calculadora'),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['ok'])
+        self.assertEqual(data['resultado']['total_bruto'], 29820.76)
+        self.assertEqual(data['resultado']['verbas'][0]['nome'], 'Saldo de salário')
+        self.assertIn('deducoes', data['resultado'])
 
     def test_calculadora_post_aceita_multiplas_parcelas(self):
         payload = {
@@ -593,6 +754,35 @@ class CalculadoraViewsTests(TestCase):
                     'honorarios_valor': 0.0,
                     'total': 305.0,
                 },
+            },
+            user=self.user,
+        )
+
+        response = self.client.post(reverse('exportar_calculo', kwargs={'id': calculo.id}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+        self.assertTrue(response.content.startswith(b'%PDF'))
+
+    def test_exportar_calculo_tabela_tj_retorna_pdf(self):
+        calculo = CalculoJudicial.objects.create(
+            processo=self.processo,
+            valor_principal=Decimal('1000.00'),
+            data_inicio=date(2006, 3, 1),
+            data_fim=date(2006, 4, 30),
+            resultado_json={
+                'tribunal': 'tjsp',
+                'tribunal_nome': 'Tabela Prática TJSP',
+                'valor_corrigido': 1030.20,
+                'juros_valor': 20.60,
+                'multa_valor': 0.0,
+                'honorarios_valor': 0.0,
+                'total': 1050.80,
+                'periodos_aplicados': [
+                    {'inicio': '01/03/2006', 'fim': '01/03/2006', 'indice': 'igpm', 'meses': 1},
+                    {'inicio': '01/04/2006', 'fim': '01/04/2006', 'indice': 'ipca_e', 'meses': 1},
+                ],
+                'tabela_mensal': [],
             },
             user=self.user,
         )
