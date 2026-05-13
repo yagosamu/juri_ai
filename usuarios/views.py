@@ -4,14 +4,20 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.messages import constants
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.http import JsonResponse, HttpResponse
 from .models import (Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD,
                       Processo, Prazo, AndamentoProcesso, TRIBUNAL_CHOICES,
-                      Honorario, Pagamento, TemplateDocumento, DocumentoGerado, Lead)
+                      Honorario, Pagamento, TemplateDocumento, DocumentoGerado, Lead,
+                      CalculoJudicial)
 from django.db.models import Sum
 from ia.models import AnaliseJurisprudencia
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.utils import timezone
+from usuarios.services.calculo import calcular_debito
+from decimal import Decimal
+import json
 import datetime
 import os
 
@@ -44,6 +50,70 @@ def _parse_date_br(value):
         except ValueError:
             continue
     return None
+
+
+def _json_body(request):
+    if not request.body:
+        return {}
+    return json.loads(request.body.decode('utf-8') or '{}')
+
+
+def _decimal_para_json(value):
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, dict):
+        return {key: _decimal_para_json(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_decimal_para_json(item) for item in value]
+    return value
+
+
+def _format_decimal_br(value):
+    if value is None:
+        return ''
+    formatted = f'{Decimal(value):,.2f}'
+    return formatted.replace(',', 'X').replace('.', ',').replace('X', '.')
+
+
+def _bool_payload(data, key):
+    value = data.get(key, False)
+    if isinstance(value, bool):
+        return value
+    return str(value).lower() in ('1', 'true', 'on', 'sim')
+
+
+def _processo_por_payload(request, data):
+    processo_id = data.get('processo_id') or request.GET.get('processo_id')
+    if not processo_id:
+        return None
+    return get_object_or_404(Processo, id=processo_id, user=request.user)
+
+
+def _parametros_calculo(data):
+    valor_principal = _parse_decimal_br(str(data.get('valor_principal', '')))
+    data_inicio = _parse_date_br(str(data.get('data_inicio', '')))
+    data_fim = _parse_date_br(str(data.get('data_fim', '')))
+    juros_percentual = _parse_decimal_br(str(data.get('juros_percentual', '1,00'))) or Decimal('1.00')
+    honorarios_percent = _parse_decimal_br(str(data.get('honorarios_percent', '10,00'))) or Decimal('10.00')
+
+    if valor_principal is None:
+        raise ValueError('Informe um valor principal válido.')
+    if data_inicio is None:
+        raise ValueError('Informe uma data inicial válida.')
+    if data_fim is None:
+        raise ValueError('Informe uma data final válida.')
+
+    return {
+        'valor_principal': valor_principal,
+        'data_inicio': data_inicio,
+        'data_fim': data_fim,
+        'indice_correcao': data.get('indice_correcao') or 'ipca_e',
+        'juros_tipo': data.get('juros_tipo') or 'simples_1',
+        'juros_percentual': juros_percentual,
+        'multa_523': _bool_payload(data, 'multa_523'),
+        'honorarios_sucumb': _bool_payload(data, 'honorarios_sucumb'),
+        'honorarios_percent': honorarios_percent,
+    }
 
 
 
@@ -399,7 +469,10 @@ def processo(request, id):
     # Honorários do processo
     honorarios = Honorario.objects.filter(processo=processo_obj, user=request.user).order_by('vencimento')
 
-    # Tab ativa (querystring ?tab=documentos|analises|prazos|andamentos|honorarios)
+    # Cálculos judiciais do processo
+    calculos = CalculoJudicial.objects.filter(processo=processo_obj, user=request.user).order_by('-criado_em')
+
+    # Tab ativa (querystring ?tab=documentos|analises|prazos|andamentos|honorarios|calculos)
     tab = request.GET.get('tab', 'documentos')
 
     return render(request, 'processo.html', {
@@ -410,6 +483,7 @@ def processo(request, id):
         'prazos':           prazos,
         'andamentos':       andamentos,
         'honorarios':       honorarios,
+        'calculos':         calculos,
         'tab':              tab,
     })
 
@@ -1049,6 +1123,177 @@ def relatorio_financeiro(request):
         'data_inicio':    data_inicio_obj.strftime('%d/%m/%Y'),
         'data_fim':       data_fim_obj.strftime('%d/%m/%Y'),
     })
+
+
+# ── Calculadora Judicial ─────────────────────────────────────────────────────
+
+@login_required
+def calculadora(request):
+    if request.method == 'GET':
+        processo_obj = _processo_por_payload(request, {})
+        hoje = timezone.now().date()
+        data_inicio = processo_obj.data_distribuicao if processo_obj and processo_obj.data_distribuicao else None
+
+        return render(request, 'calculadora.html', {
+            'processo': processo_obj,
+            'indice_choices': CalculoJudicial.INDICE_CHOICES,
+            'juros_choices': CalculoJudicial.JUROS_CHOICES,
+            'valor_principal': _format_decimal_br(processo_obj.valor_causa) if processo_obj else '',
+            'data_inicio': data_inicio.strftime('%d/%m/%Y') if data_inicio else '',
+            'data_fim': hoje.strftime('%d/%m/%Y'),
+        })
+
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'erro': 'método inválido'}, status=405)
+
+    try:
+        data = _json_body(request)
+        _processo_por_payload(request, data)
+        parametros = _parametros_calculo(data)
+        resultado = calcular_debito(**parametros)
+        return JsonResponse({'ok': True, 'resultado': _decimal_para_json(resultado)})
+    except Exception as exc:
+        return JsonResponse({'ok': False, 'erro': str(exc)}, status=400)
+
+
+@login_required
+def salvar_calculo(request):
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'erro': 'método inválido'}, status=405)
+
+    try:
+        data = _json_body(request)
+        processo_obj = _processo_por_payload(request, data)
+        parametros = _parametros_calculo(data)
+        resultado_json = data.get('resultado_json') or {}
+
+        calculo = CalculoJudicial.objects.create(
+            processo=processo_obj,
+            descricao=data.get('descricao', '').strip(),
+            valor_principal=parametros['valor_principal'],
+            data_inicio=parametros['data_inicio'],
+            data_fim=parametros['data_fim'],
+            indice_correcao=parametros['indice_correcao'],
+            juros_tipo=parametros['juros_tipo'],
+            juros_percentual=parametros['juros_percentual'],
+            multa_523=parametros['multa_523'],
+            honorarios_sucumb=parametros['honorarios_sucumb'],
+            honorarios_percent=parametros['honorarios_percent'],
+            resultado_json=resultado_json,
+            user=request.user,
+        )
+        return JsonResponse({'ok': True, 'id': calculo.id})
+    except Exception as exc:
+        return JsonResponse({'ok': False, 'erro': str(exc)}, status=400)
+
+
+@login_required
+def lista_calculos(request):
+    calculos = (
+        CalculoJudicial.objects
+        .filter(user=request.user)
+        .select_related('processo')
+        .order_by('-criado_em')
+    )
+    return render(request, 'lista_calculos.html', {'calculos': calculos})
+
+
+@login_required
+def exportar_calculo(request, id):
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'erro': 'método inválido'}, status=405)
+
+    calculo = get_object_or_404(
+        CalculoJudicial.objects.select_related('processo'),
+        id=id,
+        user=request.user,
+    )
+
+    from io import BytesIO
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import cm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        rightMargin=1.2 * cm,
+        leftMargin=1.2 * cm,
+        topMargin=1.2 * cm,
+        bottomMargin=1.2 * cm,
+    )
+    styles = getSampleStyleSheet()
+    story = [
+        Paragraph('Cálculo de Débito Judicial — JuriAI', styles['Title']),
+        Spacer(1, 0.3 * cm),
+    ]
+
+    if calculo.processo:
+        story.append(Paragraph(f'Processo: {calculo.processo}', styles['Normal']))
+    else:
+        story.append(Paragraph('Processo: não vinculado', styles['Normal']))
+
+    story.append(Paragraph(
+        f'Período: {calculo.data_inicio:%d/%m/%Y} a {calculo.data_fim:%d/%m/%Y}',
+        styles['Normal'],
+    ))
+    story.append(Paragraph(
+        f'Índice: {calculo.get_indice_correcao_display()} | Juros: {calculo.get_juros_tipo_display()}',
+        styles['Normal'],
+    ))
+    story.append(Spacer(1, 0.4 * cm))
+
+    resultado = calculo.resultado_json or {}
+    linhas = [['Mês', 'Índice %', 'Correção acum.', 'Corrigido', 'Juros acum.', 'Subtotal']]
+    for item in resultado.get('tabela_mensal', []):
+        linhas.append([
+            item.get('mes', ''),
+            item.get('indice_mensal', 0),
+            item.get('correcao_acumulada', 0),
+            f'R$ {item.get("valor_corrigido", 0)}',
+            f'R$ {item.get("juros_acumulado", 0)}',
+            f'R$ {item.get("subtotal", 0)}',
+        ])
+
+    tabela = Table(linhas, repeatRows=1)
+    tabela.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e293b')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+        ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#e2e8f0')),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('PADDING', (0, 0), (-1, -1), 5),
+    ]))
+    story.append(tabela)
+    story.append(Spacer(1, 0.5 * cm))
+
+    resumo = [
+        ['Valor corrigido', f'R$ {resultado.get("valor_corrigido", 0)}'],
+        ['Juros', f'R$ {resultado.get("juros_valor", 0)}'],
+        ['Multa', f'R$ {resultado.get("multa_valor", 0)}'],
+        ['Honorários', f'R$ {resultado.get("honorarios_valor", 0)}'],
+        ['TOTAL', f'R$ {resultado.get("total", 0)}'],
+    ]
+    resumo_table = Table(resumo, colWidths=[5 * cm, 4 * cm])
+    resumo_table.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#e2e8f0')),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#eef2ff')),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('PADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(resumo_table)
+    story.append(Spacer(1, 0.4 * cm))
+    story.append(Paragraph('Cálculo meramente estimativo. Consulte perito judicial.', styles['Italic']))
+
+    doc.build(story)
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="calculo_judicial_{calculo.id}.pdf"'
+    return response
 
 
 # ── CRUD de Templates de Documentos ─────────────────────────────────────────────

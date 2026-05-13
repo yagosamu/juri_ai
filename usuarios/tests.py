@@ -1,12 +1,15 @@
 from datetime import date
 from decimal import Decimal
+import json
 from io import StringIO
 from unittest.mock import Mock, patch
 
 from django.core.management import call_command
+from django.contrib.auth.models import User
 from django.test import TestCase
+from django.urls import reverse
 
-from usuarios.models import IndiceEconomico
+from usuarios.models import CalculoJudicial, Cliente, IndiceEconomico, Processo
 from usuarios.services.calculo import calcular_debito
 from usuarios.services.indices import (
     _calcular_taxa_legal,
@@ -224,3 +227,150 @@ class CalculoDebitoTests(TestCase):
                 'ipca_e',
                 'simples_1',
             )
+
+
+class CalculadoraViewsTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='advogado', password='abc123')
+        self.outro_user = User.objects.create_user(username='outro', password='abc123')
+        self.cliente = Cliente.objects.create(
+            nome='Cliente Teste',
+            email='cliente@example.com',
+            tipo='PF',
+            user=self.user,
+        )
+        self.processo = Processo.objects.create(
+            numero_cnj='12345678920248260001',
+            tribunal='tjsp',
+            tipo_acao='Cível',
+            valor_causa=Decimal('10000.00'),
+            data_distribuicao=date(2024, 1, 10),
+            cliente=self.cliente,
+            user=self.user,
+        )
+        self.client.force_login(self.user)
+
+    def test_urls_da_calculadora_resolvem(self):
+        self.assertEqual(reverse('calculadora'), '/usuarios/calculadora/')
+        self.assertEqual(reverse('salvar_calculo'), '/usuarios/calculadora/salvar/')
+        self.assertEqual(reverse('lista_calculos'), '/usuarios/calculadora/historico/')
+
+    def test_calculadora_get_preenche_processo_da_querystring(self):
+        response = self.client.get(reverse('calculadora'), {'processo_id': self.processo.id})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="10.000,00"')
+        self.assertContains(response, 'value="10/01/2024"')
+
+    def test_calculadora_post_retorna_resultado_json(self):
+        IndiceEconomico.objects.create(
+            tipo='ipca_e',
+            data=date(2024, 1, 1),
+            valor=Decimal('1.00'),
+            fonte='bcb',
+        )
+        payload = {
+            'valor_principal': '1.000,00',
+            'data_inicio': '01/01/2024',
+            'data_fim': '31/01/2024',
+            'indice_correcao': 'ipca_e',
+            'juros_tipo': 'simples_1',
+            'juros_percentual': '1,00',
+            'multa_523': False,
+            'honorarios_sucumb': False,
+            'honorarios_percent': '10,00',
+            'processo_id': self.processo.id,
+        }
+
+        response = self.client.post(
+            reverse('calculadora'),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['ok'])
+        self.assertEqual(data['resultado']['valor_corrigido'], 1010.0)
+        self.assertEqual(data['resultado']['tabela_mensal'][0]['mes'], '01/2024')
+
+    def test_salvar_calculo_cria_registro_do_usuario(self):
+        payload = {
+            'processo_id': self.processo.id,
+            'valor_principal': '1.000,00',
+            'data_inicio': '01/01/2024',
+            'data_fim': '31/01/2024',
+            'indice_correcao': 'ipca_e',
+            'juros_tipo': 'simples_1',
+            'juros_percentual': '1,00',
+            'multa_523': True,
+            'honorarios_sucumb': True,
+            'honorarios_percent': '10,00',
+            'resultado_json': {'total': 1122.0, 'tabela_mensal': []},
+        }
+
+        response = self.client.post(
+            reverse('salvar_calculo'),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['ok'])
+        calculo = CalculoJudicial.objects.get(id=data['id'])
+        self.assertEqual(calculo.user, self.user)
+        self.assertEqual(calculo.processo, self.processo)
+        self.assertEqual(calculo.resultado_json['total'], 1122.0)
+
+    def test_lista_calculos_filtra_por_usuario(self):
+        CalculoJudicial.objects.create(
+            valor_principal=Decimal('1000.00'),
+            data_inicio=date(2024, 1, 1),
+            data_fim=date(2024, 1, 31),
+            user=self.user,
+        )
+        CalculoJudicial.objects.create(
+            valor_principal=Decimal('2000.00'),
+            data_inicio=date(2024, 1, 1),
+            data_fim=date(2024, 1, 31),
+            user=self.outro_user,
+        )
+
+        response = self.client.get(reverse('lista_calculos'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'R$ 1.000,00')
+        self.assertNotContains(response, 'R$ 2.000,00')
+
+    def test_exportar_calculo_requer_ownership_e_retorna_pdf(self):
+        calculo = CalculoJudicial.objects.create(
+            processo=self.processo,
+            valor_principal=Decimal('1000.00'),
+            data_inicio=date(2024, 1, 1),
+            data_fim=date(2024, 1, 31),
+            resultado_json={
+                'valor_corrigido': 1010.0,
+                'juros_valor': 10.1,
+                'multa_valor': 0.0,
+                'honorarios_valor': 0.0,
+                'total': 1020.1,
+                'tabela_mensal': [
+                    {
+                        'mes': '01/2024',
+                        'indice_mensal': 1.0,
+                        'correcao_acumulada': 1.01,
+                        'valor_corrigido': 1010.0,
+                        'juros_acumulado': 10.1,
+                        'subtotal': 1020.1,
+                    }
+                ],
+            },
+            user=self.user,
+        )
+
+        response = self.client.post(reverse('exportar_calculo', kwargs={'id': calculo.id}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+        self.assertTrue(response.content.startswith(b'%PDF'))

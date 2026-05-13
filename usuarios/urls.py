@@ -34,6 +34,11 @@ urlpatterns = [
     path("financeiro/honorario/<int:id>/pagar/", views.marcar_pago, name='marcar_pago'),
     path("financeiro/honorario/<int:id>/cancelar/", views.cancelar_honorario, name='cancelar_honorario'),
     path("financeiro/relatorio/", views.relatorio_financeiro, name='relatorio_financeiro'),
+    # ── Calculadora Judicial ─────────────────────────────────────────────────
+    path('calculadora/', views.calculadora, name='calculadora'),
+    path('calculadora/salvar/', views.salvar_calculo, name='salvar_calculo'),
+    path('calculadora/historico/', views.lista_calculos, name='lista_calculos'),
+    path('calculadora/<int:id>/exportar/', views.exportar_calculo, name='exportar_calculo'),
     # ── Templates de Documentos ──────────────────────────────────────────────
     path("templates/",                  views.lista_templates,  name='lista_templates'),
     path("templates/novo/",             views.criar_template,   name='criar_template'),

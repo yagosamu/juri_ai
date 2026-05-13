@@ -158,6 +158,12 @@
         Honorários
         <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ honorarios|length }}</span>
       </a>
+      <a href="?tab=calculos"
+         class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
+                {% if tab == 'calculos' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
+        Cálculo Judicial
+        <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ calculos|length }}</span>
+      </a>
     </nav>
   </div>
 
@@ -671,6 +677,70 @@
   {% endif %}
 
   {% endif %}{# /tab honorarios #}
+
+  <!-- ── TAB: CÁLCULO JUDICIAL ── -->
+  {% if tab == 'calculos' %}
+
+  <div class="flex items-center justify-between mb-5">
+    <p class="text-sm text-slate-500">{{ calculos|length }} cálculo{{ calculos|length|pluralize }} salvo{{ calculos|length|pluralize }}</p>
+    <a href="{% url 'calculadora' %}?processo_id={{ processo.id }}"
+       class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white
+              text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+      </svg>
+      Abrir calculadora
+    </a>
+  </div>
+
+  {% if calculos %}
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-slate-100 bg-slate-50/60">
+          <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Criado em</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Período</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Índice</th>
+          <th class="text-right px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Principal</th>
+          <th class="text-right px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Total</th>
+          <th class="px-5 py-3.5"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-50">
+        {% for calculo in calculos %}
+        <tr class="hover:bg-slate-50/50 transition-colors">
+          <td class="px-5 py-4 text-slate-500">{{ calculo.criado_em|date:"d/m/Y H:i" }}</td>
+          <td class="px-5 py-4 text-slate-600">{{ calculo.data_inicio|date:"d/m/Y" }} a {{ calculo.data_fim|date:"d/m/Y" }}</td>
+          <td class="px-5 py-4 text-slate-500">{{ calculo.get_indice_correcao_display }}</td>
+          <td class="px-5 py-4 text-right font-medium text-slate-800">R$ {{ calculo.valor_principal }}</td>
+          <td class="px-5 py-4 text-right font-semibold text-slate-900">R$ {{ calculo.resultado_json.total|default:"0.00" }}</td>
+          <td class="px-5 py-4 text-right">
+            <form method="POST" action="{% url 'exportar_calculo' calculo.id %}">
+              {% csrf_token %}
+              <button type="submit"
+                class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+                Exportar PDF
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm px-8 py-12 text-center">
+    <p class="text-slate-500 text-sm">Nenhum cálculo judicial salvo para este processo.</p>
+    <p class="text-slate-400 text-xs mt-1">
+      <a href="{% url 'calculadora' %}?processo_id={{ processo.id }}" class="text-indigo-500 hover:text-indigo-600 underline">
+        Abrir calculadora
+      </a>
+      para calcular e salvar o débito.
+    </p>
+  </div>
+  {% endif %}
+
+  {% endif %}{# /tab calculos #}
 
 </div>
 {% endblock %}
