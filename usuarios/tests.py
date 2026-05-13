@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from usuarios.models import CalculoJudicial, Cliente, IndiceEconomico, Processo
-from usuarios.services.calculo import calcular_debito
+from usuarios.services.calculo import calcular_debito, calcular_debito_multiplo, comparar_cenarios
 from usuarios.services.indices import (
     _calcular_taxa_legal,
     _janelas_consulta,
@@ -108,6 +108,89 @@ class ImportarIndicesCommandTests(TestCase):
 
 
 class CalculoDebitoTests(TestCase):
+    def test_compara_cenarios_com_maior_menor_e_diferenca(self):
+        resultado = comparar_cenarios(
+            valor_principal=Decimal('1000.00'),
+            data_inicio=date(2024, 1, 1),
+            data_fim=date(2024, 2, 29),
+            cenarios=[
+                {
+                    'nome': 'IPCA-E + 1%',
+                    'indice_correcao': 'ipca_e',
+                    'juros_tipo': 'simples_1',
+                    'juros_percentual': Decimal('1.00'),
+                },
+                {
+                    'nome': 'INPC + 0,5%',
+                    'indice_correcao': 'inpc',
+                    'juros_tipo': 'simples_05',
+                    'juros_percentual': Decimal('0.50'),
+                },
+            ],
+        )
+
+        self.assertEqual(len(resultado['cenarios']), 2)
+        self.assertEqual(resultado['cenarios'][0]['nome'], 'IPCA-E + 1%')
+        self.assertEqual(resultado['cenarios'][0]['resultado']['total'], Decimal('1020.00'))
+        self.assertEqual(resultado['cenarios'][1]['resultado']['total'], Decimal('1010.00'))
+        self.assertEqual(resultado['comparativo']['maior_total']['nome'], 'IPCA-E + 1%')
+        self.assertEqual(resultado['comparativo']['maior_total']['valor'], Decimal('1020.00'))
+        self.assertEqual(resultado['comparativo']['menor_total']['nome'], 'INPC + 0,5%')
+        self.assertEqual(resultado['comparativo']['menor_total']['valor'], Decimal('1010.00'))
+        self.assertEqual(resultado['comparativo']['diferenca'], Decimal('10.00'))
+        self.assertEqual(resultado['comparativo']['diferenca_percent'], Decimal('0.990099'))
+
+    def test_comparacao_exige_dois_ou_tres_cenarios(self):
+        with self.assertRaisesMessage(ValueError, '2 a 3 cenários'):
+            comparar_cenarios(
+                valor_principal=Decimal('1000.00'),
+                data_inicio=date(2024, 1, 1),
+                data_fim=date(2024, 1, 31),
+                cenarios=[
+                    {
+                        'nome': 'Único',
+                        'indice_correcao': 'ipca_e',
+                        'juros_tipo': 'simples_1',
+                        'juros_percentual': Decimal('1.00'),
+                    },
+                ],
+            )
+
+    def test_calcula_debito_multiplo_consolida_parcelas(self):
+        resultado = calcular_debito_multiplo(
+            parcelas=[
+                {'valor': Decimal('100.00'), 'data': date(2024, 1, 1), 'descricao': 'Aluguel jan'},
+                {'valor': Decimal('200.00'), 'data': date(2024, 3, 1), 'descricao': 'Aluguel mar'},
+            ],
+            data_fim=date(2024, 3, 31),
+            indice_correcao='ipca_e',
+            juros_tipo='simples_1',
+            multa_523=True,
+            honorarios_sucumb=True,
+            honorarios_percent=Decimal('10.00'),
+        )
+
+        self.assertEqual(len(resultado['parcelas']), 2)
+        self.assertEqual(resultado['parcelas'][0]['descricao'], 'Aluguel jan')
+        self.assertEqual(resultado['parcelas'][0]['valor_principal'], Decimal('100.00'))
+        self.assertEqual(resultado['parcelas'][0]['data_inicio'], date(2024, 1, 1))
+        self.assertEqual(resultado['consolidado']['valor_principal_total'], Decimal('300.00'))
+        self.assertEqual(resultado['consolidado']['valor_corrigido_total'], Decimal('300.00'))
+        self.assertEqual(resultado['consolidado']['juros_total'], Decimal('5.00'))
+        self.assertEqual(resultado['consolidado']['subtotal'], Decimal('305.00'))
+        self.assertEqual(resultado['consolidado']['multa_valor'], Decimal('30.50'))
+        self.assertEqual(resultado['consolidado']['honorarios_valor'], Decimal('33.55'))
+        self.assertEqual(resultado['consolidado']['total'], Decimal('369.05'))
+
+    def test_calculo_multiplo_exige_parcelas(self):
+        with self.assertRaisesMessage(ValueError, 'parcela'):
+            calcular_debito_multiplo(
+                parcelas=[],
+                data_fim=date(2024, 3, 31),
+                indice_correcao='ipca_e',
+                juros_tipo='simples_1',
+            )
+
     def test_calcula_correcao_e_juros_simples_com_tabela_mensal(self):
         IndiceEconomico.objects.create(
             tipo='ipca_e',
@@ -261,6 +344,7 @@ class CalculadoraViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'value="10.000,00"')
         self.assertContains(response, 'value="10/01/2024"')
+        self.assertContains(response, 'Comparar cenários')
 
     def test_calculadora_post_retorna_resultado_json(self):
         IndiceEconomico.objects.create(
@@ -293,6 +377,106 @@ class CalculadoraViewsTests(TestCase):
         self.assertTrue(data['ok'])
         self.assertEqual(data['resultado']['valor_corrigido'], 1010.0)
         self.assertEqual(data['resultado']['tabela_mensal'][0]['mes'], '01/2024')
+
+    def test_calculadora_post_aceita_multiplas_parcelas(self):
+        payload = {
+            'data_fim': '31/03/2024',
+            'indice_correcao': 'ipca_e',
+            'juros_tipo': 'simples_1',
+            'juros_percentual': '1,00',
+            'multa_523': False,
+            'honorarios_sucumb': False,
+            'honorarios_percent': '10,00',
+            'parcelas': [
+                {'descricao': 'Parcela 1', 'valor': '100,00', 'data': '01/01/2024'},
+                {'descricao': 'Parcela 2', 'valor': '200,00', 'data': '01/03/2024'},
+            ],
+        }
+
+        response = self.client.post(
+            reverse('calculadora'),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['ok'])
+        self.assertEqual(len(data['resultado']['parcelas']), 2)
+        self.assertEqual(data['resultado']['consolidado']['valor_principal_total'], 300.0)
+        self.assertEqual(data['resultado']['consolidado']['total'], 305.0)
+
+    def test_calculadora_post_compara_cenarios(self):
+        payload = {
+            'comparar': True,
+            'valor_principal': '1.000,00',
+            'data_inicio': '01/01/2024',
+            'data_fim': '29/02/2024',
+            'multa_523': False,
+            'honorarios_sucumb': False,
+            'honorarios_percent': '10,00',
+            'cenarios': [
+                {
+                    'nome': 'IPCA-E + 1%',
+                    'indice_correcao': 'ipca_e',
+                    'juros_tipo': 'simples_1',
+                    'juros_percentual': '1,00',
+                },
+                {
+                    'nome': 'INPC + 0,5%',
+                    'indice_correcao': 'inpc',
+                    'juros_tipo': 'simples_05',
+                    'juros_percentual': '0,50',
+                },
+            ],
+        }
+
+        response = self.client.post(
+            reverse('calculadora'),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['ok'])
+        self.assertEqual(len(data['resultado']['cenarios']), 2)
+        self.assertEqual(data['resultado']['comparativo']['maior_total']['nome'], 'IPCA-E + 1%')
+        self.assertEqual(data['resultado']['comparativo']['diferenca'], 10.0)
+
+    def test_salvar_calculo_multiplo_grava_soma_e_menor_data(self):
+        payload = {
+            'data_fim': '31/03/2024',
+            'indice_correcao': 'ipca_e',
+            'juros_tipo': 'simples_1',
+            'juros_percentual': '1,00',
+            'multa_523': False,
+            'honorarios_sucumb': False,
+            'honorarios_percent': '10,00',
+            'parcelas': [
+                {'descricao': 'Parcela 1', 'valor': '100,00', 'data': '01/01/2024'},
+                {'descricao': 'Parcela 2', 'valor': '200,00', 'data': '01/03/2024'},
+            ],
+            'resultado_json': {
+                'parcelas': [
+                    {'descricao': 'Parcela 1', 'valor_principal': 100.0, 'data_inicio': '01/01/2024'},
+                    {'descricao': 'Parcela 2', 'valor_principal': 200.0, 'data_inicio': '01/03/2024'},
+                ],
+                'consolidado': {'total': 305.0},
+            },
+        }
+
+        response = self.client.post(
+            reverse('salvar_calculo'),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        calculo = CalculoJudicial.objects.get(id=response.json()['id'])
+        self.assertEqual(calculo.valor_principal, Decimal('300.00'))
+        self.assertEqual(calculo.data_inicio, date(2024, 1, 1))
+        self.assertEqual(calculo.resultado_json['consolidado']['total'], 305.0)
 
     def test_salvar_calculo_cria_registro_do_usuario(self):
         payload = {
@@ -365,6 +549,50 @@ class CalculadoraViewsTests(TestCase):
                         'subtotal': 1020.1,
                     }
                 ],
+            },
+            user=self.user,
+        )
+
+        response = self.client.post(reverse('exportar_calculo', kwargs={'id': calculo.id}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+        self.assertTrue(response.content.startswith(b'%PDF'))
+
+    def test_exportar_calculo_multiplo_retorna_pdf(self):
+        calculo = CalculoJudicial.objects.create(
+            processo=self.processo,
+            valor_principal=Decimal('300.00'),
+            data_inicio=date(2024, 1, 1),
+            data_fim=date(2024, 3, 31),
+            resultado_json={
+                'parcelas': [
+                    {
+                        'descricao': 'Parcela 1',
+                        'valor_principal': 100.0,
+                        'data_inicio': '01/01/2024',
+                        'valor_corrigido': 100.0,
+                        'juros_valor': 3.0,
+                        'subtotal': 103.0,
+                    },
+                    {
+                        'descricao': 'Parcela 2',
+                        'valor_principal': 200.0,
+                        'data_inicio': '01/03/2024',
+                        'valor_corrigido': 200.0,
+                        'juros_valor': 2.0,
+                        'subtotal': 202.0,
+                    },
+                ],
+                'consolidado': {
+                    'valor_principal_total': 300.0,
+                    'valor_corrigido_total': 300.0,
+                    'juros_total': 5.0,
+                    'subtotal': 305.0,
+                    'multa_valor': 0.0,
+                    'honorarios_valor': 0.0,
+                    'total': 305.0,
+                },
             },
             user=self.user,
         )

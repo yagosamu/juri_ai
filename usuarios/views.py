@@ -15,7 +15,7 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
-from usuarios.services.calculo import calcular_debito
+from usuarios.services.calculo import calcular_debito, calcular_debito_multiplo, comparar_cenarios
 from decimal import Decimal
 import json
 import datetime
@@ -61,6 +61,8 @@ def _json_body(request):
 def _decimal_para_json(value):
     if isinstance(value, Decimal):
         return float(value)
+    if isinstance(value, datetime.date):
+        return value.strftime('%d/%m/%Y')
     if isinstance(value, dict):
         return {key: _decimal_para_json(item) for key, item in value.items()}
     if isinstance(value, list):
@@ -114,6 +116,55 @@ def _parametros_calculo(data):
         'honorarios_sucumb': _bool_payload(data, 'honorarios_sucumb'),
         'honorarios_percent': honorarios_percent,
     }
+
+
+def _parametros_comuns_calculo(data):
+    data_fim = _parse_date_br(str(data.get('data_fim', '')))
+    juros_percentual = _parse_decimal_br(str(data.get('juros_percentual', '1,00'))) or Decimal('1.00')
+    honorarios_percent = _parse_decimal_br(str(data.get('honorarios_percent', '10,00'))) or Decimal('10.00')
+
+    if data_fim is None:
+        raise ValueError('Informe uma data final válida.')
+
+    return {
+        'data_fim': data_fim,
+        'indice_correcao': data.get('indice_correcao') or 'ipca_e',
+        'juros_tipo': data.get('juros_tipo') or 'simples_1',
+        'juros_percentual': juros_percentual,
+        'multa_523': _bool_payload(data, 'multa_523'),
+        'honorarios_sucumb': _bool_payload(data, 'honorarios_sucumb'),
+        'honorarios_percent': honorarios_percent,
+    }
+
+
+def _parcelas_payload(data):
+    parcelas = []
+    for item in data.get('parcelas') or []:
+        valor = _parse_decimal_br(str(item.get('valor', '')))
+        data_ref = _parse_date_br(str(item.get('data', '')))
+        if valor is None or data_ref is None:
+            raise ValueError('Informe valor e data válidos para todas as parcelas.')
+        parcelas.append({
+            'valor': valor,
+            'data': data_ref,
+            'descricao': item.get('descricao', '').strip(),
+        })
+    return parcelas
+
+
+def _cenarios_payload(data):
+    cenarios = []
+    for posicao, item in enumerate(data.get('cenarios') or [], start=1):
+        juros_percentual = _parse_decimal_br(str(item.get('juros_percentual', '1,00'))) or Decimal('1.00')
+        cenarios.append({
+            'nome': item.get('nome', '').strip() or f'Cenário {posicao}',
+            'indice_correcao': item.get('indice_correcao') or 'ipca_e',
+            'juros_tipo': item.get('juros_tipo') or 'simples_1',
+            'juros_percentual': juros_percentual,
+        })
+    if len(cenarios) < 2 or len(cenarios) > 3:
+        raise ValueError('Informe de 2 a 3 cenários para comparação.')
+    return cenarios
 
 
 
@@ -1149,8 +1200,25 @@ def calculadora(request):
     try:
         data = _json_body(request)
         _processo_por_payload(request, data)
-        parametros = _parametros_calculo(data)
-        resultado = calcular_debito(**parametros)
+        if _bool_payload(data, 'comparar'):
+            parametros = _parametros_calculo(data)
+            resultado = comparar_cenarios(
+                valor_principal=parametros['valor_principal'],
+                data_inicio=parametros['data_inicio'],
+                data_fim=parametros['data_fim'],
+                cenarios=_cenarios_payload(data),
+                multa_523=parametros['multa_523'],
+                honorarios_sucumb=parametros['honorarios_sucumb'],
+                honorarios_percent=parametros['honorarios_percent'],
+            )
+        else:
+            parcelas = _parcelas_payload(data)
+            if not parcelas:
+                parametros = _parametros_calculo(data)
+                resultado = calcular_debito(**parametros)
+            else:
+                parametros = _parametros_comuns_calculo(data)
+                resultado = calcular_debito_multiplo(parcelas=parcelas, **parametros)
         return JsonResponse({'ok': True, 'resultado': _decimal_para_json(resultado)})
     except Exception as exc:
         return JsonResponse({'ok': False, 'erro': str(exc)}, status=400)
@@ -1164,14 +1232,22 @@ def salvar_calculo(request):
     try:
         data = _json_body(request)
         processo_obj = _processo_por_payload(request, data)
-        parametros = _parametros_calculo(data)
+        parcelas = _parcelas_payload(data)
+        if parcelas:
+            parametros = _parametros_comuns_calculo(data)
+            valor_principal = sum((parcela['valor'] for parcela in parcelas), Decimal('0'))
+            data_inicio = min(parcela['data'] for parcela in parcelas)
+        else:
+            parametros = _parametros_calculo(data)
+            valor_principal = parametros['valor_principal']
+            data_inicio = parametros['data_inicio']
         resultado_json = data.get('resultado_json') or {}
 
         calculo = CalculoJudicial.objects.create(
             processo=processo_obj,
             descricao=data.get('descricao', '').strip(),
-            valor_principal=parametros['valor_principal'],
-            data_inicio=parametros['data_inicio'],
+            valor_principal=valor_principal,
+            data_inicio=data_inicio,
             data_fim=parametros['data_fim'],
             indice_correcao=parametros['indice_correcao'],
             juros_tipo=parametros['juros_tipo'],
@@ -1247,6 +1323,31 @@ def exportar_calculo(request, id):
     story.append(Spacer(1, 0.4 * cm))
 
     resultado = calculo.resultado_json or {}
+    if resultado.get('parcelas'):
+        story.append(Paragraph('Parcelas individuais', styles['Heading2']))
+        parcelas = [['Descrição', 'Data', 'Principal', 'Corrigido', 'Juros', 'Subtotal']]
+        for item in resultado.get('parcelas', []):
+            parcelas.append([
+                item.get('descricao', ''),
+                item.get('data_inicio', ''),
+                f'R$ {item.get("valor_principal", 0)}',
+                f'R$ {item.get("valor_corrigido", 0)}',
+                f'R$ {item.get("juros_valor", 0)}',
+                f'R$ {item.get("subtotal", 0)}',
+            ])
+        parcelas_table = Table(parcelas, repeatRows=1)
+        parcelas_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#334155')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+            ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#e2e8f0')),
+            ('PADDING', (0, 0), (-1, -1), 5),
+        ]))
+        story.append(parcelas_table)
+        story.append(Spacer(1, 0.4 * cm))
+
     linhas = [['Mês', 'Índice %', 'Correção acum.', 'Corrigido', 'Juros acum.', 'Subtotal']]
     for item in resultado.get('tabela_mensal', []):
         linhas.append([
@@ -1258,26 +1359,28 @@ def exportar_calculo(request, id):
             f'R$ {item.get("subtotal", 0)}',
         ])
 
-    tabela = Table(linhas, repeatRows=1)
-    tabela.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e293b')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
-        ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#e2e8f0')),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('PADDING', (0, 0), (-1, -1), 5),
-    ]))
-    story.append(tabela)
-    story.append(Spacer(1, 0.5 * cm))
+    if len(linhas) > 1:
+        tabela = Table(linhas, repeatRows=1)
+        tabela.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e293b')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+            ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#e2e8f0')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('PADDING', (0, 0), (-1, -1), 5),
+        ]))
+        story.append(tabela)
+        story.append(Spacer(1, 0.5 * cm))
 
+    consolidado = resultado.get('consolidado', {})
     resumo = [
-        ['Valor corrigido', f'R$ {resultado.get("valor_corrigido", 0)}'],
-        ['Juros', f'R$ {resultado.get("juros_valor", 0)}'],
-        ['Multa', f'R$ {resultado.get("multa_valor", 0)}'],
-        ['Honorários', f'R$ {resultado.get("honorarios_valor", 0)}'],
-        ['TOTAL', f'R$ {resultado.get("total", 0)}'],
+        ['Valor corrigido', f'R$ {consolidado.get("valor_corrigido_total", resultado.get("valor_corrigido", 0))}'],
+        ['Juros', f'R$ {consolidado.get("juros_total", resultado.get("juros_valor", 0))}'],
+        ['Multa', f'R$ {consolidado.get("multa_valor", resultado.get("multa_valor", 0))}'],
+        ['Honorários', f'R$ {consolidado.get("honorarios_valor", resultado.get("honorarios_valor", 0))}'],
+        ['TOTAL', f'R$ {consolidado.get("total", resultado.get("total", 0))}'],
     ]
     resumo_table = Table(resumo, colWidths=[5 * cm, 4 * cm])
     resumo_table.setStyle(TableStyle([

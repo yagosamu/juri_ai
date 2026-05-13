@@ -29,15 +29,35 @@
       {% csrf_token %}
       {% if processo %}<input type="hidden" name="processo_id" value="{{ processo.id }}">{% endif %}
 
-      <div>
+      <label class="flex items-center gap-2 text-sm text-slate-700">
+        <input type="checkbox" id="modo-multiplo" class="rounded border-slate-300 text-indigo-600">
+        Múltiplas parcelas
+      </label>
+      <label class="flex items-center gap-2 text-sm text-slate-700">
+        <input type="checkbox" id="modo-comparar" class="rounded border-slate-300 text-indigo-600">
+        Comparar cenários
+      </label>
+
+      <div id="campo-principal">
         <label class="block text-xs font-medium text-slate-600 mb-1">Valor principal (R$)</label>
         <input type="text" name="valor_principal" data-mask="currency" placeholder="0,00" required
                value="{{ valor_principal }}"
                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
       </div>
 
+      <div id="parcelas-box" class="hidden space-y-3 border border-slate-100 rounded-2xl p-3 bg-slate-50/60">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Parcelas</p>
+          <button type="button" id="add-parcela"
+                  class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-medium px-3 py-1.5 rounded-lg">
+            Adicionar parcela
+          </button>
+        </div>
+        <div id="parcelas-lista" class="space-y-3"></div>
+      </div>
+
       <div class="grid grid-cols-2 gap-3">
-        <div>
+        <div id="campo-data-inicio">
           <label class="block text-xs font-medium text-slate-600 mb-1">Data inicial</label>
           <input type="text" name="data_inicio" data-mask="date" placeholder="dd/mm/yyyy" maxlength="10" required
                  value="{{ data_inicio }}"
@@ -51,7 +71,7 @@
         </div>
       </div>
 
-      <div>
+      <div class="campo-cenario-principal">
         <label class="block text-xs font-medium text-slate-600 mb-1">Índice de correção</label>
         <select name="indice_correcao"
                 class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
@@ -61,7 +81,7 @@
         </select>
       </div>
 
-      <div>
+      <div class="campo-cenario-principal">
         <label class="block text-xs font-medium text-slate-600 mb-1">Tipo de juros</label>
         <select name="juros_tipo"
                 class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
@@ -71,10 +91,21 @@
         </select>
       </div>
 
-      <div>
+      <div class="campo-cenario-principal">
         <label class="block text-xs font-medium text-slate-600 mb-1">Juros % a.m.</label>
         <input type="text" name="juros_percentual" value="1,00" placeholder="1,00"
                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+      </div>
+
+      <div id="cenarios-box" class="hidden space-y-3 border border-slate-100 rounded-2xl p-3 bg-slate-50/60">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Cenários</p>
+          <button type="button" id="add-cenario"
+                  class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-medium px-3 py-1.5 rounded-lg">
+            Adicionar cenário
+          </button>
+        </div>
+        <div id="cenarios-lista" class="space-y-3"></div>
       </div>
 
       <label class="flex items-center gap-2 text-sm text-slate-700">
@@ -103,7 +134,30 @@
     </form>
 
     <div class="space-y-5">
-      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div id="comparacao-box" class="hidden space-y-4">
+        <div id="cenarios-resultado-cards" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+        <div id="comparativo-card" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4"></div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-slate-100">
+            <h2 class="text-sm font-semibold text-slate-800">Tabela comparativa</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50/60 border-b border-slate-100">
+                <tr>
+                  <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Cenário</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Corrigido</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Juros</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Total</th>
+                </tr>
+              </thead>
+              <tbody id="comparacao-tabela" class="divide-y divide-slate-50"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="resumo-cards" class="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
           <p class="text-xs font-semibold text-slate-400 uppercase">Corrigido</p>
           <p id="res-corrigido" class="text-lg font-bold text-slate-900 mt-1">R$ 0,00</p>
@@ -126,7 +180,27 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div id="evolucao-box" class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div id="parcelas-resultado-box" class="hidden border-b border-slate-100">
+          <div class="px-5 py-4 border-b border-slate-100">
+            <h2 class="text-sm font-semibold text-slate-800">Parcelas individuais</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50/60 border-b border-slate-100">
+                <tr>
+                  <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Descrição</th>
+                  <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Data</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Principal</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Corrigido</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Juros</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody id="parcelas-resultado" class="divide-y divide-slate-50"></tbody>
+            </table>
+          </div>
+        </div>
         <div class="px-5 py-4 border-b border-slate-100">
           <h2 class="text-sm font-semibold text-slate-800">Evolução mensal</h2>
         </div>
@@ -153,9 +227,122 @@
 
 <script>
 let ultimoResultado = null;
+let parcelasSeq = 0;
+let cenariosSeq = 0;
 
 function moeda(v) {
   return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function aplicarMascaras(container) {
+  container.querySelectorAll('input[data-mask="date"]').forEach(function (el) {
+    el.addEventListener('input', function (e) {
+      var v = e.target.value.replace(/\D/g, '').slice(0, 8);
+      if (v.length >= 5) v = v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);
+      else if (v.length >= 3) v = v.slice(0,2)+'/'+v.slice(2);
+      e.target.value = v;
+    });
+  });
+  container.querySelectorAll('input[data-mask="currency"]').forEach(function (el) {
+    el.addEventListener('input', function () {
+      var digits = el.value.replace(/\D/g, '');
+      if (!digits) { el.value = ''; return; }
+      var num = parseInt(digits, 10) / 100;
+      el.value = num.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    });
+  });
+}
+
+function adicionarParcela(descricao = '', valor = '', data = '') {
+  parcelasSeq += 1;
+  const lista = document.getElementById('parcelas-lista');
+  lista.insertAdjacentHTML('beforeend', `
+    <div class="parcela-item bg-white border border-slate-200 rounded-xl p-3 space-y-2" data-id="${parcelasSeq}">
+      <div class="flex items-center gap-2">
+        <input type="text" data-parcela="descricao" placeholder="Descrição"
+               value="${descricao}"
+               class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+        <button type="button" class="remover-parcela border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium px-3 py-2 rounded-xl">
+          Remover
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <input type="text" data-parcela="valor" data-mask="currency" placeholder="0,00"
+               value="${valor}"
+               class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+        <input type="text" data-parcela="data" data-mask="date" placeholder="dd/mm/yyyy" maxlength="10"
+               value="${data}"
+               class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+      </div>
+    </div>
+  `);
+  const item = lista.lastElementChild;
+  aplicarMascaras(item);
+  item.querySelector('.remover-parcela').addEventListener('click', function () {
+    item.remove();
+  });
+}
+
+function adicionarCenario(nome = '', indice = 'ipca_e', juros = 'simples_1', percentual = '1,00') {
+  if (document.querySelectorAll('.cenario-item').length >= 3) return;
+  cenariosSeq += 1;
+  const lista = document.getElementById('cenarios-lista');
+  const titulo = nome || `Cenário ${cenariosSeq}`;
+  lista.insertAdjacentHTML('beforeend', `
+    <div class="cenario-item bg-white border border-slate-200 rounded-xl p-3 space-y-2" data-id="${cenariosSeq}">
+      <div class="flex items-center gap-2">
+        <input type="text" data-cenario="nome" placeholder="Nome do cenário"
+               value="${titulo}"
+               class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+        <button type="button" class="remover-cenario border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium px-3 py-2 rounded-xl">
+          Remover
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <select data-cenario="indice_correcao"
+                class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+          {% for value, label in indice_choices %}
+          <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+        <select data-cenario="juros_tipo"
+                class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+          {% for value, label in juros_choices %}
+          <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" data-cenario="juros_percentual" value="${percentual}" placeholder="1,00"
+               class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+      </div>
+    </div>
+  `);
+  const item = lista.lastElementChild;
+  item.querySelector('[data-cenario="indice_correcao"]').value = indice;
+  item.querySelector('[data-cenario="juros_tipo"]').value = juros;
+  item.querySelector('.remover-cenario').addEventListener('click', function () {
+    if (document.querySelectorAll('.cenario-item').length > 2) item.remove();
+  });
+}
+
+function parcelasDoFormulario() {
+  return Array.from(document.querySelectorAll('.parcela-item')).map(function (item) {
+    return {
+      descricao: item.querySelector('[data-parcela="descricao"]').value,
+      valor: item.querySelector('[data-parcela="valor"]').value,
+      data: item.querySelector('[data-parcela="data"]').value,
+    };
+  });
+}
+
+function cenariosDoFormulario() {
+  return Array.from(document.querySelectorAll('.cenario-item')).map(function (item) {
+    return {
+      nome: item.querySelector('[data-cenario="nome"]').value,
+      indice_correcao: item.querySelector('[data-cenario="indice_correcao"]').value,
+      juros_tipo: item.querySelector('[data-cenario="juros_tipo"]').value,
+      juros_percentual: item.querySelector('[data-cenario="juros_percentual"]').value,
+    };
+  });
 }
 
 function payloadDoForm() {
@@ -163,8 +350,170 @@ function payloadDoForm() {
   const data = Object.fromEntries(new FormData(form).entries());
   data.multa_523 = form.elements.multa_523.checked;
   data.honorarios_sucumb = form.elements.honorarios_sucumb.checked;
+  if (document.getElementById('modo-multiplo').checked) {
+    data.parcelas = parcelasDoFormulario();
+    delete data.valor_principal;
+    delete data.data_inicio;
+  }
+  if (document.getElementById('modo-comparar').checked) {
+    data.comparar = true;
+    data.cenarios = cenariosDoFormulario();
+    delete data.indice_correcao;
+    delete data.juros_tipo;
+    delete data.juros_percentual;
+  }
   return data;
 }
+
+function renderParcelas(parcelas) {
+  const box = document.getElementById('parcelas-resultado-box');
+  const tbody = document.getElementById('parcelas-resultado');
+  tbody.innerHTML = '';
+  if (!parcelas.length) {
+    box.classList.add('hidden');
+    return;
+  }
+  parcelas.forEach(function (item) {
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr class="hover:bg-slate-50/50">
+        <td class="px-4 py-3 text-slate-700">${item.descricao || '-'}</td>
+        <td class="px-4 py-3 text-slate-500">${item.data_inicio}</td>
+        <td class="px-4 py-3 text-right text-slate-700">${moeda(item.valor_principal)}</td>
+        <td class="px-4 py-3 text-right text-slate-700">${moeda(item.valor_corrigido)}</td>
+        <td class="px-4 py-3 text-right text-slate-700">${moeda(item.juros_valor)}</td>
+        <td class="px-4 py-3 text-right font-medium text-slate-900">${moeda(item.subtotal)}</td>
+      </tr>
+    `);
+  });
+  const total = parcelas.reduce(function (acc, item) { return acc + Number(item.subtotal || 0); }, 0);
+  tbody.insertAdjacentHTML('beforeend', `
+    <tr class="bg-slate-50">
+      <td class="px-4 py-3 font-semibold text-slate-800" colspan="5">Total consolidado</td>
+      <td class="px-4 py-3 text-right font-bold text-slate-900">${moeda(total)}</td>
+    </tr>
+  `);
+  box.classList.remove('hidden');
+}
+
+function renderTabelaMensal(linhas) {
+  const tbody = document.getElementById('tabela-mensal');
+  tbody.innerHTML = '';
+  if (!linhas.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">Tabela mensal disponível nos cálculos individuais.</td></tr>';
+    return;
+  }
+  linhas.forEach(function (item) {
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr class="hover:bg-slate-50/50">
+        <td class="px-4 py-3 text-slate-700">${item.mes}</td>
+        <td class="px-4 py-3 text-right text-slate-500">${Number(item.indice_mensal).toFixed(6)}%</td>
+        <td class="px-4 py-3 text-right text-slate-700">${moeda(item.valor_corrigido)}</td>
+        <td class="px-4 py-3 text-right text-slate-700">${moeda(item.juros_acumulado)}</td>
+        <td class="px-4 py-3 text-right font-medium text-slate-900">${moeda(item.subtotal)}</td>
+      </tr>
+    `);
+  });
+}
+
+function renderComparacao(resultado) {
+  const box = document.getElementById('comparacao-box');
+  const cards = document.getElementById('cenarios-resultado-cards');
+  const comparativoCard = document.getElementById('comparativo-card');
+  const tabela = document.getElementById('comparacao-tabela');
+  const maior = resultado.comparativo.maior_total.nome;
+  const menor = resultado.comparativo.menor_total.nome;
+
+  cards.innerHTML = '';
+  tabela.innerHTML = '';
+  resultado.cenarios.forEach(function (cenario) {
+    const total = cenario.resultado.total;
+    const destaque = cenario.nome === maior
+      ? 'border-emerald-200 bg-emerald-50'
+      : cenario.nome === menor
+        ? 'border-amber-200 bg-amber-50'
+        : 'border-slate-100 bg-white';
+    const label = cenario.nome === maior ? 'Maior valor' : cenario.nome === menor ? 'Menor valor' : 'Cenário';
+    cards.insertAdjacentHTML('beforeend', `
+      <div class="rounded-2xl border ${destaque} shadow-sm p-4">
+        <p class="text-xs font-semibold text-slate-500 uppercase">${label}</p>
+        <p class="text-sm font-semibold text-slate-800 mt-1">${cenario.nome}</p>
+        <p class="text-xl font-bold text-slate-950 mt-2">${moeda(total)}</p>
+      </div>
+    `);
+    tabela.insertAdjacentHTML('beforeend', `
+      <tr class="hover:bg-slate-50/50">
+        <td class="px-4 py-3 font-medium text-slate-800">${cenario.nome}</td>
+        <td class="px-4 py-3 text-right text-slate-700">${moeda(cenario.resultado.valor_corrigido)}</td>
+        <td class="px-4 py-3 text-right text-slate-700">${moeda(cenario.resultado.juros_valor)}</td>
+        <td class="px-4 py-3 text-right font-semibold text-slate-900">${moeda(total)}</td>
+      </tr>
+    `);
+  });
+
+  comparativoCard.innerHTML = `
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <p class="text-xs font-semibold text-slate-400 uppercase">Diferença entre cenários</p>
+        <p class="text-lg font-bold text-slate-900 mt-1">${moeda(resultado.comparativo.diferenca)} (${Number(resultado.comparativo.diferenca_percent || 0).toFixed(6)}%)</p>
+      </div>
+      <div class="text-sm text-slate-600">
+        <span class="font-medium text-emerald-700">${maior}</span>
+        <span class="text-slate-400"> vs. </span>
+        <span class="font-medium text-amber-700">${menor}</span>
+      </div>
+    </div>
+  `;
+  box.classList.remove('hidden');
+}
+
+function alternarMultiplasParcelas(ativo) {
+  document.getElementById('parcelas-box').classList.toggle('hidden', !ativo);
+  document.getElementById('campo-principal').classList.toggle('hidden', ativo);
+  document.getElementById('campo-data-inicio').classList.toggle('hidden', ativo);
+  document.querySelector('[name="valor_principal"]').required = !ativo;
+  document.querySelector('[name="data_inicio"]').required = !ativo;
+  if (ativo && document.querySelectorAll('.parcela-item').length < 2) {
+    adicionarParcela('Parcela 1', '', '');
+    adicionarParcela('Parcela 2', '', '');
+  }
+}
+
+function alternarComparacao(ativo) {
+  document.getElementById('cenarios-box').classList.toggle('hidden', !ativo);
+  document.querySelectorAll('.campo-cenario-principal').forEach(function (el) {
+    el.classList.toggle('hidden', ativo);
+  });
+  if (ativo && document.querySelectorAll('.cenario-item').length < 2) {
+    adicionarCenario('IPCA-E + 1%', 'ipca_e', 'simples_1', '1,00');
+    adicionarCenario('SELIC integral', 'selic', 'selic', '0,00');
+  }
+}
+
+document.getElementById('modo-multiplo').addEventListener('change', function (event) {
+  const ativo = event.target.checked;
+  if (ativo) {
+    document.getElementById('modo-comparar').checked = false;
+    alternarComparacao(false);
+  }
+  alternarMultiplasParcelas(ativo);
+});
+
+document.getElementById('modo-comparar').addEventListener('change', function (event) {
+  const ativo = event.target.checked;
+  if (ativo) {
+    document.getElementById('modo-multiplo').checked = false;
+    alternarMultiplasParcelas(false);
+  }
+  alternarComparacao(ativo);
+});
+
+document.getElementById('add-parcela').addEventListener('click', function () {
+  adicionarParcela(`Parcela ${document.querySelectorAll('.parcela-item').length + 1}`, '', '');
+});
+
+document.getElementById('add-cenario').addEventListener('click', function () {
+  adicionarCenario(`Cenário ${document.querySelectorAll('.cenario-item').length + 1}`, 'ipca_e', 'simples_1', '1,00');
+});
 
 document.getElementById('calc-form').addEventListener('submit', async function (event) {
   event.preventDefault();
@@ -184,25 +533,25 @@ document.getElementById('calc-form').addEventListener('submit', async function (
   }
 
   ultimoResultado = data.resultado;
-  document.getElementById('res-corrigido').textContent = moeda(ultimoResultado.valor_corrigido);
-  document.getElementById('res-juros').textContent = moeda(ultimoResultado.juros_valor);
-  document.getElementById('res-multa').textContent = moeda(ultimoResultado.multa_valor);
-  document.getElementById('res-honorarios').textContent = moeda(ultimoResultado.honorarios_valor);
-  document.getElementById('res-total').textContent = moeda(ultimoResultado.total);
+  if (ultimoResultado.cenarios) {
+    document.getElementById('resumo-cards').classList.add('hidden');
+    document.getElementById('evolucao-box').classList.add('hidden');
+    document.getElementById('parcelas-resultado-box').classList.add('hidden');
+    renderComparacao(ultimoResultado);
+  } else {
+    document.getElementById('comparacao-box').classList.add('hidden');
+    document.getElementById('resumo-cards').classList.remove('hidden');
+    document.getElementById('evolucao-box').classList.remove('hidden');
+    const resumo = ultimoResultado.consolidado || ultimoResultado;
+    document.getElementById('res-corrigido').textContent = moeda(resumo.valor_corrigido_total || resumo.valor_corrigido);
+    document.getElementById('res-juros').textContent = moeda(resumo.juros_total || resumo.juros_valor);
+    document.getElementById('res-multa').textContent = moeda(resumo.multa_valor);
+    document.getElementById('res-honorarios').textContent = moeda(resumo.honorarios_valor);
+    document.getElementById('res-total').textContent = moeda(resumo.total);
+    renderParcelas(ultimoResultado.parcelas || []);
+    renderTabelaMensal(ultimoResultado.tabela_mensal || []);
+  }
 
-  const tbody = document.getElementById('tabela-mensal');
-  tbody.innerHTML = '';
-  ultimoResultado.tabela_mensal.forEach(function (item) {
-    tbody.insertAdjacentHTML('beforeend', `
-      <tr class="hover:bg-slate-50/50">
-        <td class="px-4 py-3 text-slate-700">${item.mes}</td>
-        <td class="px-4 py-3 text-right text-slate-500">${Number(item.indice_mensal).toFixed(6)}%</td>
-        <td class="px-4 py-3 text-right text-slate-700">${moeda(item.valor_corrigido)}</td>
-        <td class="px-4 py-3 text-right text-slate-700">${moeda(item.juros_acumulado)}</td>
-        <td class="px-4 py-3 text-right font-medium text-slate-900">${moeda(item.subtotal)}</td>
-      </tr>
-    `);
-  });
   document.getElementById('salvar-btn').disabled = false;
   document.getElementById('salvar-btn').classList.remove('text-slate-400');
   document.getElementById('salvar-btn').classList.add('text-slate-700', 'hover:bg-slate-50');

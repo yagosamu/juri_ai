@@ -100,6 +100,134 @@ def calcular_debito(
     }
 
 
+def calcular_debito_multiplo(
+    parcelas: list[dict],
+    data_fim: date,
+    indice_correcao: str,
+    juros_tipo: str,
+    juros_percentual: Decimal = Decimal('1.00'),
+    multa_523: bool = False,
+    honorarios_sucumb: bool = False,
+    honorarios_percent: Decimal = Decimal('10.00'),
+) -> dict:
+    """
+    Calcula múltiplos créditos individualmente e consolida.
+    """
+    if not parcelas:
+        raise ValueError('Informe ao menos uma parcela.')
+
+    juros_percentual = Decimal(juros_percentual)
+    honorarios_percent = Decimal(honorarios_percent)
+    parcelas_resultado = []
+    valor_principal_total = ZERO
+    valor_corrigido_total = ZERO
+    juros_total = ZERO
+
+    for parcela in parcelas:
+        valor = Decimal(parcela['valor'])
+        data_inicio = parcela['data']
+        descricao = parcela.get('descricao', '')
+        resultado = calcular_debito(
+            valor_principal=valor,
+            data_inicio=data_inicio,
+            data_fim=data_fim,
+            indice_correcao=indice_correcao,
+            juros_tipo=juros_tipo,
+            juros_percentual=juros_percentual,
+            multa_523=False,
+            honorarios_sucumb=False,
+            honorarios_percent=honorarios_percent,
+        )
+
+        valor_principal_total += resultado['valor_principal']
+        valor_corrigido_total += resultado['valor_corrigido']
+        juros_total += resultado['juros_valor']
+        parcelas_resultado.append({
+            'descricao': descricao,
+            'valor_principal': resultado['valor_principal'],
+            'data_inicio': data_inicio,
+            'valor_corrigido': resultado['valor_corrigido'],
+            'juros_valor': resultado['juros_valor'],
+            'subtotal': resultado['subtotal'],
+        })
+
+    subtotal = valor_corrigido_total + juros_total
+    multa_valor = subtotal * Decimal('0.10') if multa_523 else ZERO
+    base_honorarios = subtotal + multa_valor
+    honorarios_valor = base_honorarios * (honorarios_percent / CEM) if honorarios_sucumb else ZERO
+    total = subtotal + multa_valor + honorarios_valor
+
+    return {
+        'parcelas': parcelas_resultado,
+        'consolidado': {
+            'valor_principal_total': _arredondar_moeda(valor_principal_total),
+            'valor_corrigido_total': _arredondar_moeda(valor_corrigido_total),
+            'juros_total': _arredondar_moeda(juros_total),
+            'subtotal': _arredondar_moeda(subtotal),
+            'multa_valor': _arredondar_moeda(multa_valor),
+            'honorarios_valor': _arredondar_moeda(honorarios_valor),
+            'total': _arredondar_moeda(total),
+        },
+    }
+
+
+def comparar_cenarios(
+    valor_principal: Decimal,
+    data_inicio: date,
+    data_fim: date,
+    cenarios: list[dict],
+    multa_523: bool = False,
+    honorarios_sucumb: bool = False,
+    honorarios_percent: Decimal = Decimal('10.00'),
+) -> dict:
+    """
+    Calcula o mesmo débito com diferentes índices e juros.
+    """
+    if len(cenarios) < 2 or len(cenarios) > 3:
+        raise ValueError('Informe de 2 a 3 cenários para comparação.')
+
+    resultados = []
+    for posicao, cenario in enumerate(cenarios, start=1):
+        resultado = calcular_debito(
+            valor_principal=valor_principal,
+            data_inicio=data_inicio,
+            data_fim=data_fim,
+            indice_correcao=cenario.get('indice_correcao') or 'ipca_e',
+            juros_tipo=cenario.get('juros_tipo') or 'simples_1',
+            juros_percentual=Decimal(cenario.get('juros_percentual', Decimal('1.00'))),
+            multa_523=multa_523,
+            honorarios_sucumb=honorarios_sucumb,
+            honorarios_percent=honorarios_percent,
+        )
+        resultados.append({
+            'nome': cenario.get('nome') or f'Cenário {posicao}',
+            'resultado': resultado,
+        })
+
+    maior = max(resultados, key=lambda item: item['resultado']['total'])
+    menor = min(resultados, key=lambda item: item['resultado']['total'])
+    diferenca = maior['resultado']['total'] - menor['resultado']['total']
+    diferenca_percent = ZERO
+    if menor['resultado']['total'] != ZERO:
+        diferenca_percent = (diferenca / menor['resultado']['total']) * CEM
+
+    return {
+        'cenarios': resultados,
+        'comparativo': {
+            'maior_total': {
+                'nome': maior['nome'],
+                'valor': maior['resultado']['total'],
+            },
+            'menor_total': {
+                'nome': menor['nome'],
+                'valor': menor['resultado']['total'],
+            },
+            'diferenca': _arredondar_moeda(diferenca),
+            'diferenca_percent': _arredondar_percentual(diferenca_percent),
+        },
+    }
+
+
 def _calcular_selic_integral(
     valor_principal,
     meses_ref,
