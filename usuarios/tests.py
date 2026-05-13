@@ -7,6 +7,7 @@ from django.core.management import call_command
 from django.test import TestCase
 
 from usuarios.models import IndiceEconomico
+from usuarios.services.calculo import calcular_debito
 from usuarios.services.indices import (
     _calcular_taxa_legal,
     _janelas_consulta,
@@ -101,3 +102,125 @@ class ImportarIndicesCommandTests(TestCase):
         self.assertEqual(mock_importar.call_args.kwargs['tipos'], ['tr'])
         self.assertEqual(mock_importar.call_args.kwargs['ano_inicio'], 2025)
         self.assertIn('Total de registros novos: 1', out.getvalue())
+
+
+class CalculoDebitoTests(TestCase):
+    def test_calcula_correcao_e_juros_simples_com_tabela_mensal(self):
+        IndiceEconomico.objects.create(
+            tipo='ipca_e',
+            data=date(2024, 1, 1),
+            valor=Decimal('1.00'),
+            fonte='bcb',
+        )
+        IndiceEconomico.objects.create(
+            tipo='ipca_e',
+            data=date(2024, 2, 1),
+            valor=Decimal('2.00'),
+            fonte='bcb',
+        )
+
+        resultado = calcular_debito(
+            valor_principal=Decimal('1000.00'),
+            data_inicio=date(2024, 1, 1),
+            data_fim=date(2024, 2, 29),
+            indice_correcao='ipca_e',
+            juros_tipo='simples_1',
+        )
+
+        self.assertEqual(resultado['valor_principal'], Decimal('1000.00'))
+        self.assertEqual(resultado['valor_corrigido'], Decimal('1030.20'))
+        self.assertEqual(resultado['correcao_acumulada_percent'], Decimal('3.020000'))
+        self.assertEqual(resultado['juros_valor'], Decimal('20.60'))
+        self.assertEqual(resultado['subtotal'], Decimal('1050.80'))
+        self.assertEqual(resultado['total'], Decimal('1050.80'))
+        self.assertEqual(resultado['meses'], 2)
+        self.assertEqual(len(resultado['tabela_mensal']), 2)
+        self.assertEqual(resultado['tabela_mensal'][0]['mes'], '01/2024')
+        self.assertEqual(resultado['tabela_mensal'][1]['subtotal'], Decimal('1050.80'))
+
+    def test_meses_sem_indice_usam_zero_por_cento(self):
+        IndiceEconomico.objects.create(
+            tipo='ipca_e',
+            data=date(2024, 1, 1),
+            valor=Decimal('1.00'),
+            fonte='bcb',
+        )
+
+        resultado = calcular_debito(
+            valor_principal=Decimal('1000.00'),
+            data_inicio=date(2024, 1, 1),
+            data_fim=date(2024, 2, 29),
+            indice_correcao='ipca_e',
+            juros_tipo='customizado',
+            juros_percentual=Decimal('0.00'),
+        )
+
+        self.assertEqual(resultado['valor_corrigido'], Decimal('1010.00'))
+        self.assertEqual(resultado['tabela_mensal'][1]['indice_mensal'], Decimal('0.000000'))
+        self.assertEqual(resultado['tabela_mensal'][1]['valor_corrigido'], Decimal('1010.00'))
+
+    def test_selic_integral_nao_soma_juros_duas_vezes_no_subtotal(self):
+        IndiceEconomico.objects.create(
+            tipo='selic',
+            data=date(2024, 1, 1),
+            valor=Decimal('1.00'),
+            fonte='bcb',
+        )
+
+        resultado = calcular_debito(
+            valor_principal=Decimal('1000.00'),
+            data_inicio=date(2024, 1, 1),
+            data_fim=date(2024, 1, 31),
+            indice_correcao='ipca_e',
+            juros_tipo='selic',
+        )
+
+        self.assertEqual(resultado['valor_corrigido'], Decimal('1010.00'))
+        self.assertEqual(resultado['juros_valor'], Decimal('10.00'))
+        self.assertEqual(resultado['subtotal'], Decimal('1010.00'))
+        self.assertEqual(resultado['total'], Decimal('1010.00'))
+
+    def test_taxa_legal_aplica_juros_compostos_sobre_valor_corrigido(self):
+        IndiceEconomico.objects.create(
+            tipo='ipca_e',
+            data=date(2024, 9, 1),
+            valor=Decimal('1.00'),
+            fonte='bcb',
+        )
+        IndiceEconomico.objects.create(
+            tipo='taxa_legal',
+            data=date(2024, 9, 1),
+            valor=Decimal('2.00'),
+            fonte='bcb',
+        )
+
+        resultado = calcular_debito(
+            valor_principal=Decimal('1000.00'),
+            data_inicio=date(2024, 9, 1),
+            data_fim=date(2024, 9, 30),
+            indice_correcao='ipca_e',
+            juros_tipo='taxa_legal',
+        )
+
+        self.assertEqual(resultado['valor_corrigido'], Decimal('1010.00'))
+        self.assertEqual(resultado['juros_valor'], Decimal('20.20'))
+        self.assertEqual(resultado['subtotal'], Decimal('1030.20'))
+
+    def test_valida_periodo_e_valor_principal(self):
+        with self.assertRaisesMessage(ValueError, 'valor principal'):
+            calcular_debito(
+                Decimal('0.00'),
+                date(2024, 1, 1),
+                date(2024, 1, 31),
+                'ipca_e',
+                'simples_1',
+            )
+
+        with self.assertRaisesMessage(ValueError, 'data inicial'):
+            calcular_debito(
+                Decimal('1000.00'),
+                date(2024, 2, 1),
+                date(2024, 1, 31),
+                'ipca_e',
+                'simples_1',
+            )

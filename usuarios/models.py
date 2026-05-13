@@ -532,6 +532,59 @@ class IndiceEconomico(models.Model):
         return f"{self.get_tipo_display()} — {self.data.strftime('%m/%Y')} — {self.valor}%"
 
 
+class CalculoJudicial(models.Model):
+    INDICE_CHOICES = [
+        ('ipca_e',     'IPCA-E'),
+        ('inpc',       'INPC'),
+        ('selic',      'SELIC'),
+        ('tr',         'TR'),
+        ('igpm',       'IGP-M'),
+        ('taxa_legal', 'Taxa Legal'),
+    ]
+    JUROS_CHOICES = [
+        ('simples_1',   'Juros simples 1% a.m.'),
+        ('simples_05',  'Juros simples 0,5% a.m.'),
+        ('selic',       'SELIC integral'),
+        ('taxa_legal',  'Taxa Legal (Lei 14.905/2024)'),
+        ('customizado', 'Percentual customizado'),
+    ]
+
+    processo           = models.ForeignKey('Processo', on_delete=models.SET_NULL,
+                                           null=True, blank=True, related_name='calculos',
+                                           verbose_name='Processo')
+    descricao          = models.CharField(max_length=255, blank=True,
+                                          verbose_name='Descrição do cálculo')
+    valor_principal    = models.DecimalField(max_digits=14, decimal_places=2,
+                                             verbose_name='Valor principal (R$)')
+    data_inicio        = models.DateField(verbose_name='Data do fato gerador')
+    data_fim           = models.DateField(verbose_name='Data do cálculo')
+    indice_correcao    = models.CharField(max_length=15, choices=INDICE_CHOICES,
+                                          default='ipca_e', verbose_name='Índice de correção')
+    juros_tipo         = models.CharField(max_length=15, choices=JUROS_CHOICES,
+                                          default='simples_1', verbose_name='Tipo de juros')
+    juros_percentual   = models.DecimalField(max_digits=5, decimal_places=2,
+                                             default=1.00, verbose_name='Juros % a.m.')
+    multa_523          = models.BooleanField(default=False,
+                                             verbose_name='Multa Art. 523 CPC (10%)')
+    honorarios_sucumb  = models.BooleanField(default=False,
+                                             verbose_name='Honorários sucumbenciais')
+    honorarios_percent = models.DecimalField(max_digits=5, decimal_places=2,
+                                             default=10.00, verbose_name='Honorários %')
+    resultado_json     = models.JSONField(null=True, blank=True,
+                                          verbose_name='Resultado detalhado')
+    user               = models.ForeignKey(User, on_delete=models.CASCADE,
+                                           related_name='calculos_judiciais')
+    criado_em          = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        verbose_name = 'Cálculo Judicial'
+        verbose_name_plural = 'Cálculos Judiciais'
+
+    def __str__(self):
+        return f"R$ {self.valor_principal} — {self.data_inicio} a {self.data_fim}"
+
+
 auditlog.register(Processo)
 auditlog.register(AndamentoProcesso)
 auditlog.register(Prazo)
@@ -545,3 +598,4 @@ auditlog.register(TemplateDocumento)
 auditlog.register(DocumentoGerado)
 auditlog.register(Lead)
 auditlog.register(IndiceEconomico)
+auditlog.register(CalculoJudicial)
