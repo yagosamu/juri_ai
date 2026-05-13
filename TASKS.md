@@ -1,5 +1,5 @@
 # TASKS — JuriAI
-> Controle de tarefas por fase e sprint | Atualizado: Abril 2026
+> Controle de tarefas por fase e sprint | Atualizado: Maio 2026
 
 ---
 
@@ -30,6 +30,16 @@
 - [x] Configurar `ALLOWED_HOSTS` para desenvolvimento
 - [x] Implementar view de logout
 - [x] Corrigir bug CSRF no fetch do chat
+
+### Melhorias Visuais e UX
+- [x] Mockup dashboard na landing page
+- [x] Mockup duplo: Geração de Documento IA + Análise de Risco
+- [x] Formatação brasileira de moeda (R$ 20.000,00)
+- [x] Formato de data dd/mm/yyyy em todos os inputs
+- [x] Máscara de moeda e data compartilhada (`data-mask`)
+- [x] Helpers `_parse_date_br()` e `_parse_decimal_br()`
+- [x] Tipo "Por Hora" com cálculo automático
+- [x] Editar cliente (nome, email, tipo, telefone, status)
 
 ---
 
@@ -233,111 +243,197 @@
 
 ---
 
-## 🟢 FASE 3 — Geração de Documentos com IA
+## ✅ FASE 3 — Geração de Documentos com IA
+> Sprint 3.1 e 3.2 concluídos 100%
 
-### Sprint 3.1 — Templates de Documentos
+### Sprint 3.1 — Templates de Documentos ✅
 
-- [ ] **Criar model `TemplateDocumento`**
+- [x] **Criar model `TemplateDocumento`**
   - Campos: `nome`, `tipo` (contrato/petição/notificação/procuração/outro), `conteudo_markdown` (com variáveis `{{cliente.nome}}`, `{{processo.numero}}`), `user` (FK nullable para templates globais)
-  - Pré-popular com 5 templates padrão: contrato de honorários, procuração, notificação extrajudicial, petição inicial genérica, acordo extrajudicial
+  - Pré-populado com 5 templates padrão: contrato de honorários, procuração, notificação extrajudicial, petição inicial genérica, acordo extrajudicial
+  - Migration criada e aplicada
 
-- [ ] **CRUD de templates**
-  - View `/templates/` com lista e editor markdown inline
+- [x] **CRUD de templates**
+  - View `/templates/` com lista de templates do usuário + templates globais
+  - Editor markdown inline com textarea expansível
   - Duplicar template padrão para personalizar
-  - Preview renderizado em tempo real
+  - Preview renderizado em tempo real via marked.js (client-side)
+  - Excluir template com confirmação
 
-### Sprint 3.2 — Geração com IA
+### Sprint 3.2 — Geração com IA ✅
 
-- [ ] **Criar agente `RedacaoAI`**
+- [x] **Criar agente `RedacaoAI`**
   - Agno + GPT-4
-  - System prompt: especialista em redação jurídica brasileira
+  - System prompt especializado em redação jurídica brasileira
   - Recebe: tipo do documento + dados do cliente + dados do processo + instruções do advogado
-  - Retorna: documento em markdown pronto para revisão
+  - Retorna documento em markdown pronto para revisão
+  - Suporte a variáveis automáticas `{{cliente.nome}}`, `{{processo.numero}}`, `{{data_hoje}}` etc.
 
-- [ ] **View de geração**
+- [x] **View de geração**
   - Form: selecionar template + selecionar cliente + selecionar processo (opcional) + instrução adicional
-  - Chamada ao `RedacaoAI` com streaming
-  - Editor inline para revisão e ajustes
+  - Chamada ao `RedacaoAI` com streaming via `StreamingHttpResponse`
+  - Editor inline com preview side-by-side para revisão e ajustes
 
-- [ ] **Exportação**
-  - Exportar como `.docx` (`python-docx`)
-  - Exportar como `.pdf` (`weasyprint`)
-  - Salvar como Documento vinculado ao cliente/processo
+- [x] **Exportação**
+  - Exportar como `.docx` (`python-docx`) com formatação jurídica
+  - Exportar como `.pdf` (`weasyprint`) pronto para protocolo
+  - Salvar como `DocumentoGerado` vinculado ao cliente e/ou processo
+
+- [x] **Model `DocumentoGerado`**
+  - Campos: `titulo`, `conteudo_markdown`, `template` (FK nullable), `cliente` (FK), `processo` (FK nullable), `user` (FK), `criado_em`
+  - Listagem em `/documentos-gerados/` com filtro por cliente/processo
 
 ---
 
-## 🔵 FASE 4 — CRM e Captação
+## ✅ FASE 4 — CRM e Captação
+> Sprint 4.1 e 4.2 concluídos 100%
 
-### Sprint 4.1 — Pipeline de Leads
+### Sprint 4.1 — Pipeline de Leads ✅
 
-- [ ] **Criar model `Lead`**
+- [x] **Criar model `Lead`**
   - Campos: `nome`, `telefone`, `email`, `origem` (WhatsApp/indicação/site/outro), `status` (novo/qualificado/proposta/fechado/perdido), `observacoes`, `user` (FK)
+  - Migration criada e aplicada
+  - Campo `telefone` adicionado ao model `Cliente` (varchar, opcional)
 
-- [ ] **View kanban `/crm/`**
-  - Colunas por status com drag-and-drop (JS nativo)
+- [x] **View kanban `/crm/`**
+  - Colunas por status com drag-and-drop (JS nativo — Drag API HTML5)
   - Card por lead: nome, origem, data, telefone
-  - Adicionar "CRM" na sidebar
+  - Atualização de status via fetch POST ao arrastar card
+  - "CRM" adicionado na sidebar com badge de leads novos
 
-- [ ] **Converter lead em cliente**
-  - Botão "Converter em cliente" no card do lead (status = fechado)
-  - Pré-preenche o form de criação de cliente com dados do lead
+- [x] **Converter lead em cliente**
+  - Botão "Converter em cliente" no card do lead com status fechado
+  - View `converter_lead` pré-preenche form de criação de cliente com dados do lead
+  - Lead marcado como fechado após conversão
 
-### Sprint 4.2 — Captação via WhatsApp
+- [x] **`editar_cliente` view**
+  - View `/clientes/<id>/editar/` com `@login_required` + ownership check
+  - Campos editáveis: nome, email, tipo, telefone, status
 
-- [ ] **SecretariaAI cria Lead automaticamente**
-  - Ao receber mensagem de número desconhecido, cria `Lead` com status "novo"
-  - Notifica advogado no dashboard (badge no menu CRM)
+### Sprint 4.2 — Captação via WhatsApp ✅
 
-- [ ] **Relatório de conversão**
+- [x] **SecretariaAI cria Lead automaticamente**
+  - Webhook WhatsApp (`webhook_whatsapp`) detecta número desconhecido
+  - Cria `Lead` com `origem='whatsapp'` e `status='novo'` automaticamente
+  - Badge `leads_novos` na sidebar atualizado em tempo real
+
+- [x] **Relatório de conversão**
   - View `/crm/relatorio/` com funil: leads → qualificados → propostas → fechados
-  - Taxa de conversão por origem
+  - Taxa de conversão por origem (WhatsApp, indicação, site, outro)
+  - Cards com totais e percentuais de conversão
 
 ---
 
-## 🟣 FASE 5 — Portal do Cliente e Mobile
+## 🟣 FASE 5 — Calculadora de Débitos Judiciais
 
-### Sprint 5.1 — Portal do Cliente
+### Sprint 5.1 — Infraestrutura de Índices
 
-- [ ] **Model de acesso para clientes finais**
-  - `PortalCliente`: email, senha, `cliente` (OneToOne FK)
-  - Autenticação separada do advogado
+- [ ] **Criar model `IndiceEconomico`**
+  - Campos: `tipo` (IPCA-E/INPC/SELIC/TR/IGP-M/Taxa Legal), `data` (date, mês de referência), `valor` (Decimal — variação percentual mensal), `fonte` (BCB/IBGE/TJSP)
+  - Índice único em `(tipo, data)` para evitar duplicatas
 
-- [ ] **Portal `/portal/`**
-  - Login exclusivo para clientes
-  - Ver processos vinculados: status, andamentos recentes
-  - Ver documentos disponibilizados pelo advogado
-  - Enviar mensagem para o advogado
+- [ ] **Criar management command para importar índices históricos**
+  - `python manage.py importar_indices` via API SGS do Banco Central
+  - IPCA-E (série 13522), INPC (série 188), SELIC (série 4390), TR (série 226), IGP-M (série 189)
+  - Taxa Legal = SELIC − IPCA, conforme Lei 14.905/2024
+  - Tabelas práticas do TJSP (IPCA-E acumulado desde jan/1992)
+  - Cobertura temporal: janeiro/1994 (Plano Real) até mês atual
 
-### Sprint 5.2 — PWA
+- [ ] **Criar task django-q para atualização mensal automática**
+  - Schedule mensal que busca o índice do mês anterior (D+1 de publicação)
+  - Atualiza `IndiceEconomico` sem duplicar registros existentes
 
-- [ ] **Converter em Progressive Web App**
-  - `manifest.json` com nome, ícone, cores
-  - `service-worker.js` para cache offline básico
-  - Meta tags no `base.html`
+### Sprint 5.2 — Motor de Cálculo
 
-- [ ] **Push notifications**
-  - Notificação de prazo chegando (via service worker)
-  - Notificação de novo lead no CRM
+- [ ] **Criar model `CalculoJudicial`**
+  - Campos: `processo` (FK nullable), `valor_principal` (Decimal), `data_inicio` (date), `data_fim` (date), `indice_correcao` (choices), `juros_tipo` (simples/taxa_legal/selic/customizado), `juros_percentual` (Decimal), `multa_523` (bool), `honorarios_sucumbencia` (bool), `honorarios_percentual` (Decimal), `resultado_json` (JSONField), `user` (FK), `criado_em`
 
----
+- [ ] **Implementar engine de cálculo em Python**
+  - Correção monetária mês a mês pelo índice selecionado (leitura de `IndiceEconomico`)
+  - Juros simples: 1% a.m., 0,5% a.m. (Fazenda Pública), percentual customizado
+  - Juros pela Taxa Legal (SELIC − IPCA, Lei 14.905/2024)
+  - Juros pela SELIC integral (trabalhista pós EC 113/2021)
+  - Multa Art. 523 CPC (10% sobre valor corrigido + juros)
+  - Honorários sucumbenciais (percentual configurável 10–20%)
+  - Suporte a troca de índice no meio do período
+  - Suporte a múltiplas parcelas com datas diferentes
 
-## ⚫ FASE 6 — Análise Preditiva
+- [ ] **Gerar tabela mensal de evolução**
+  - Colunas: mês, índice do mês (%), correção acumulada, juros acumulados, subtotal
+  - Armazenada em `resultado_json` para exibição e exportação
 
-### Sprint 6.1 — Jurimetria
+### Sprint 5.3 — Interface e Exportação
 
-- [ ] **Expandir JurisprudenciaAI com probabilidade de êxito**
-  - Consultar casos similares no DataJud por tipo de ação + comarca
-  - Calcular taxa de êxito histórica
-  - Exibir score de probabilidade na página do processo
+- [ ] **View calculadora acessível de 2 formas**
+  - Item "Calculadora" na sidebar (acesso independente, processo nullable)
+  - Aba "Cálculo Judicial" na página do processo (pré-preenche dados do processo)
 
-- [ ] **Relatório comparativo**
-  - Casos similares: número, desfecho, tempo médio de duração
-  - Insights estratégicos: "Casos como este têm 67% de êxito no TJSP"
+- [ ] **Template `calculadora.html`**
+  - Selects inteligentes: tipo de ação sugere automaticamente índice e juros padrão
+    * Cível → IPCA-E + 1% a.m.
+    * Trabalhista → SELIC (EC 113/2021)
+    * Fazenda Pública → IPCA-E + 0,5% a.m.
+    * Previdenciário → INPC + 1% a.m.
+  - Campos: valor principal, data do fato gerador, data do cálculo (default: hoje)
+  - Índice de correção (IPCA-E, INPC, SELIC, TR, IGP-M, Taxa Legal)
+  - Juros de mora (1% a.m., 0,5% a.m., Taxa Legal, SELIC, customizado)
+  - Toggle multa Art. 523 CPC (sim/não)
+  - Toggle honorários (sim/não + slider 10–20%)
+  - Recalcular ao alterar qualquer parâmetro (sem reload — fetch API)
+
+- [ ] **Resultado da calculadora**
+  - Cards: Valor Corrigido | Juros | Multa | Honorários | TOTAL
+  - Tabela mensal expandível de evolução completa
+  - Gráfico de evolução do valor ao longo do tempo (Chart.js)
+
+- [ ] **Exportar resultado como PDF (reportlab)**
+  - Cabeçalho com dados do processo e advogado
+  - Tabela completa mês a mês
+  - Resumo final com todos os componentes
+  - Rodapé com aviso legal
+
+- [ ] **Salvar e listar cálculos**
+  - Salvar cálculo vinculado ao processo (se aplicável)
+  - Histórico de cálculos salvos acessível pela sidebar
+
+### Sprint 5.4 — Funcionalidades Avançadas
+
+- [ ] **Suporte a tabelas específicas dos TJs**
+  - Tabela prática TJSP (índice composto por período histórico)
+  - Tabela TJRJ, TJMG, TJPR, TJRS e demais tribunais estaduais
+  - Tabela CJF (Justiça Federal — ações condenatórias)
+  - Tabela TST (Débitos Trabalhistas)
+  - Detecção automática de qual tabela usar pelo tribunal do processo
+
+- [ ] **Calculadora trabalhista completa**
+  - Horas extras (50%, 75%, 100%) com DSR
+  - 13º salário proporcional
+  - Férias proporcionais + 1/3 constitucional
+  - Aviso prévio (trabalhado/indenizado)
+  - Multa 40% FGTS
+  - Verbas rescisórias completas
+
+- [ ] **Suporte a múltiplos créditos em datas diferentes**
+  - Interface para adicionar N parcelas (data + valor + descrição)
+  - Cálculo individual por parcela + consolidado no final
+
+- [ ] **IA auxiliar na calculadora**
+  - Upload de sentença/decisão em PDF
+  - IA extrai: valor condenado, data, índice determinado, juros
+  - Pré-preenche os campos automaticamente
+
+- [ ] **Comparador de cenários**
+  - Calcular com 2–3 índices diferentes lado a lado
+  - Mostrar diferença absoluta e percentual entre cenários
+  - Útil para negociação e estratégia processual
 
 ---
 
 ## 📦 Backlog (sem sprint definido)
 
+- [ ] **Portal do Cliente** — login separado, dashboard do cliente, visualização de processos e documentos
+- [ ] **PWA** — `manifest.json`, `service-worker.js`, push notifications de prazo e novos leads
+- [ ] **Análise Preditiva** — jurimetria, probabilidade de êxito via DataJud, relatório comparativo de casos similares
 - [ ] Testes automatizados (pytest-django) — cobertura mínima 60%
 - [ ] Observabilidade — logging estruturado nos agentes (Sentry ou similar)
 - [ ] Escalabilidade — múltiplos workers no django-q para Docling pesado
@@ -347,7 +443,7 @@
 - [ ] Integração com PJe para peticionamento eletrônico
 - [ ] Multi-tenancy (escritórios com múltiplos advogados e permissões)
 - [ ] Planos e cobrança (Stripe ou Pagar.me)
-- [ ] Painel de administração SaaS (métricas de uso, churm, MRR)
+- [ ] Painel de administração SaaS (métricas de uso, churn, MRR)
 
 ---
 
@@ -355,14 +451,14 @@
 
 | Fase | Status | Progresso |
 |---|---|---|
-| Fase 0 — Segurança | ✅ Concluída | 100% (Sprint 0.1 e Sprint 0.2 LGPD concluídas) |
+| Fase 0 — Segurança | ✅ Concluída | 100% (Sprints 0.1 e 0.2 LGPD concluídos) |
 | Fase 1 — MVP | ✅ Concluída | 100% (Sprints 1.1, 1.2 e 1.3 concluídos) |
-| Fase 2 — Financeiro | ✅ Concluída | 100% |
-| Fase 3 — Geração Docs | ⬜ Não iniciada | 0% |
-| Fase 4 — CRM | ⬜ Não iniciada | 0% |
-| Fase 5 — Portal/Mobile | ⬜ Não iniciada | 0% |
-| Fase 6 — Preditiva | ⬜ Não iniciada | 0% |
+| Fase 2 — Financeiro | ✅ Concluída | 100% (Sprints 2.1 e 2.2 concluídos) |
+| Fase 3 — Geração Docs | ✅ Concluída | 100% (Sprints 3.1 e 3.2 concluídos) |
+| Fase 4 — CRM | ✅ Concluída | 100% (Sprints 4.1 e 4.2 concluídos) |
+| Fase 5 — Calculadora | ⬜ Não iniciada | 0% |
+| Backlog | ⬜ Aguardando | — |
 
 ---
 
-*Última atualização: Abril 2026*
+*Última atualização: Maio 2026*

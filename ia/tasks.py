@@ -218,3 +218,13 @@ def atualizar_todos_processos_datajud():
 
     for proc in Processo.objects.filter(status='ativo').exclude(tribunal='outro'):
         async_task('ia.tasks.consultar_datajud', proc.id)
+
+
+def atualizar_indices_economicos():
+    """Task mensal — importa índices do ano corrente."""
+    from datetime import date
+    from usuarios.services.indices import importar_indices_bcb
+
+    resultado = importar_indices_bcb(ano_inicio=date.today().year)
+    resumo = ', '.join(f'{k}={v}' for k, v in resultado.items() if v > 0)
+    return f'Índices atualizados: {resumo}' if resumo else 'Nenhum índice novo'

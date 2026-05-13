@@ -33,6 +33,22 @@ def _criar_schedule_alertas_honorarios(sender, **kwargs):
         pass
 
 
+def _criar_schedule_indices(sender, **kwargs):
+    """Garante que o schedule mensal de índices econômicos existe após cada migrate."""
+    try:
+        from django_q.models import Schedule
+        Schedule.objects.get_or_create(
+            name='Atualizar índices econômicos',
+            defaults={
+                'func': 'ia.tasks.atualizar_indices_economicos',
+                'schedule_type': 'M',
+                'repeats': -1,
+            },
+        )
+    except Exception:
+        pass
+
+
 class IaConfig(AppConfig):
     name = 'ia'
 
@@ -40,3 +56,4 @@ class IaConfig(AppConfig):
         from django.db.models.signals import post_migrate
         post_migrate.connect(_criar_schedule_datajud, sender=self)
         post_migrate.connect(_criar_schedule_alertas_honorarios, sender=self)
+        post_migrate.connect(_criar_schedule_indices, sender=self)

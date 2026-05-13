@@ -499,6 +499,39 @@ class Lead(models.Model):
         return f"{self.nome} ({self.get_origem_display()})"
 
 
+class IndiceEconomico(models.Model):
+    TIPO_CHOICES = [
+        ('ipca_e',     'IPCA-E'),
+        ('inpc',       'INPC'),
+        ('selic',      'SELIC'),
+        ('tr',         'TR'),
+        ('igpm',       'IGP-M'),
+        ('taxa_legal', 'Taxa Legal'),
+    ]
+    FONTE_CHOICES = [
+        ('bcb',  'Banco Central'),
+        ('ibge', 'IBGE'),
+        ('tjsp', 'TJSP'),
+    ]
+
+    tipo      = models.CharField(max_length=15, choices=TIPO_CHOICES)
+    data      = models.DateField(verbose_name='Mês de referência')
+    valor     = models.DecimalField(
+        max_digits=10, decimal_places=6,
+        verbose_name='Variação mensal (%)')
+    fonte     = models.CharField(max_length=10, choices=FONTE_CHOICES, default='bcb')
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [('tipo', 'data')]
+        ordering = ['-data', 'tipo']
+        verbose_name = 'Índice Econômico'
+        verbose_name_plural = 'Índices Econômicos'
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} — {self.data.strftime('%m/%Y')} — {self.valor}%"
+
+
 auditlog.register(Processo)
 auditlog.register(AndamentoProcesso)
 auditlog.register(Prazo)
@@ -511,3 +544,4 @@ auditlog.register(Pagamento)
 auditlog.register(TemplateDocumento)
 auditlog.register(DocumentoGerado)
 auditlog.register(Lead)
+auditlog.register(IndiceEconomico)
