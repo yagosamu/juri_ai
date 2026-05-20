@@ -50,12 +50,68 @@
 
     .reveal { opacity: 0; transform: translateY(20px); transition: opacity 800ms cubic-bezier(0.16,1,0.3,1), transform 800ms cubic-bezier(0.16,1,0.3,1); }
     .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(15,23,42,.08);
+      transition: background 200ms, box-shadow 200ms;
+    }
+    .nav.is-scrolled { background: rgba(255,255,255,.98); box-shadow: 0 1px 12px rgba(15,23,42,.06); }
+    .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; height: 72px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.15rem; letter-spacing: -.015em; color: var(--ink); text-decoration: none; }
+    .nav-logo em { font-style: italic; color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 2.25rem; }
+    .nav-link { font-size: .82rem; color: var(--text-muted); text-decoration: none; position: relative; padding-bottom: 2px; }
+    .nav-link::after { content: ''; position: absolute; left: 0; bottom: 0; width: 0; height: 1px; background: var(--ink); transition: width 200ms ease-out; }
+    .nav-link:hover { color: var(--ink); }
+    .nav-link:hover::after { width: 100%; }
+    .nav-cta-row { display: flex; align-items: center; gap: .65rem; }
+    .nav-btn-out { font-size: .82rem; padding: .55rem 1.1rem; border-radius: 7px; color: var(--ink); border: 1px solid rgba(15,23,42,.18); text-decoration: none; transition: background 180ms; }
+    .nav-btn-out:hover { background: rgba(15,23,42,.04); }
+    .nav-btn-dark { font-size: .82rem; padding: .55rem 1.1rem; border-radius: 7px; background: var(--ink); color: var(--cream); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: .4rem; transition: background 180ms, transform 140ms; }
+    .nav-btn-dark:hover { background: var(--ink-2); transform: translateY(-1px); }
+
+    .nav-mobile-toggle { display: none; background: none; border: 0; color: var(--ink); cursor: pointer; padding: .5rem; }
+    .nav-mobile-menu { display: none; padding: 1.5rem 2rem; gap: 1rem; background: #fff; border-bottom: 1px solid rgba(15,23,42,.08); flex-direction: column; }
+    .nav-mobile-menu a { font-family: 'Fraunces', serif; font-style: italic; font-size: 1.15rem; color: var(--ink); text-decoration: none; }
+    .nav-mobile-menu.is-open { display: flex; }
+
+    @media (max-width: 768px) {
+      .nav-links, .nav-cta-row { display: none; }
+      .nav-mobile-toggle { display: block; }
+    }
   </style>
 </head>
 
 <body>
 
   <!-- ═══ 01 · HEADER ═══ -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="{% url 'home' %}" class="nav-logo">Juri<em>AI</em></a>
+    <nav class="nav-links">
+      <a href="#funcionalidades" class="nav-link">Funcionalidades</a>
+      <a href="#seguranca" class="nav-link">Segurança</a>
+      <a href="{% url 'login' %}" class="nav-link">Entrar</a>
+    </nav>
+    <div class="nav-cta-row">
+      <a href="{% url 'cadastro' %}" class="nav-btn-dark">Começar grátis
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+      </a>
+    </div>
+    <button class="nav-mobile-toggle" id="navToggle" aria-label="Abrir menu">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+  <div class="nav-mobile-menu" id="navMobileMenu">
+    <a href="#funcionalidades">Funcionalidades</a>
+    <a href="#seguranca">Segurança</a>
+    <a href="{% url 'login' %}">Entrar</a>
+    <a href="{% url 'cadastro' %}" style="color: var(--gold); font-style: normal; font-family: Inter, sans-serif; font-weight: 600; font-size: 1rem;">Começar grátis →</a>
+  </div>
+</header>
 
   <!-- ═══ 02 · HERO ═══ -->
 
@@ -80,7 +136,9 @@
   <!-- ═══ 12 · CTA + FOOTER ═══ -->
 
   <script>
-    // JS goes here in later tasks
+    const navToggle = document.getElementById('navToggle');
+    const navMobileMenu = document.getElementById('navMobileMenu');
+    navToggle?.addEventListener('click', () => navMobileMenu.classList.toggle('is-open'));
   </script>
 
 </body>
