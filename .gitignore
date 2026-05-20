@@ -36,6 +36,9 @@ venv/
 .vscode/
 .idea/
 
+# Brainstorming companion
+.superpowers/
+
 client_secret_*.json
 client_secret.json
 
