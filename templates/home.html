@@ -162,6 +162,37 @@
     @media (max-width: 900px) {
       .pillars-grid { grid-template-columns: 1fr; }
     }
+
+    .module { padding: 6rem 2rem; }
+    .module.alt { background: var(--cream); }
+    .module-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .module-inner.reverse { direction: rtl; }
+    .module-inner.reverse > * { direction: ltr; }
+    .module-text .pretitle { color: var(--gold); }
+    .module-text h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.9rem, 3.2vw, 2.6rem); line-height: 1.1; letter-spacing: -.018em; margin: 0 0 1.1rem; color: var(--text-light); }
+    .module-text h2 em { font-style: italic; color: var(--navy-700); }
+    .module-text p { font-size: 1rem; color: var(--text-muted); line-height: 1.7; margin: 0 0 1.2rem; }
+    .module-bullets { list-style: none; padding: 0; margin: 1.4rem 0 0; }
+    .module-bullets li { display: flex; gap: .65rem; font-size: .92rem; color: var(--text-light); padding: .4rem 0; line-height: 1.55; }
+    .module-bullets li::before { content: '→'; color: var(--gold); font-weight: 700; flex-shrink: 0; }
+    .module-chips { margin-top: 1.6rem; display: flex; flex-wrap: wrap; gap: .4rem; }
+    .chip-light { font-size: .72rem; padding: .28rem .65rem; border-radius: 5px; background: rgba(15,23,42,.05); color: var(--text-light); border: 1px solid rgba(15,23,42,.1); font-weight: 500; }
+
+    .module-mockup { background: #fff; border: 1px solid #e3dcc8; border-radius: 14px; padding: 1.5rem; box-shadow: 0 18px 50px rgba(15,23,42,.08); }
+    .module-mockup .mockup-title { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); padding-bottom: .8rem; border-bottom: 1px solid #e3dcc8; margin-bottom: 1rem; }
+
+    @media (max-width: 1024px) {
+      .module-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .module-inner.reverse { direction: ltr; }
+    }
+
+    .mockup-risk { padding: 1rem; }
+    .mockup-risk .risk-big { display: flex; align-items: baseline; gap: .5rem; margin-bottom: .8rem; }
+    .mockup-risk .risk-big .num { font-family: 'Fraunces', serif; font-size: 3rem; font-weight: 500; color: var(--gold); letter-spacing: -.02em; line-height: 1; }
+    .mockup-risk .risk-big .lbl { font-size: .82rem; color: var(--text-muted); }
+    .mockup-risk .flag { padding: .65rem .85rem; background: var(--cream); border-left: 2px solid var(--gold); border-radius: 4px; margin-bottom: .5rem; }
+    .mockup-risk .flag .cat { font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--gold); margin-bottom: .2rem; }
+    .mockup-risk .flag .desc { font-size: .82rem; color: var(--text-light); line-height: 1.45; }
   </style>
 </head>
 
@@ -304,6 +335,48 @@
 </section>
 
   <!-- ═══ 05 · ANÁLISE DE DOCUMENTOS ═══ -->
+<section class="module reveal">
+  <div class="module-inner">
+    <div class="module-text">
+      <span class="pretitle">Módulo 01</span>
+      <div><span class="gold-rule"></span></div>
+      <h2>Risco identificado <em>antes do protocolo.</em></h2>
+      <p>Carregue petições, contratos e pareceres. O JuriAI extrai o texto via OCR, percorre cada cláusula e devolve um índice de risco com red flags categorizados.</p>
+      <ul class="module-bullets">
+        <li>OCR automático em PDF, DOCX e imagens</li>
+        <li>Índice de risco de 0 a 100 com explicação por categoria</li>
+        <li>Red flags por tema: prazo, jurisprudência, formatação, coerência interna</li>
+        <li>Citações aos artigos do CPC e acórdãos aplicáveis</li>
+      </ul>
+      <div class="module-chips">
+        <span class="chip-light">PDF</span>
+        <span class="chip-light">DOCX</span>
+        <span class="chip-light">OCR</span>
+        <span class="chip-light">Petições</span>
+        <span class="chip-light">Contratos</span>
+        <span class="chip-light">Pareceres</span>
+      </div>
+    </div>
+    <div class="module-mockup">
+      <div class="mockup-title">Análise · Silva vs Construtora</div>
+      <div class="mockup-risk">
+        <div class="risk-big"><span class="num">28</span><span class="lbl">/ 100 · Risco baixo</span></div>
+        <div class="flag">
+          <div class="cat">Prazo</div>
+          <div class="desc">3 inconsistências de prazo identificadas (fls. 4, 9 e 12).</div>
+        </div>
+        <div class="flag">
+          <div class="cat">Jurisprudência</div>
+          <div class="desc">Cláusula 4ª contradiz Art. 523 CPC sobre multa de 10%.</div>
+        </div>
+        <div class="flag">
+          <div class="cat">Precedente</div>
+          <div class="desc">Falta menção ao acórdão STJ Tema 1.061 (precedente aplicável).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
   <!-- ═══ 06 · CALCULADORA JUDICIAL ═══ -->
 
