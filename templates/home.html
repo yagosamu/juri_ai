@@ -287,6 +287,38 @@
 
     @media (max-width: 900px) { .trust-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 500px) { .trust-grid { grid-template-columns: 1fr; } .trust-featured { flex-direction: column; text-align: center; } }
+
+    .cta-final {
+      position: relative; overflow: hidden;
+      padding: 7rem 2rem 5rem;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 50%, rgba(212,165,71,.12) 0%, transparent 65%),
+        var(--ink);
+      color: var(--cream); text-align: center;
+    }
+    .cta-final-inner { position: relative; z-index: 2; max-width: 640px; margin: 0 auto; }
+    .cta-final .badge { margin-bottom: 1.6rem; }
+    .cta-final h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(2.4rem, 4.5vw, 3.5rem); line-height: 1.08; letter-spacing: -.02em; margin: 0 0 .9rem; }
+    .cta-final h2 em { font-style: italic; color: var(--gold); }
+    .cta-final p { font-size: 1rem; opacity: .8; margin: 0 0 2.4rem; }
+    .cta-final .trust-line { margin-top: 2.4rem; padding-top: 2rem; border-top: 1px solid rgba(245,239,226,.1); display: flex; align-items: center; justify-content: center; gap: 1.5rem; flex-wrap: wrap; font-size: .78rem; opacity: .6; }
+    .cta-final .trust-line span { display: inline-flex; align-items: center; gap: .35rem; }
+    .cta-final .trust-line .sep { width: 1px; height: 14px; background: rgba(245,239,226,.2); }
+
+    .footer { background: var(--ink); color: rgba(245,239,226,.55); padding: 4rem 2rem 2rem; border-top: 1px solid rgba(245,239,226,.06); font-size: .85rem; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem; }
+    .footer .col h4 { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--cream); margin: 0 0 1rem; }
+    .footer .col ul { list-style: none; padding: 0; margin: 0; }
+    .footer .col li { margin-bottom: .55rem; font-size: .82rem; }
+    .footer .col a { color: inherit; text-decoration: none; transition: color 180ms; }
+    .footer .col a:hover { color: var(--cream); }
+    .footer .brand .logo { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.25rem; color: var(--cream); }
+    .footer .brand .logo em { font-style: italic; color: var(--gold); }
+    .footer .brand .tag { font-size: .8rem; margin-top: .5rem; line-height: 1.5; max-width: 280px; }
+    .footer-bottom { max-width: 1200px; margin: 0 auto; padding-top: 1.5rem; border-top: 1px solid rgba(245,239,226,.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: .76rem; }
+
+    @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 500px) { .footer-inner { grid-template-columns: 1fr; } }
   </style>
 </head>
 
@@ -681,6 +713,62 @@
 </section>
 
   <!-- ═══ 12 · CTA + FOOTER ═══ -->
+<section class="cta-final grain">
+  <div class="cta-final-inner">
+    <div class="badge"><span class="dot"></span>Comece grátis</div>
+    <h2>Pronto para trabalhar <em>diferente?</em></h2>
+    <p>Crie sua conta. Sem cartão de crédito.</p>
+    <a href="{% url 'cadastro' %}" class="btn-gold">Criar conta gratuita
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+    </a>
+    <div class="trust-line">
+      <span>
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+        Dados criptografados
+      </span>
+      <span class="sep"></span>
+      <span>Configuração em minutos</span>
+      <span class="sep"></span>
+      <span>Suporte em português</span>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="col brand">
+      <div class="logo">Juri<em>AI</em></div>
+      <p class="tag">Plataforma de inteligência jurídica para escritórios brasileiros.</p>
+    </div>
+    <div class="col">
+      <h4>Produto</h4>
+      <ul>
+        <li><a href="#funcionalidades">Funcionalidades</a></li>
+        <li><a href="#seguranca">Segurança</a></li>
+        <li><a href="{% url 'login' %}">Entrar</a></li>
+        <li><a href="{% url 'cadastro' %}">Criar conta</a></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="/privacidade/">Privacidade</a></li>
+        <li><a href="/termos/">Termos de uso</a></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>Contato</h4>
+      <ul>
+        <li>contato@juriai.com.br</li>
+        <li>São Paulo, Brasil</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 JuriAI. Todos os direitos reservados.</span>
+    <span>Feito no Brasil para o Direito brasileiro.</span>
+  </div>
+</footer>
 
   <script>
     const navToggle = document.getElementById('navToggle');
