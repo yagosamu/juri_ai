@@ -82,6 +82,53 @@
       .nav-links, .nav-cta-row { display: none; }
       .nav-mobile-toggle { display: block; }
     }
+
+    .hero {
+      position: relative; overflow: hidden;
+      min-height: 720px; padding: 8rem 2rem 5rem;
+      background:
+        linear-gradient(180deg, transparent 0%, rgba(15,23,42,.55) 60%, rgba(15,23,42,.95) 100%),
+        linear-gradient(90deg, rgba(15,23,42,.65) 0%, rgba(15,23,42,.25) 50%, rgba(15,23,42,.7) 100%),
+        url("{% static 'landing/law.png' %}") center 30% / cover,
+        var(--ink);
+      color: var(--cream);
+      animation: hero-breathe 14s ease-in-out infinite alternate;
+    }
+    @keyframes hero-breathe { from { background-size: 100%, 100%, 100% 100%; } to { background-size: 100%, 100%, 103% 103%; } }
+    @media (prefers-reduced-motion: reduce) { .hero { animation: none; } }
+    .hero-orb { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); width: 700px; height: 480px; background: radial-gradient(ellipse, rgba(212,165,71,.10) 0%, transparent 65%); filter: blur(48px); pointer-events: none; }
+    .hero-inner { position: relative; z-index: 2; max-width: 940px; margin: 0 auto; text-align: center; }
+
+    .badge { display: inline-flex; align-items: center; gap: .45rem; padding: .35rem .85rem; border-radius: 20px; background: rgba(212,165,71,.12); border: 1px solid rgba(212,165,71,.3); font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; color: var(--gold); margin-bottom: 1.75rem; }
+    .badge .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: dot-pulse 2.5s ease-in-out infinite; }
+    @keyframes dot-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+    .hero h1 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(2.8rem, 6vw, 5rem); line-height: 1.04; letter-spacing: -.022em; margin: 0 0 1.3rem; }
+    .hero h1 em { color: var(--gold); }
+    .hero .sub { font-size: clamp(1rem, 1.4vw, 1.1rem); opacity: .82; line-height: 1.65; max-width: 620px; margin: 0 auto 2.4rem; }
+
+    .btn-gold { padding: .9rem 1.75rem; background: var(--gold); color: var(--ink); border-radius: 8px; font-size: .92rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: .5rem; box-shadow: 0 0 30px rgba(212,165,71,.22); transition: background 180ms, transform 140ms, box-shadow 180ms; }
+    .btn-gold:hover { background: var(--gold-hover); transform: translateY(-1px); box-shadow: 0 0 40px rgba(212,165,71,.4); }
+    .btn-ghost-dark { padding: .9rem 1.75rem; background: transparent; color: var(--cream); border: 1px solid rgba(245,239,226,.25); border-radius: 8px; font-size: .92rem; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: .5rem; transition: background 180ms, border-color 180ms; }
+    .btn-ghost-dark:hover { background: rgba(245,239,226,.05); border-color: rgba(245,239,226,.4); }
+
+    .hero .ctas { display: flex; gap: .8rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.8rem; }
+
+    .mockup-card-hero { max-width: 540px; margin: 0 auto; background: rgba(15,23,42,.58); backdrop-filter: blur(20px); border: 1px solid rgba(212,165,71,.2); border-radius: 11px; padding: 1.15rem 1.35rem; text-align: left; box-shadow: 0 24px 60px rgba(0,0,0,.45); }
+    .mc-head { display: flex; align-items: center; gap: .7rem; margin-bottom: .9rem; padding-bottom: .75rem; border-bottom: 1px solid rgba(245,239,226,.08); }
+    .mc-icon { width: 30px; height: 30px; border-radius: 6px; background: rgba(212,165,71,.15); border: 1px solid rgba(212,165,71,.3); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; color: var(--gold); font-weight: 600; }
+    .mc-file { font-size: .82rem; font-weight: 600; }
+    .mc-file .meta { display: block; font-size: .65rem; opacity: .55; font-weight: 400; margin-top: 2px; }
+    .mc-risk { margin-left: auto; font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--gold); }
+    .mc-item { display: flex; gap: .5rem; font-size: .78rem; line-height: 1.5; margin: .35rem 0; opacity: .88; }
+    .mc-item .pin { color: var(--gold); font-weight: 700; }
+    .mc-item strong { color: var(--cream); font-weight: 600; }
+
+    .hero-stats { margin-top: 2.6rem; display: flex; align-items: center; justify-content: center; gap: 2.5rem; flex-wrap: wrap; }
+    .hero-stats .stat { text-align: center; }
+    .hero-stats .stat .num { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.55rem; letter-spacing: -.015em; color: var(--cream); }
+    .hero-stats .stat .lbl { font-size: .65rem; letter-spacing: .14em; text-transform: uppercase; opacity: .55; margin-top: 3px; }
+    .hero-stats .sep { width: 1px; height: 28px; background: rgba(245,239,226,.15); }
   </style>
 </head>
 
@@ -114,6 +161,47 @@
 </header>
 
   <!-- ═══ 02 · HERO ═══ -->
+<section class="hero grain" id="hero">
+  <div class="hero-orb"></div>
+  <div class="hero-inner">
+
+    <div class="badge"><span class="dot"></span>Plataforma de inteligência jurídica</div>
+
+    <h1 class="serif">Jurídico inteligente,<br><em>resultados reais.</em></h1>
+
+    <p class="sub">Documentos, processos, agenda e atendimento em um único ambiente. Inteligência avançada que apoia o julgamento do advogado sem jamais substituí-lo.</p>
+
+    <div class="ctas">
+      <a href="{% url 'cadastro' %}" class="btn-gold">Começar grátis
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+      </a>
+      <a href="#funcionalidades" class="btn-ghost-dark">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>
+        Ver demonstração
+      </a>
+    </div>
+
+    <div class="mockup-card-hero">
+      <div class="mc-head">
+        <div class="mc-icon">§</div>
+        <div class="mc-file">Petição inicial · Silva vs Construtora<span class="meta">Analisado há 14 segundos</span></div>
+        <div class="mc-risk">Risco 28/100</div>
+      </div>
+      <div class="mc-item"><span class="pin">→</span><span><strong>3 inconsistências de prazo</strong> identificadas (fls. 4, 9 e 12)</span></div>
+      <div class="mc-item"><span class="pin">→</span><span>Cláusula 4ª <strong>contradiz Art. 523 CPC</strong> sobre multa de 10%</span></div>
+      <div class="mc-item"><span class="pin">→</span><span>Falta menção ao acórdão <strong>STJ Tema 1.061</strong> (precedente aplicável)</span></div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat"><div class="num">50+</div><div class="lbl">Tribunais</div></div>
+      <div class="sep"></div>
+      <div class="stat"><div class="num">DataJud</div><div class="lbl">Integrado</div></div>
+      <div class="sep"></div>
+      <div class="stat"><div class="num">24/7</div><div class="lbl">Atendimento</div></div>
+    </div>
+
+  </div>
+</section>
 
   <!-- ═══ 03 · STATS STRIP ═══ -->
 
