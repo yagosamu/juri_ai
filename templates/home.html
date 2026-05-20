@@ -205,6 +205,20 @@
     .mockup-calc th.r, .mockup-calc td.r { text-align: right; }
     .mockup-calc td { padding: .55rem .4rem; border-bottom: 1px solid #f1efe9; }
     .mockup-calc tr:last-child td { border-bottom: 0; font-weight: 600; }
+
+    .mockup-timeline { padding: 1.5rem; }
+    .mockup-timeline .tl-item { display: flex; gap: 1rem; padding: .65rem 0; position: relative; }
+    .mockup-timeline .tl-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; position: relative; }
+    .mockup-timeline .tl-dot.datajud { background: var(--navy-700); }
+    .mockup-timeline .tl-dot.manual { background: #cbd5e1; }
+    .mockup-timeline .tl-dot::after { content: ''; position: absolute; top: 14px; left: 4px; width: 2px; height: 30px; background: #e3dcc8; }
+    .mockup-timeline .tl-item:last-child .tl-dot::after { display: none; }
+    .mockup-timeline .tl-content { flex: 1; }
+    .mockup-timeline .tl-date { font-size: .68rem; color: var(--text-muted); letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+    .mockup-timeline .tl-desc { font-size: .88rem; color: var(--text-light); line-height: 1.5; margin-top: 2px; }
+    .mockup-timeline .tl-src { display: inline-block; font-size: .6rem; padding: .15rem .45rem; border-radius: 3px; margin-left: .4rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; vertical-align: middle; }
+    .mockup-timeline .tl-src.datajud { background: rgba(30,58,95,.1); color: var(--navy-700); }
+    .mockup-timeline .tl-src.manual { background: rgba(100,116,139,.1); color: var(--text-muted); }
   </style>
 </head>
 
@@ -429,6 +443,54 @@
 </section>
 
   <!-- ═══ 07 · PROCESSOS + DATAJUD + PRAZOS ═══ -->
+<section class="module reveal">
+  <div class="module-inner">
+    <div class="module-text">
+      <span class="pretitle">Módulo 03</span>
+      <div><span class="gold-rule"></span></div>
+      <h2>Cada processo <em>sempre atualizado.</em></h2>
+      <p>Vincule o número CNJ e o JuriAI consulta o DataJud todo dia. Andamentos chegam automáticos, prazos viram alerta de e-mail e evento no Google Calendar.</p>
+      <ul class="module-bullets">
+        <li>Integração nativa com DataJud (CNJ) e atualização diária automática</li>
+        <li>Timeline visual de andamentos com origem (DataJud ou manual)</li>
+        <li>Prazos com alerta por e-mail nos dias configurados antes do vencimento</li>
+        <li>Sincronização bidirecional com Google Calendar</li>
+        <li>Cobertura de todos os tribunais brasileiros suportados pelo DataJud</li>
+      </ul>
+    </div>
+    <div class="module-mockup mockup-timeline">
+      <div class="mockup-title">0042586-12.2025.8.26.0100 · Silva vs Construtora</div>
+      <div class="tl-item">
+        <div class="tl-dot datajud"></div>
+        <div class="tl-content">
+          <div class="tl-date">14/05/2026<span class="tl-src datajud">DataJud</span></div>
+          <div class="tl-desc">Decisão interlocutória publicada. Concedida tutela provisória parcial.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot datajud"></div>
+        <div class="tl-content">
+          <div class="tl-date">02/05/2026<span class="tl-src datajud">DataJud</span></div>
+          <div class="tl-desc">Audiência de conciliação designada para 18/06/2026 às 14h.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot manual"></div>
+        <div class="tl-content">
+          <div class="tl-date">28/04/2026<span class="tl-src manual">Manual</span></div>
+          <div class="tl-desc">Contrato original anexado ao processo (revisado pelo escritório).</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot datajud"></div>
+        <div class="tl-content">
+          <div class="tl-date">15/04/2026<span class="tl-src datajud">DataJud</span></div>
+          <div class="tl-desc">Distribuição inicial. 4ª Vara Cível de São Paulo.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
   <!-- ═══ 08 · MANIFESTO ═══ -->
 
