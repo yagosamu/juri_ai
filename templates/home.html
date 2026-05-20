@@ -193,6 +193,18 @@
     .mockup-risk .flag { padding: .65rem .85rem; background: var(--cream); border-left: 2px solid var(--gold); border-radius: 4px; margin-bottom: .5rem; }
     .mockup-risk .flag .cat { font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--gold); margin-bottom: .2rem; }
     .mockup-risk .flag .desc { font-size: .82rem; color: var(--text-light); line-height: 1.45; }
+
+    .module.calc { background: var(--cream); }
+    .mockup-calc { padding: 0; }
+    .mockup-calc .calc-summary { padding: 1.2rem; background: var(--ink); color: var(--cream); border-radius: 10px 10px 0 0; margin: -1.5rem -1.5rem 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .mockup-calc .calc-summary .item .lbl { font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; opacity: .55; }
+    .mockup-calc .calc-summary .item .val { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.1rem; margin-top: 3px; }
+    .mockup-calc .calc-summary .item.total .val { color: var(--gold); font-size: 1.35rem; }
+    .mockup-calc table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: .8rem; }
+    .mockup-calc th { text-align: left; font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; padding: .55rem .4rem; border-bottom: 1px solid #e3dcc8; }
+    .mockup-calc th.r, .mockup-calc td.r { text-align: right; }
+    .mockup-calc td { padding: .55rem .4rem; border-bottom: 1px solid #f1efe9; }
+    .mockup-calc tr:last-child td { border-bottom: 0; font-weight: 600; }
   </style>
 </head>
 
@@ -379,6 +391,42 @@
 </section>
 
   <!-- ═══ 06 · CALCULADORA JUDICIAL ═══ -->
+<section class="module calc reveal">
+  <div class="module-inner reverse">
+    <div class="module-text">
+      <span class="pretitle">Módulo 02</span>
+      <div><span class="gold-rule"></span></div>
+      <h2>Cálculos prontos <em>para protocolo.</em></h2>
+      <p>Atualização monetária mês a mês pelo índice oficial, juros conforme o regime do processo e exportação em PDF pronta para protocolo. Sem planilha à parte.</p>
+      <ul class="module-bullets">
+        <li>Índices: IPCA-E, INPC, SELIC, TR, IGP-M e Taxa Legal (Lei 14.905/2024)</li>
+        <li>Juros simples ou compostos, com regime customizável por período</li>
+        <li>Multa Art. 523 CPC e honorários sucumbenciais configuráveis</li>
+        <li>Tabelas próprias dos TJs (SP, RJ, MG, PR, RS), CJF e TST</li>
+        <li>Comparador de cenários lado a lado para negociação</li>
+      </ul>
+    </div>
+    <div class="module-mockup mockup-calc">
+      <div class="calc-summary">
+        <div class="item"><div class="lbl">Corrigido</div><div class="val">R$ 38.420,16</div></div>
+        <div class="item"><div class="lbl">Juros</div><div class="val">R$ 6.708,03</div></div>
+        <div class="item"><div class="lbl">Multa</div><div class="val">R$ 4.512,82</div></div>
+        <div class="item total"><div class="lbl">Total</div><div class="val">R$ 49.641,01</div></div>
+      </div>
+      <table>
+        <thead><tr><th>Mês</th><th class="r">IPCA-E %</th><th class="r">Correção</th><th class="r">Juros</th><th class="r">Subtotal</th></tr></thead>
+        <tbody>
+          <tr><td>jan/26</td><td class="r">0,47</td><td class="r">141,12</td><td class="r">300,42</td><td class="r">30.441,54</td></tr>
+          <tr><td>fev/26</td><td class="r">0,33</td><td class="r">100,57</td><td class="r">301,04</td><td class="r">30.843,15</td></tr>
+          <tr><td>mar/26</td><td class="r">0,55</td><td class="r">169,77</td><td class="r">302,06</td><td class="r">31.314,98</td></tr>
+          <tr><td>abr/26</td><td class="r">0,29</td><td class="r">90,93</td><td class="r">302,99</td><td class="r">31.708,90</td></tr>
+          <tr><td>… 18 meses</td><td class="r">…</td><td class="r">…</td><td class="r">…</td><td class="r">…</td></tr>
+          <tr><td>Total</td><td class="r">-</td><td class="r"><strong>R$ 8.420,16</strong></td><td class="r"><strong>R$ 6.708,03</strong></td><td class="r"><strong>R$ 45.128,19</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
   <!-- ═══ 07 · PROCESSOS + DATAJUD + PRAZOS ═══ -->
 
