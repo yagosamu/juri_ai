@@ -288,6 +288,10 @@
     @media (max-width: 900px) { .trust-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 500px) { .trust-grid { grid-template-columns: 1fr; } .trust-featured { flex-direction: column; text-align: center; } }
 
+    @media (max-width: 640px) {
+      .mockup-calc .calc-summary { grid-template-columns: repeat(2, 1fr); }
+    }
+
     .cta-final {
       position: relative; overflow: hidden;
       padding: 7rem 2rem 5rem;
@@ -325,21 +329,21 @@
 <body>
 
   <!-- ═══ 01 · HEADER ═══ -->
-<header class="nav" id="nav">
+<header class="nav" id="nav" aria-label="Navegação principal">
   <div class="nav-inner">
     <a href="{% url 'home' %}" class="nav-logo">Juri<em>AI</em></a>
-    <nav class="nav-links">
+    <nav class="nav-links" aria-label="Menu principal">
       <a href="#funcionalidades" class="nav-link">Funcionalidades</a>
       <a href="#seguranca" class="nav-link">Segurança</a>
       <a href="{% url 'login' %}" class="nav-link">Entrar</a>
     </nav>
     <div class="nav-cta-row">
       <a href="{% url 'cadastro' %}" class="nav-btn-dark">Começar grátis
-        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
       </a>
     </div>
-    <button class="nav-mobile-toggle" id="navToggle" aria-label="Abrir menu">
-      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <button class="nav-mobile-toggle" id="navToggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="navMobileMenu">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
     </button>
   </div>
   <div class="nav-mobile-menu" id="navMobileMenu">
@@ -351,7 +355,7 @@
 </header>
 
   <!-- ═══ 02 · HERO ═══ -->
-<section class="hero grain" id="hero">
+<section class="hero grain" id="hero" aria-label="Apresentação do JuriAI">
   <div class="hero-orb"></div>
   <div class="hero-inner">
 
@@ -363,10 +367,10 @@
 
     <div class="ctas">
       <a href="{% url 'cadastro' %}" class="btn-gold">Começar grátis
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
       </a>
       <a href="#funcionalidades" class="btn-ghost-dark">
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>
         Ver demonstração
       </a>
     </div>
@@ -394,11 +398,11 @@
 </section>
 
   <!-- ═══ 03 · STATS STRIP ═══ -->
-<section class="stats-strip">
+<section class="stats-strip" aria-label="Estatísticas da plataforma">
   <div class="stats-strip-inner">
     <div class="stat-cell">
       <div class="stat-icon">
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
       </div>
       <div>
         <div class="stat-title">3 agentes jurídicos especializados</div>
@@ -407,7 +411,7 @@
     </div>
     <div class="stat-cell">
       <div class="stat-icon">
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       </div>
       <div>
         <div class="stat-title">Análise jurisprudencial em segundos</div>
@@ -416,7 +420,7 @@
     </div>
     <div class="stat-cell">
       <div class="stat-icon">
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/></svg>
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/></svg>
       </div>
       <div>
         <div class="stat-title">Atendimento autônomo 24/7</div>
@@ -437,21 +441,21 @@
     <div class="pillars-grid">
       <div class="pillar-card">
         <div class="pillar-icon">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
         </div>
         <h3>Análise de Documentos.</h3>
         <p>Identifica riscos, inconsistências e red flags antes do protocolo.</p>
       </div>
       <div class="pillar-card">
         <div class="pillar-icon">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/></svg>
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/></svg>
         </div>
         <h3>Chat por Cliente.</h3>
         <p>Cada cliente tem seu próprio assistente treinado com os documentos do caso.</p>
       </div>
       <div class="pillar-card">
         <div class="pillar-icon">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/></svg>
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/></svg>
         </div>
         <h3>Secretaria Autônoma.</h3>
         <p>Atende, agenda e mantém a comunicação fluindo sem intervenção humana.</p>
@@ -461,7 +465,7 @@
 </section>
 
   <!-- ═══ 05 · ANÁLISE DE DOCUMENTOS ═══ -->
-<section class="module reveal">
+<section class="module reveal" aria-label="Módulo de análise de documentos">
   <div class="module-inner">
     <div class="module-text">
       <span class="pretitle">Módulo 01</span>
@@ -505,7 +509,7 @@
 </section>
 
   <!-- ═══ 06 · CALCULADORA JUDICIAL ═══ -->
-<section class="module calc reveal">
+<section class="module calc reveal" aria-label="Módulo de calculadora judicial">
   <div class="module-inner reverse">
     <div class="module-text">
       <span class="pretitle">Módulo 02</span>
@@ -543,7 +547,7 @@
 </section>
 
   <!-- ═══ 07 · PROCESSOS + DATAJUD + PRAZOS ═══ -->
-<section class="module reveal">
+<section class="module reveal" aria-label="Módulo de acompanhamento de processos">
   <div class="module-inner">
     <div class="module-text">
       <span class="pretitle">Módulo 03</span>
@@ -593,17 +597,17 @@
 </section>
 
   <!-- ═══ 08 · MANIFESTO ═══ -->
-<section class="manifesto grain reveal">
+<section class="manifesto grain reveal" aria-labelledby="manifesto-heading">
   <div class="manifesto-inner">
     <span class="pretitle">Manifesto</span>
     <div><span class="gold-rule"></span></div>
-    <h2>Tradição que pensa, <em>inteligência que age.</em></h2>
+    <h2 id="manifesto-heading">Tradição que pensa, <em>inteligência que age.</em></h2>
     <p>Cada decisão jurídica nasce sobre séculos de doutrina. O JuriAI torna esse acervo, e o seu próprio, instantaneamente acessível. O julgamento continua seu.</p>
   </div>
 </section>
 
   <!-- ═══ 09 · FINANCEIRO + GERAÇÃO ═══ -->
-<section class="duo reveal">
+<section class="duo reveal" aria-label="Módulos financeiro e redação jurídica">
   <div class="duo-inner">
     <div class="duo-head">
       <span class="pretitle">Módulos 04 e 05</span>
@@ -653,7 +657,7 @@
 </section>
 
   <!-- ═══ 10 · INTEGRAÇÕES ═══ -->
-<section class="integrations reveal">
+<section class="integrations reveal" aria-label="Integrações disponíveis">
   <div class="integrations-inner">
     <span class="pretitle">Integrado com o que você já usa</span>
     <div class="integrations-logos">
@@ -678,28 +682,28 @@
     <div class="trust-grid">
       <div class="trust-card">
         <div class="trust-icon">
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
         </div>
         <h3>Dados criptografados</h3>
         <p>Em trânsito e em repouso, com chave gerenciada pelo escritório.</p>
       </div>
       <div class="trust-card">
         <div class="trust-icon">
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/></svg>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/></svg>
         </div>
         <h3>LGPD nativo</h3>
         <p>Consentimento auditado, exclusão de conta completa, exportação de dados.</p>
       </div>
       <div class="trust-card">
         <div class="trust-icon">
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
         </div>
         <h3>Auditoria completa</h3>
         <p>Cada alteração em cliente, processo ou documento fica registrada e visível.</p>
       </div>
       <div class="trust-card">
         <div class="trust-icon">
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"/></svg>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"/></svg>
         </div>
         <h3>Isolamento por cliente</h3>
         <p>Cada cliente tem seu próprio espaço de busca. Nada vaza entre casos.</p>
@@ -713,17 +717,17 @@
 </section>
 
   <!-- ═══ 12 · CTA + FOOTER ═══ -->
-<section class="cta-final grain">
+<section class="cta-final grain" aria-label="Chamada para ação">
   <div class="cta-final-inner">
     <div class="badge"><span class="dot"></span>Comece grátis</div>
     <h2>Pronto para trabalhar <em>diferente?</em></h2>
     <p>Crie sua conta. Sem cartão de crédito.</p>
     <a href="{% url 'cadastro' %}" class="btn-gold">Criar conta gratuita
-      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
     </a>
     <div class="trust-line">
       <span>
-        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
         Dados criptografados
       </span>
       <span class="sep"></span>
@@ -773,7 +777,11 @@
   <script>
     const navToggle = document.getElementById('navToggle');
     const navMobileMenu = document.getElementById('navMobileMenu');
-    navToggle?.addEventListener('click', () => navMobileMenu.classList.toggle('is-open'));
+    navToggle?.addEventListener('click', () => {
+      const isOpen = navMobileMenu.classList.toggle('is-open');
+      navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      navToggle.setAttribute('aria-label', isOpen ? 'Fechar menu' : 'Abrir menu');
+    });
 
     // Reveal sections as they enter viewport (respects prefers-reduced-motion)
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
