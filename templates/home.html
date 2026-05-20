@@ -1,894 +1,814 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JuriAI — Jurídico Inteligente</title>
-  <meta name="description" content="Analise documentos, atenda clientes e organize sua agenda — tudo com IA jurídica." />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>JuriAI · Plataforma de inteligência jurídica</title>
+  <meta name="description" content="Documentos, processos, agenda e atendimento em um único ambiente. Inteligência avançada que apoia o julgamento do advogado sem jamais substituí-lo.">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,500;9..144,0,600;9..144,1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --ink:        #ffffff;
-      --ink-2:      #f8fafc;
-      --ink-3:      #f1f5f9;
-      --rule:       #e2e8f0;
-      --rule-hover: rgba(30,64,175,0.3);
-      --indigo:     #1d4ed8;
-      --indigo-dk:  #1e40af;
-      --indigo-lt:  #1e40af;
-      --text:       #0f172a;
-      --muted:      #64748b;
-      --faint:      #94a3b8;
+      --ink:         #0F172A;
+      --ink-2:       #0C1D3D;
+      --navy-700:    #1E3A5F;
+      --gold:        #D4A547;
+      --gold-hover:  #E0B558;
+      --cream:       #F5EFE2;
+      --cream-light: #FAFAF7;
+      --muted:       #6B7A96;
+      --faint:       #2E3A52;
+      --text-light:  #0F172A;
+      --text-muted:  #64748B;
     }
 
     *, *::before, *::after { box-sizing: border-box; }
-
     html { scroll-behavior: smooth; }
-
     body {
-      font-family: 'DM Sans', system-ui, sans-serif;
-      background: var(--ink);
-      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--cream-light);
+      color: var(--text-light);
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
+    .serif { font-family: 'Fraunces', Georgia, serif; font-variation-settings: "opsz" 144; }
+    .serif em { font-style: italic; }
 
-    .serif { font-family: 'Cormorant Garamond', 'Georgia', serif; }
-
-    /* ─── dot grid ─── */
-    .dot-grid {
-      background-image: radial-gradient(circle, rgba(0,0,0,0.045) 1px, transparent 1px);
-      background-size: 28px 28px;
-    }
-
-    /* ─── hero glow ─── */
-    .hero-glow {
-      background:
-        radial-gradient(ellipse 100% 50% at 50% -5%, rgba(30,64,175,.06) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 35% at 50% 0%, rgba(30,64,175,.03) 0%, transparent 50%);
+    .grain::after {
+      content: ''; position: absolute; inset: 0; opacity: 0.07; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
-    /* ─── nav ─── */
-    .nav {
-      background: rgba(255,255,255,.94);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--rule);
-    }
-
-    /* ─── buttons ─── */
-    .btn-primary {
-      background: var(--indigo-dk);
-      color: #fff;
-      border: 1px solid rgba(30,64,175,.3);
-      transition: background .18s, box-shadow .18s, transform .14s;
-    }
-    .btn-primary:hover {
-      background: var(--indigo);
-      box-shadow: 0 0 28px rgba(30,64,175,.25);
-      transform: translateY(-1px);
-    }
-    .btn-ghost {
-      background: transparent;
-      color: var(--muted);
-      border: 1px solid var(--rule);
-      transition: border-color .18s, color .18s, background .18s;
-    }
-    .btn-ghost:hover {
-      border-color: #cbd5e1;
-      color: var(--text);
-      background: #f8fafc;
-    }
-
-    /* ─── cards ─── */
-    .card {
-      background: #ffffff;
-      border: 1px solid var(--rule);
-      border-radius: 14px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.05);
-      transition: border-color .22s, box-shadow .22s;
-    }
-    .card:hover {
-      border-color: #bfdbfe;
-      box-shadow: 0 4px 20px rgba(30,64,175,.08);
-    }
-    .card-accent {
-      background: linear-gradient(150deg, #eff6ff 0%, #f8fafc 100%);
-      border: 1px solid #bfdbfe;
-      box-shadow: 0 1px 4px rgba(30,64,175,.06);
-    }
-    .card-accent:hover {
-      border-color: #93c5fd;
-      box-shadow: 0 4px 24px rgba(30,64,175,.12);
-    }
-
-    /* ─── icon pill ─── */
-    .icon-pill {
-      background: #dbeafe;
-      border: 1px solid #bfdbfe;
-      border-radius: 10px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 44px;
-      flex-shrink: 0;
-    }
-
-    /* ─── tag chip ─── */
-    .chip {
-      font-size: .68rem;
-      font-weight: 500;
-      letter-spacing: .025em;
-      color: #64748b;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      padding: .22rem .6rem;
-      border-radius: 6px;
-    }
-    .chip-indigo {
-      color: #1e40af;
-      background: #dbeafe;
-      border-color: #bfdbfe;
-    }
-
-    /* ─── badge ─── */
-    .badge {
-      font-size: .72rem;
-      font-weight: 500;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: var(--indigo-lt);
-      background: #dbeafe;
-      border: 1px solid #bfdbfe;
-      padding: .3rem .9rem;
-      border-radius: 20px;
-    }
-
-    /* ─── nav link ─── */
-    .nav-link {
-      font-size: .875rem;
-      font-weight: 400;
-      color: var(--muted);
-      text-decoration: none;
-      transition: color .15s;
-    }
-    .nav-link:hover { color: var(--text); }
-
-    /* ─── stat strip ─── */
-    .stat-strip {
-      background: var(--ink-2);
-      border-top: 1px solid var(--rule);
-      border-bottom: 1px solid var(--rule);
-    }
-
-    /* ─── CTA bg — solid blue-800 ─── */
-    .cta-bg {
-      background: #1e40af;
-      border-top: 1px solid #1e3a8a;
-      border-bottom: 1px solid #1e3a8a;
-    }
-
-    /* ─── fade-in stagger ─── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(18px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .f1 { animation: fadeUp .55s ease both; }
-    .f2 { animation: fadeUp .55s .10s ease both; }
-    .f3 { animation: fadeUp .55s .20s ease both; }
-    .f4 { animation: fadeUp .55s .32s ease both; }
-    .f5 { animation: fadeUp .55s .44s ease both; }
-
-    /* ─── section label ─── */
-    .section-label {
-      font-size: .7rem;
-      font-weight: 600;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--indigo-lt);
-    }
-
-    /* custom scrollbar */
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--cream-light); }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 800ms cubic-bezier(0.16,1,0.3,1), transform 800ms cubic-bezier(0.16,1,0.3,1); }
+    .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(15,23,42,.08);
+      transition: background 200ms, box-shadow 200ms;
+    }
+    .nav.is-scrolled { background: rgba(255,255,255,.98); box-shadow: 0 1px 12px rgba(15,23,42,.06); }
+    .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; height: 72px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.15rem; letter-spacing: -.015em; color: var(--ink); text-decoration: none; }
+    .nav-logo em { font-style: italic; color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 2.25rem; }
+    .nav-link { font-size: .82rem; color: var(--text-muted); text-decoration: none; position: relative; padding-bottom: 2px; }
+    .nav-link::after { content: ''; position: absolute; left: 0; bottom: 0; width: 0; height: 1px; background: var(--ink); transition: width 200ms ease-out; }
+    .nav-link:hover { color: var(--ink); }
+    .nav-link:hover::after { width: 100%; }
+    .nav-cta-row { display: flex; align-items: center; gap: .65rem; }
+    .nav-btn-out { font-size: .82rem; padding: .55rem 1.1rem; border-radius: 7px; color: var(--ink); border: 1px solid rgba(15,23,42,.18); text-decoration: none; transition: background 180ms; }
+    .nav-btn-out:hover { background: rgba(15,23,42,.04); }
+    .nav-btn-dark { font-size: .82rem; padding: .55rem 1.1rem; border-radius: 7px; background: var(--ink); color: var(--cream); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: .4rem; transition: background 180ms, transform 140ms; }
+    .nav-btn-dark:hover { background: var(--ink-2); transform: translateY(-1px); }
+
+    .nav-mobile-toggle { display: none; background: none; border: 0; color: var(--ink); cursor: pointer; padding: .5rem; }
+    .nav-mobile-menu { display: none; padding: 1.5rem 2rem; gap: 1rem; background: #fff; border-bottom: 1px solid rgba(15,23,42,.08); flex-direction: column; }
+    .nav-mobile-menu a { font-family: 'Fraunces', serif; font-style: italic; font-size: 1.15rem; color: var(--ink); text-decoration: none; }
+    .nav-mobile-menu.is-open { display: flex; }
+
+    @media (max-width: 768px) {
+      .nav-links, .nav-cta-row { display: none; }
+      .nav-mobile-toggle { display: block; }
+    }
+
+    .hero {
+      position: relative; overflow: hidden;
+      min-height: 720px; padding: 8rem 2rem 5rem;
+      background:
+        linear-gradient(180deg, transparent 0%, rgba(15,23,42,.55) 60%, rgba(15,23,42,.95) 100%),
+        linear-gradient(90deg, rgba(15,23,42,.65) 0%, rgba(15,23,42,.25) 50%, rgba(15,23,42,.7) 100%),
+        url("{% static 'landing/law.png' %}") center 30% / cover,
+        var(--ink);
+      color: var(--cream);
+      animation: hero-breathe 14s ease-in-out infinite alternate;
+    }
+    @keyframes hero-breathe { from { background-size: 100%, 100%, 100% 100%; } to { background-size: 100%, 100%, 103% 103%; } }
+    @media (prefers-reduced-motion: reduce) { .hero { animation: none; } }
+    .hero-orb { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); width: 700px; height: 480px; background: radial-gradient(ellipse, rgba(212,165,71,.10) 0%, transparent 65%); filter: blur(48px); pointer-events: none; }
+    .hero-inner { position: relative; z-index: 2; max-width: 940px; margin: 0 auto; text-align: center; }
+
+    .badge { display: inline-flex; align-items: center; gap: .45rem; padding: .35rem .85rem; border-radius: 20px; background: rgba(212,165,71,.12); border: 1px solid rgba(212,165,71,.3); font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; color: var(--gold); margin-bottom: 1.75rem; }
+    .badge .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: dot-pulse 2.5s ease-in-out infinite; }
+    @keyframes dot-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+    .hero h1 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(2.8rem, 6vw, 5rem); line-height: 1.04; letter-spacing: -.022em; margin: 0 0 1.3rem; }
+    .hero h1 em { color: var(--gold); }
+    .hero .sub { font-size: clamp(1rem, 1.4vw, 1.1rem); opacity: .82; line-height: 1.65; max-width: 620px; margin: 0 auto 2.4rem; }
+
+    .btn-gold { padding: .9rem 1.75rem; background: var(--gold); color: var(--ink); border-radius: 8px; font-size: .92rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: .5rem; box-shadow: 0 0 30px rgba(212,165,71,.22); transition: background 180ms, transform 140ms, box-shadow 180ms; }
+    .btn-gold:hover { background: var(--gold-hover); transform: translateY(-1px); box-shadow: 0 0 40px rgba(212,165,71,.4); }
+    .btn-ghost-dark { padding: .9rem 1.75rem; background: transparent; color: var(--cream); border: 1px solid rgba(245,239,226,.25); border-radius: 8px; font-size: .92rem; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: .5rem; transition: background 180ms, border-color 180ms; }
+    .btn-ghost-dark:hover { background: rgba(245,239,226,.05); border-color: rgba(245,239,226,.4); }
+
+    .hero .ctas { display: flex; gap: .8rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.8rem; }
+
+    .mockup-card-hero { max-width: 540px; margin: 0 auto; background: rgba(15,23,42,.58); backdrop-filter: blur(20px); border: 1px solid rgba(212,165,71,.2); border-radius: 11px; padding: 1.15rem 1.35rem; text-align: left; box-shadow: 0 24px 60px rgba(0,0,0,.45); }
+    .mc-head { display: flex; align-items: center; gap: .7rem; margin-bottom: .9rem; padding-bottom: .75rem; border-bottom: 1px solid rgba(245,239,226,.08); }
+    .mc-icon { width: 30px; height: 30px; border-radius: 6px; background: rgba(212,165,71,.15); border: 1px solid rgba(212,165,71,.3); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; color: var(--gold); font-weight: 600; }
+    .mc-file { font-size: .82rem; font-weight: 600; }
+    .mc-file .meta { display: block; font-size: .65rem; opacity: .55; font-weight: 400; margin-top: 2px; }
+    .mc-risk { margin-left: auto; font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--gold); }
+    .mc-item { display: flex; gap: .5rem; font-size: .78rem; line-height: 1.5; margin: .35rem 0; opacity: .88; }
+    .mc-item .pin { color: var(--gold); font-weight: 700; }
+    .mc-item strong { color: var(--cream); font-weight: 600; }
+
+    .hero-stats { margin-top: 2.6rem; display: flex; align-items: center; justify-content: center; gap: 2.5rem; flex-wrap: wrap; }
+    .hero-stats .stat { text-align: center; }
+    .hero-stats .stat .num { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.55rem; letter-spacing: -.015em; color: var(--cream); }
+    .hero-stats .stat .lbl { font-size: .65rem; letter-spacing: .14em; text-transform: uppercase; opacity: .55; margin-top: 3px; }
+    .hero-stats .sep { width: 1px; height: 28px; background: rgba(245,239,226,.15); }
+
+    .stats-strip { background: var(--cream); border-top: 1px solid #e3dcc8; border-bottom: 1px solid #e3dcc8; }
+    .stats-strip-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: grid; grid-template-columns: repeat(3, 1fr); }
+    .stat-cell { padding: 1.75rem 1.5rem; display: flex; align-items: center; gap: 1rem; border-right: 1px solid #e3dcc8; }
+    .stat-cell:last-child { border-right: 0; }
+    .stat-icon { width: 44px; height: 44px; border-radius: 10px; background: rgba(212,165,71,.12); border: 1px solid rgba(212,165,71,.3); display: flex; align-items: center; justify-content: center; color: var(--gold); flex-shrink: 0; }
+    .stat-title { font-size: .92rem; font-weight: 600; letter-spacing: -.012em; color: var(--text-light); }
+    .stat-meta { font-size: .76rem; color: var(--text-muted); margin-top: 3px; font-weight: 400; }
+
+    @media (max-width: 768px) {
+      .stats-strip-inner { grid-template-columns: 1fr; }
+      .stat-cell { border-right: 0; border-bottom: 1px solid #e3dcc8; }
+      .stat-cell:last-child { border-bottom: 0; }
+    }
+
+    .section { padding: 7rem 2rem; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .pretitle { font-family: 'Inter', sans-serif; font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; font-weight: 600; color: var(--gold); margin-bottom: 1rem; }
+    .gold-rule { display: inline-block; width: 36px; height: 1px; background: var(--gold); margin-bottom: 1.1rem; }
+    .section h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(2rem, 3.6vw, 2.9rem); line-height: 1.08; letter-spacing: -.018em; margin: 0 0 1rem; color: var(--text-light); }
+    .section h2 em { font-style: italic; color: var(--navy-700); }
+    .duo h2, .trust h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(2rem, 3.6vw, 2.9rem); line-height: 1.08; letter-spacing: -.018em; margin: 0 0 1rem; color: var(--text-light); }
+    .duo h2 em, .trust h2 em { font-style: italic; color: var(--navy-700); }
+    .section .sub { font-size: 1rem; color: var(--text-muted); line-height: 1.65; max-width: 580px; }
+
+    .pillars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3.5rem; }
+    .pillar-card { background: #fff; border: 1px solid #e3dcc8; border-radius: 14px; padding: 2rem 1.75rem; transition: border-color 220ms, box-shadow 220ms, transform 220ms; }
+    .pillar-card:hover { border-color: rgba(212,165,71,.4); box-shadow: 0 14px 40px rgba(15,23,42,.06); transform: translateY(-3px); }
+    .pillar-icon { width: 48px; height: 48px; border-radius: 10px; background: rgba(212,165,71,.12); border: 1px solid rgba(212,165,71,.3); display: flex; align-items: center; justify-content: center; color: var(--gold); margin-bottom: 1.5rem; }
+    .pillar-card h3 { font-family: 'Fraunces', serif; font-weight: 500; font-style: italic; font-size: 1.35rem; letter-spacing: -.012em; color: var(--text-light); margin: 0 0 .55rem; }
+    .pillar-card p { font-size: .92rem; color: var(--text-muted); line-height: 1.6; margin: 0; }
+
+    @media (max-width: 900px) {
+      .pillars-grid { grid-template-columns: 1fr; }
+    }
+
+    .module { padding: 6rem 2rem; }
+    .module.alt { background: var(--cream); }
+    .module-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .module-inner.reverse { direction: rtl; }
+    .module-inner.reverse > * { direction: ltr; }
+    .module-text .pretitle { color: var(--gold); }
+    .module-text h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.9rem, 3.2vw, 2.6rem); line-height: 1.1; letter-spacing: -.018em; margin: 0 0 1.1rem; color: var(--text-light); }
+    .module-text h2 em { font-style: italic; color: var(--navy-700); }
+    .module-text p { font-size: 1rem; color: var(--text-muted); line-height: 1.7; margin: 0 0 1.2rem; }
+    .module-bullets { list-style: none; padding: 0; margin: 1.4rem 0 0; }
+    .module-bullets li { display: flex; gap: .65rem; font-size: .92rem; color: var(--text-light); padding: .4rem 0; line-height: 1.55; }
+    .module-bullets li::before { content: '→'; color: var(--gold); font-weight: 700; flex-shrink: 0; }
+    .module-chips { margin-top: 1.6rem; display: flex; flex-wrap: wrap; gap: .4rem; }
+    .chip-light { font-size: .72rem; padding: .28rem .65rem; border-radius: 5px; background: rgba(15,23,42,.05); color: var(--text-light); border: 1px solid rgba(15,23,42,.1); font-weight: 500; }
+
+    .module-mockup { background: #fff; border: 1px solid #e3dcc8; border-radius: 14px; padding: 1.5rem; box-shadow: 0 18px 50px rgba(15,23,42,.08); }
+    .module-mockup .mockup-title { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); padding-bottom: .8rem; border-bottom: 1px solid #e3dcc8; margin-bottom: 1rem; }
+
+    @media (max-width: 1024px) {
+      .module-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .module-inner.reverse { direction: ltr; }
+    }
+
+    .mockup-risk { padding: 1rem; }
+    .mockup-risk .risk-big { display: flex; align-items: baseline; gap: .5rem; margin-bottom: .8rem; }
+    .mockup-risk .risk-big .num { font-family: 'Fraunces', serif; font-size: 3rem; font-weight: 500; color: var(--gold); letter-spacing: -.02em; line-height: 1; }
+    .mockup-risk .risk-big .lbl { font-size: .82rem; color: var(--text-muted); }
+    .mockup-risk .flag { padding: .65rem .85rem; background: var(--cream); border-left: 2px solid var(--gold); border-radius: 4px; margin-bottom: .5rem; }
+    .mockup-risk .flag .cat { font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--gold); margin-bottom: .2rem; }
+    .mockup-risk .flag .desc { font-size: .82rem; color: var(--text-light); line-height: 1.45; }
+
+    .module.calc { background: var(--cream); }
+    .mockup-calc { padding: 0; }
+    .mockup-calc .calc-summary { padding: 1.2rem; background: var(--ink); color: var(--cream); border-radius: 10px 10px 0 0; margin: -1.5rem -1.5rem 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .mockup-calc .calc-summary .item .lbl { font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; opacity: .55; }
+    .mockup-calc .calc-summary .item .val { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.1rem; margin-top: 3px; }
+    .mockup-calc .calc-summary .item.total .val { color: var(--gold); font-size: 1.35rem; }
+    .mockup-calc table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: .8rem; }
+    .mockup-calc th { text-align: left; font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; padding: .55rem .4rem; border-bottom: 1px solid #e3dcc8; }
+    .mockup-calc th.r, .mockup-calc td.r { text-align: right; }
+    .mockup-calc td { padding: .55rem .4rem; border-bottom: 1px solid #f1efe9; }
+    .mockup-calc tr:last-child td { border-bottom: 0; font-weight: 600; }
+
+    .mockup-timeline { padding: 1.5rem; }
+    .mockup-timeline .tl-item { display: flex; gap: 1rem; padding: .65rem 0; position: relative; }
+    .mockup-timeline .tl-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; position: relative; }
+    .mockup-timeline .tl-dot.datajud { background: var(--navy-700); }
+    .mockup-timeline .tl-dot.manual { background: #cbd5e1; }
+    .mockup-timeline .tl-dot::after { content: ''; position: absolute; top: 14px; left: 4px; width: 2px; height: 30px; background: #e3dcc8; }
+    .mockup-timeline .tl-item:last-child .tl-dot::after { display: none; }
+    .mockup-timeline .tl-content { flex: 1; }
+    .mockup-timeline .tl-date { font-size: .68rem; color: var(--text-muted); letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+    .mockup-timeline .tl-desc { font-size: .88rem; color: var(--text-light); line-height: 1.5; margin-top: 2px; }
+    .mockup-timeline .tl-src { display: inline-block; font-size: .6rem; padding: .15rem .45rem; border-radius: 3px; margin-left: .4rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; vertical-align: middle; }
+    .mockup-timeline .tl-src.datajud { background: rgba(30,58,95,.1); color: var(--navy-700); }
+    .mockup-timeline .tl-src.manual { background: rgba(100,116,139,.1); color: var(--text-muted); }
+
+    .manifesto {
+      position: relative; overflow: hidden;
+      padding: 9rem 2rem;
+      background:
+        linear-gradient(90deg, rgba(10,10,10,.92) 0%, rgba(10,10,10,.5) 50%, rgba(10,10,10,.92) 100%),
+        url("{% static 'landing/books.jpg' %}") center / cover,
+        #0a0a0a;
+      color: var(--cream);
+      text-align: center;
+    }
+    .manifesto-inner { position: relative; z-index: 2; max-width: 640px; margin: 0 auto; }
+    .manifesto .pretitle { color: var(--gold); }
+    .manifesto h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(2.2rem, 4.2vw, 3.4rem); line-height: 1.08; letter-spacing: -.02em; margin: 1rem 0; color: var(--cream); }
+    .manifesto h2 em { font-style: italic; color: var(--gold); }
+    .manifesto p { font-size: 1.05rem; line-height: 1.7; opacity: .8; margin: 1.4rem 0 0; }
+
+    .duo { padding: 7rem 2rem; }
+    .duo-inner { max-width: 1200px; margin: 0 auto; }
+    .duo-head { max-width: 580px; margin-bottom: 3.5rem; }
+    .duo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .duo-col { background: #fff; border: 1px solid #e3dcc8; border-radius: 14px; padding: 2.25rem; }
+    .duo-col h3 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.65rem; line-height: 1.12; margin: 0 0 .8rem; }
+    .duo-col h3 em { font-style: italic; color: var(--navy-700); }
+    .duo-col p { font-size: .92rem; color: var(--text-muted); line-height: 1.65; margin: 0 0 1rem; }
+    .duo-col ul { list-style: none; padding: 0; margin: 0 0 1.5rem; }
+    .duo-col ul li { display: flex; gap: .55rem; font-size: .88rem; padding: .25rem 0; color: var(--text-light); }
+    .duo-col ul li::before { content: '·'; color: var(--gold); font-weight: 700; font-size: 1.2rem; line-height: 1; flex-shrink: 0; }
+
+    .mini-mock { background: var(--cream); border: 1px solid #e3dcc8; border-radius: 10px; padding: 1rem; }
+    .mini-mock .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; }
+    .mini-mock .kpi .lbl { font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+    .mini-mock .kpi .val { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 500; margin-top: 4px; }
+    .mini-mock .kpi.warn .val { color: #b8860b; }
+
+    .editor-mock { background: var(--ink); color: var(--cream); border-radius: 10px; overflow: hidden; }
+    .editor-mock .em-head { padding: .5rem .9rem; background: rgba(255,255,255,.05); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); border-bottom: 1px solid rgba(255,255,255,.05); display: flex; gap: .5rem; }
+    .editor-mock .em-tab.active { color: var(--cream); }
+    .editor-mock .em-body { padding: 1rem; font-size: .8rem; line-height: 1.6; font-family: 'Fraunces', serif; opacity: .9; }
+    .editor-mock .em-body strong { color: var(--gold); font-weight: 500; }
+
+    @media (max-width: 900px) {
+      .duo-grid { grid-template-columns: 1fr; }
+    }
+
+    .integrations { padding: 3.5rem 2rem; background: var(--cream); border-top: 1px solid #e3dcc8; border-bottom: 1px solid #e3dcc8; }
+    .integrations-inner { max-width: 1200px; margin: 0 auto; text-align: center; }
+    .integrations .pretitle { color: var(--text-muted); }
+    .integrations-logos { display: flex; align-items: center; justify-content: center; gap: 3rem; flex-wrap: wrap; margin-top: 1.5rem; }
+    .integration-logo { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.2rem; color: var(--text-muted); letter-spacing: -.01em; transition: color 200ms; cursor: default; opacity: .7; }
+    .integration-logo:hover { color: var(--text-light); opacity: 1; }
+
+    .trust { padding: 7rem 2rem; }
+    .trust-inner { max-width: 1200px; margin: 0 auto; }
+    .trust-head { max-width: 620px; margin-bottom: 3.5rem; }
+    .trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+    .trust-card { background: #fff; border: 1px solid #e3dcc8; border-radius: 12px; padding: 1.75rem; transition: border-color 220ms, box-shadow 220ms; }
+    .trust-card:hover { border-color: rgba(15,23,42,.25); box-shadow: 0 10px 30px rgba(15,23,42,.06); }
+    .trust-icon { width: 38px; height: 38px; border-radius: 9px; background: rgba(212,165,71,.12); border: 1px solid rgba(212,165,71,.3); display: flex; align-items: center; justify-content: center; color: var(--gold); margin-bottom: 1.1rem; }
+    .trust-card h3 { font-family: 'Inter', sans-serif; font-weight: 600; font-size: .98rem; letter-spacing: -.012em; color: var(--text-light); margin: 0 0 .4rem; }
+    .trust-card p { font-size: .85rem; color: var(--text-muted); line-height: 1.55; margin: 0; }
+
+    .trust-featured { background: var(--ink); color: var(--cream); border-radius: 12px; padding: 1.5rem 2rem; margin-top: 1.25rem; display: flex; align-items: center; gap: 1rem; }
+    .trust-featured .flag { font-family: 'Fraunces', serif; font-style: italic; font-size: 1.05rem; color: var(--gold); }
+    .trust-featured .body { font-size: .92rem; opacity: .85; }
+
+    @media (max-width: 900px) { .trust-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .trust-grid { grid-template-columns: 1fr; } .trust-featured { flex-direction: column; text-align: center; } }
+
+    @media (max-width: 640px) {
+      .mockup-calc .calc-summary { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .cta-final {
+      position: relative; overflow: hidden;
+      padding: 7rem 2rem 5rem;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 50%, rgba(212,165,71,.12) 0%, transparent 65%),
+        var(--ink);
+      color: var(--cream); text-align: center;
+    }
+    .cta-final-inner { position: relative; z-index: 2; max-width: 640px; margin: 0 auto; }
+    .cta-final .badge { margin-bottom: 1.6rem; }
+    .cta-final h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(2.4rem, 4.5vw, 3.5rem); line-height: 1.08; letter-spacing: -.02em; margin: 0 0 .9rem; }
+    .cta-final h2 em { font-style: italic; color: var(--gold); }
+    .cta-final p { font-size: 1rem; opacity: .8; margin: 0 0 2.4rem; }
+    .cta-final .trust-line { margin-top: 2.4rem; padding-top: 2rem; border-top: 1px solid rgba(245,239,226,.1); display: flex; align-items: center; justify-content: center; gap: 1.5rem; flex-wrap: wrap; font-size: .78rem; opacity: .6; }
+    .cta-final .trust-line span { display: inline-flex; align-items: center; gap: .35rem; }
+    .cta-final .trust-line .sep { width: 1px; height: 14px; background: rgba(245,239,226,.2); }
+
+    .footer { background: var(--ink); color: rgba(245,239,226,.55); padding: 4rem 2rem 2rem; border-top: 1px solid rgba(245,239,226,.06); font-size: .85rem; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem; }
+    .footer .col h4 { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--cream); margin: 0 0 1rem; }
+    .footer .col ul { list-style: none; padding: 0; margin: 0; }
+    .footer .col li { margin-bottom: .55rem; font-size: .82rem; }
+    .footer .col a { color: inherit; text-decoration: none; transition: color 180ms; }
+    .footer .col a:hover { color: var(--cream); }
+    .footer .brand .logo { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.25rem; color: var(--cream); }
+    .footer .brand .logo em { font-style: italic; color: var(--gold); }
+    .footer .brand .tag { font-size: .8rem; margin-top: .5rem; line-height: 1.5; max-width: 280px; }
+    .footer-bottom { max-width: 1200px; margin: 0 auto; padding-top: 1.5rem; border-top: 1px solid rgba(245,239,226,.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: .76rem; }
+
+    @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 500px) { .footer-inner { grid-template-columns: 1fr; } }
   </style>
 </head>
 
 <body>
 
-<!-- ══════════════════════════════════════════
-     NAVIGATION
-══════════════════════════════════════════ -->
-<header class="nav" style="position:sticky;top:0;z-index:50;">
-  <div style="max-width:1160px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:62px;">
-
-    <!-- Logo -->
-    <a href="/" style="display:flex;align-items:center;text-decoration:none;">
-      <span style="font-weight:700;font-size:1.2rem;color:#0f172a;letter-spacing:-.02em;">Juri</span>
-      <span style="font-weight:700;font-size:1.2rem;color:var(--indigo-lt);letter-spacing:-.02em;">AI</span>
-    </a>
-
-    <!-- Links -->
-    <nav style="display:flex;align-items:center;gap:2.25rem;">
-      <a href="#como-funciona" class="nav-link">Como funciona</a>
-      <a href="#como-funciona" class="nav-link">Funcionalidades</a>
+  <!-- ═══ 01 · HEADER ═══ -->
+<header class="nav" id="nav" aria-label="Navegação principal">
+  <div class="nav-inner">
+    <a href="{% url 'home' %}" class="nav-logo">Juri<em>AI</em></a>
+    <nav class="nav-links" aria-label="Menu principal">
+      <a href="#funcionalidades" class="nav-link">Funcionalidades</a>
+      <a href="#seguranca" class="nav-link">Segurança</a>
+      <a href="{% url 'login' %}" class="nav-link">Entrar</a>
     </nav>
-
-    <!-- CTA -->
-    <div style="display:flex;align-items:center;gap:.625rem;">
-      <a href="{% url 'login' %}" style="padding:.5rem 1.1rem;border-radius:8px;font-size:.875rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;border:1px solid #1d4ed8;color:#1d4ed8;transition:background .18s,color .18s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='transparent'">
-        Entrar
-      </a>
-      <a href="{% url 'cadastro' %}" class="btn-primary" style="padding:.5rem 1.1rem;border-radius:8px;font-size:.875rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:.45rem;letter-spacing:-.01em;">
-        Começar grátis
-        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
-        </svg>
+    <div class="nav-cta-row">
+      <a href="{% url 'cadastro' %}" class="nav-btn-dark">Começar grátis
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
       </a>
     </div>
-
+    <button class="nav-mobile-toggle" id="navToggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="navMobileMenu">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+  <div class="nav-mobile-menu" id="navMobileMenu">
+    <a href="#funcionalidades">Funcionalidades</a>
+    <a href="#seguranca">Segurança</a>
+    <a href="{% url 'login' %}">Entrar</a>
+    <a href="{% url 'cadastro' %}" style="color: var(--gold); font-style: normal; font-family: Inter, sans-serif; font-weight: 600; font-size: 1rem;">Começar grátis →</a>
   </div>
 </header>
 
+  <!-- ═══ 02 · HERO ═══ -->
+<section class="hero grain" id="hero" aria-label="Apresentação do JuriAI">
+  <div class="hero-orb"></div>
+  <div class="hero-inner">
 
-<!-- ══════════════════════════════════════════
-     HERO
-══════════════════════════════════════════ -->
-<section class="dot-grid hero-glow" style="position:relative;padding:9.5rem 2rem 7rem;text-align:center;overflow:hidden;">
+    <div class="badge"><span class="dot"></span>Plataforma de inteligência jurídica</div>
 
-  <!-- ambient orb -->
-  <div style="position:absolute;top:15%;left:50%;transform:translateX(-50%);width:700px;height:480px;background:radial-gradient(ellipse,rgba(30,64,175,.05) 0%,transparent 68%);filter:blur(48px);pointer-events:none;"></div>
+    <h1 class="serif">Jurídico inteligente,<br><em>resultados reais.</em></h1>
 
-  <div style="position:relative;max-width:840px;margin:0 auto;">
+    <p class="sub">Documentos, processos, agenda e atendimento em um único ambiente. Inteligência avançada que apoia o julgamento do advogado sem jamais substituí-lo.</p>
 
-    <!-- Badge -->
-    <div class="f1" style="margin-bottom:2.25rem;">
-      <span class="badge">Plataforma jurídica com IA</span>
-    </div>
-
-    <!-- Headline -->
-    <h1 class="serif f2" style="font-size:clamp(3.2rem,6.5vw,5.75rem);font-weight:500;color:#0f172a;line-height:1.06;letter-spacing:-.025em;margin-bottom:1.4rem;">
-      Jurídico inteligente, <em style="font-style:italic;color:var(--indigo-lt);">resultados reais.</em>
-    </h1>
-
-    <!-- Sub -->
-    <p class="f3" style="font-size:1.0625rem;font-weight:300;color:var(--muted);line-height:1.65;margin-bottom:2.75rem;letter-spacing:.01em;">
-      Analise documentos, atenda clientes e organize sua agenda — tudo com IA.
-    </p>
-
-    <!-- CTAs -->
-    <div class="f4" style="display:flex;align-items:center;justify-content:center;gap:.875rem;flex-wrap:wrap;margin-bottom:3.25rem;">
-      <a href="{% url 'cadastro' %}" class="btn-primary" style="padding:.78rem 1.7rem;border-radius:9px;font-size:.9375rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;letter-spacing:-.01em;">
-        Começar grátis
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
-        </svg>
+    <div class="ctas">
+      <a href="{% url 'cadastro' %}" class="btn-gold">Começar grátis
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
       </a>
-      <a href="#como-funciona" class="btn-ghost" style="padding:.78rem 1.7rem;border-radius:9px;font-size:.9375rem;font-weight:400;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;letter-spacing:-.01em;">
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/>
-        </svg>
-        Ver como funciona
+      <a href="#funcionalidades" class="btn-ghost-dark">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>
+        Ver demonstração
       </a>
     </div>
 
-    <!-- Stats -->
-    <div class="f5" style="display:flex;align-items:center;justify-content:center;">
-      <div style="display:flex;align-items:center;gap:2.5rem;">
-        <div style="text-align:center;">
-          <p style="font-size:1.0625rem;font-weight:600;color:#0f172a;letter-spacing:-.02em;">50+</p>
-          <p style="font-size:.75rem;font-weight:400;color:#64748b;margin-top:2px;">Tribunais</p>
-        </div>
-        <div style="width:1px;height:28px;background:#e2e8f0;"></div>
-        <div style="text-align:center;">
-          <p style="font-size:1.0625rem;font-weight:600;color:#0f172a;letter-spacing:-.02em;">Análise</p>
-          <p style="font-size:.75rem;font-weight:400;color:#64748b;margin-top:2px;">em segundos</p>
-        </div>
-        <div style="width:1px;height:28px;background:#e2e8f0;"></div>
-        <div style="text-align:center;">
-          <p style="font-size:1.0625rem;font-weight:600;color:#0f172a;letter-spacing:-.02em;">Atendimento</p>
-          <p style="font-size:.75rem;font-weight:400;color:#64748b;margin-top:2px;">24h</p>
-        </div>
+    <div class="mockup-card-hero">
+      <div class="mc-head">
+        <div class="mc-icon">§</div>
+        <div class="mc-file">Petição inicial · Silva vs Construtora<span class="meta">Analisado há 14 segundos</span></div>
+        <div class="mc-risk">Risco 28/100</div>
       </div>
+      <div class="mc-item"><span class="pin">→</span><span><strong>3 inconsistências de prazo</strong> identificadas (fls. 4, 9 e 12)</span></div>
+      <div class="mc-item"><span class="pin">→</span><span>Cláusula 4ª <strong>contradiz Art. 523 CPC</strong> sobre multa de 10%</span></div>
+      <div class="mc-item"><span class="pin">→</span><span>Falta menção ao acórdão <strong>STJ Tema 1.061</strong> (precedente aplicável)</span></div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat"><div class="num">50+</div><div class="lbl">Tribunais</div></div>
+      <div class="sep"></div>
+      <div class="stat"><div class="num">DataJud</div><div class="lbl">Integrado</div></div>
+      <div class="sep"></div>
+      <div class="stat"><div class="num">24/7</div><div class="lbl">Atendimento</div></div>
     </div>
 
   </div>
 </section>
 
-
-<!-- ══════════════════════════════════════════
-     MOCKUP DASHBOARD
-══════════════════════════════════════════ -->
-<section style="background:#f8fafc;padding:5.5rem 2rem 4rem;">
-  <div style="max-width:1100px;margin:0 auto;">
-
-    <!-- Título da seção -->
-    <div style="text-align:center;margin-bottom:3rem;">
-      <p class="section-label" style="margin-bottom:.75rem;">Painel de controle — visão real da plataforma</p>
-      <h2 class="serif" style="font-size:clamp(1.75rem,3.2vw,2.5rem);font-weight:500;color:#0f172a;line-height:1.15;letter-spacing:-.022em;">
-        Tudo que seu escritório precisa,<br>em um só lugar.
-      </h2>
-      <p style="margin-top:.75rem;font-size:.9375rem;font-weight:300;color:#64748b;line-height:1.65;">
-        Visualize métricas, gerencie riscos e acompanhe sua agenda — tudo integrado em tempo real.
-      </p>
-    </div>
-
-    <!-- Mockup container -->
-    <div style="border-radius:18px;overflow:hidden;box-shadow:0 32px 80px -12px rgba(15,23,42,.18),0 0 0 1px rgba(15,23,42,.07);transform:scale(1);transform-origin:top center;">
-
-      <!-- Barra de janela (decorativa) -->
-      <div style="background:#1e293b;padding:.55rem 1rem;display:flex;align-items:center;gap:.5rem;">
-        <span style="width:11px;height:11px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
-        <span style="width:11px;height:11px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
-        <span style="width:11px;height:11px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
-        <span style="flex:1;background:#334155;border-radius:4px;height:20px;margin-left:.5rem;display:flex;align-items:center;justify-content:center;">
-          <span style="font-size:.65rem;color:#94a3b8;font-family:monospace;">app.juriai.com.br/dashboard</span>
-        </span>
+  <!-- ═══ 03 · STATS STRIP ═══ -->
+<section class="stats-strip" aria-label="Estatísticas da plataforma">
+  <div class="stats-strip-inner">
+    <div class="stat-cell">
+      <div class="stat-icon">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
       </div>
+      <div>
+        <div class="stat-title">3 agentes jurídicos especializados</div>
+        <div class="stat-meta">JuriAI · SecretariaAI · JurisprudênciaAI</div>
+      </div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-icon">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div>
+        <div class="stat-title">Análise jurisprudencial em segundos</div>
+        <div class="stat-meta">Índice de risco e red flags automáticos</div>
+      </div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-icon">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/></svg>
+      </div>
+      <div>
+        <div class="stat-title">Atendimento autônomo 24/7</div>
+        <div class="stat-meta">WhatsApp e Google Calendar integrados</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-      <!-- App shell -->
-      <div style="display:flex;height:480px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <!-- ═══ 04 · TRÊS PILARES ═══ -->
+<section class="section reveal" id="funcionalidades">
+  <div class="section-inner">
+    <span class="pretitle">Capacidades</span>
+    <div><span class="gold-rule"></span></div>
+    <h2>Três pilares, <em>um ambiente.</em></h2>
+    <p class="sub">Cada agente é especializado num eixo do trabalho jurídico, sem misturar contextos nem dados.</p>
 
-        <!-- ── Sidebar ── -->
-        <div style="width:196px;flex-shrink:0;background:#020617;display:flex;flex-direction:column;padding:1.25rem .75rem;">
-
-          <!-- Logo -->
-          <div style="padding:.5rem .75rem 1.5rem;">
-            <span style="font-size:.9rem;font-weight:700;color:#ffffff;letter-spacing:-.02em;">Juri<span style="color:#60a5fa;">AI</span></span>
-          </div>
-
-          <!-- Nav items -->
-          <nav style="display:flex;flex-direction:column;gap:.15rem;">
-            <a style="display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;border-radius:8px;background:#1e3a8a;text-decoration:none;">
-              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#93c5fd" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25A2.25 2.25 0 0113.5 8.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
-              <span style="font-size:.72rem;font-weight:600;color:#bfdbfe;">Dashboard</span>
-            </a>
-            <a style="display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;border-radius:8px;text-decoration:none;">
-              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#475569" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-              <span style="font-size:.72rem;font-weight:400;color:#475569;">Clientes</span>
-            </a>
-            <a style="display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;border-radius:8px;text-decoration:none;">
-              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#475569" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-              <span style="font-size:.72rem;font-weight:400;color:#475569;">Processos</span>
-            </a>
-            <a style="display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;border-radius:8px;text-decoration:none;">
-              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#475569" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
-              <span style="font-size:.72rem;font-weight:400;color:#475569;">CRM</span>
-            </a>
-            <a style="display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;border-radius:8px;text-decoration:none;">
-              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#475569" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span style="font-size:.72rem;font-weight:400;color:#475569;">Financeiro</span>
-            </a>
-            <a style="display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;border-radius:8px;text-decoration:none;">
-              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#475569" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
-              <span style="font-size:.72rem;font-weight:400;color:#475569;">Documentos</span>
-            </a>
-          </nav>
-
-          <!-- Bottom user pill -->
-          <div style="margin-top:auto;padding:.6rem .75rem;border-radius:8px;background:#0f172a;display:flex;align-items:center;gap:.5rem;">
-            <div style="width:22px;height:22px;border-radius:50%;background:#1e3a8a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <span style="font-size:.6rem;font-weight:700;color:#bfdbfe;">DR</span>
-            </div>
-            <div>
-              <p style="font-size:.62rem;font-weight:600;color:#e2e8f0;line-height:1.2;">Dr. Rafael Mendes</p>
-              <p style="font-size:.58rem;color:#475569;">Administrador</p>
-            </div>
-          </div>
+    <div class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
         </div>
+        <h3>Análise de Documentos.</h3>
+        <p>Identifica riscos, inconsistências e red flags antes do protocolo.</p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/></svg>
+        </div>
+        <h3>Chat por Cliente.</h3>
+        <p>Cada cliente tem seu próprio assistente treinado com os documentos do caso.</p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/></svg>
+        </div>
+        <h3>Secretaria Autônoma.</h3>
+        <p>Atende, agenda e mantém a comunicação fluindo sem intervenção humana.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-        <!-- ── Main content ── -->
-        <div style="flex:1;background:#f8fafc;overflow:hidden;display:flex;flex-direction:column;">
-
-          <!-- Top bar -->
-          <div style="background:#ffffff;border-bottom:1px solid #e2e8f0;padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-            <div>
-              <h1 style="font-size:.85rem;font-weight:700;color:#0f172a;letter-spacing:-.01em;">Dashboard</h1>
-              <p style="font-size:.65rem;color:#94a3b8;margin-top:1px;">11 de Abril de 2026</p>
-            </div>
-            <div style="display:flex;align-items:center;gap:.5rem;">
-              <div style="width:28px;height:28px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;">
-                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#1e40af" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
-              </div>
-            </div>
-          </div>
-
-          <!-- Scroll area -->
-          <div style="flex:1;overflow:hidden;padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:1rem;">
-
-            <!-- Metric cards -->
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;">
-
-              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:.875rem 1rem;">
-                <p style="font-size:.6rem;font-weight:500;color:#64748b;text-transform:uppercase;letter-spacing:.06em;">Clientes Ativos</p>
-                <p style="font-size:1.5rem;font-weight:700;color:#0f172a;line-height:1;margin-top:.35rem;">24</p>
-                <span style="display:inline-block;margin-top:.4rem;font-size:.58rem;font-weight:600;color:#16a34a;background:#dcfce7;border-radius:4px;padding:1px 5px;">+3 este mês</span>
-              </div>
-
-              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:.875rem 1rem;">
-                <p style="font-size:.6rem;font-weight:500;color:#64748b;text-transform:uppercase;letter-spacing:.06em;">Processos</p>
-                <p style="font-size:1.5rem;font-weight:700;color:#0f172a;line-height:1;margin-top:.35rem;">8</p>
-                <span style="display:inline-block;margin-top:.4rem;font-size:.58rem;font-weight:600;color:#1d4ed8;background:#dbeafe;border-radius:4px;padding:1px 5px;">ativos</span>
-              </div>
-
-              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:.875rem 1rem;">
-                <p style="font-size:.6rem;font-weight:500;color:#64748b;text-transform:uppercase;letter-spacing:.06em;">Docs Processados</p>
-                <p style="font-size:1.5rem;font-weight:700;color:#0f172a;line-height:1;margin-top:.35rem;">26<span style="font-size:.85rem;font-weight:400;color:#94a3b8;">/26</span></p>
-                <span style="display:inline-block;margin-top:.4rem;font-size:.58rem;font-weight:600;color:#4338ca;background:#e0e7ff;border-radius:4px;padding:1px 5px;">100% indexados</span>
-              </div>
-
-              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:.875rem 1rem;">
-                <p style="font-size:.6rem;font-weight:500;color:#64748b;text-transform:uppercase;letter-spacing:.06em;">A Receber</p>
-                <p style="font-size:1.1rem;font-weight:700;color:#0f172a;line-height:1;margin-top:.35rem;">R$ 45.000</p>
-                <span style="display:inline-block;margin-top:.4rem;font-size:.58rem;font-weight:600;color:#b45309;background:#fef3c7;border-radius:4px;padding:1px 5px;">honorários</span>
-              </div>
-
-            </div>
-
-            <!-- Bottom row: Alertas + Calendário -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;flex:1;min-height:0;">
-
-              <!-- Alertas de Risco -->
-              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:1rem;overflow:hidden;">
-                <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.875rem;">
-                  <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#dc2626" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-                  <span style="font-size:.72rem;font-weight:700;color:#0f172a;">Alertas de Risco</span>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:.5rem;">
-                  <div style="display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;">
-                    <span style="flex-shrink:0;font-size:.6rem;font-weight:700;color:#dc2626;background:#fee2e2;border-radius:4px;padding:2px 6px;">CRÍTICO 88%</span>
-                    <div style="min-width:0;">
-                      <p style="font-size:.67rem;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Contrato João Carlos Ferreira</p>
-                      <p style="font-size:.6rem;color:#94a3b8;margin-top:1px;">Análise de cláusula abusiva</p>
-                    </div>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;">
-                    <span style="flex-shrink:0;font-size:.6rem;font-weight:700;color:#b45309;background:#fef3c7;border-radius:4px;padding:2px 6px;">ALTO 74%</span>
-                    <div style="min-width:0;">
-                      <p style="font-size:.67rem;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Contestação Luciana Barbosa</p>
-                      <p style="font-size:.6rem;color:#94a3b8;margin-top:1px;">Prazo crítico em 3 dias</p>
-                    </div>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;">
-                    <span style="flex-shrink:0;font-size:.6rem;font-weight:700;color:#b45309;background:#fef3c7;border-radius:4px;padding:2px 6px;">ALTO 69%</span>
-                    <div style="min-width:0;">
-                      <p style="font-size:.67rem;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Recurso Ana Paula Rodrigues</p>
-                      <p style="font-size:.6rem;color:#94a3b8;margin-top:1px;">Revisão pendente de aprovação</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Google Calendar -->
-              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:1rem;overflow:hidden;position:relative;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;">
-                  <div style="display:flex;align-items:center;gap:.4rem;">
-                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#1d4ed8" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
-                    <span style="font-size:.72rem;font-weight:700;color:#0f172a;">Próximos Eventos</span>
-                  </div>
-                  <span style="font-size:.57rem;font-weight:600;color:#16a34a;background:#dcfce7;border-radius:4px;padding:2px 6px;">Google Calendar</span>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:.5rem;">
-                  <div style="display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border-radius:8px;background:#eff6ff;border-left:3px solid #1d4ed8;">
-                    <div style="flex-shrink:0;text-align:center;">
-                      <p style="font-size:.58rem;font-weight:700;color:#1d4ed8;line-height:1;">14/04</p>
-                      <p style="font-size:.58rem;color:#64748b;">09:00</p>
-                    </div>
-                    <div style="width:1px;height:24px;background:#bfdbfe;flex-shrink:0;"></div>
-                    <p style="font-size:.67rem;font-weight:600;color:#0f172a;">Audiência Trabalhista</p>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border-radius:8px;background:#eff6ff;border-left:3px solid #1d4ed8;">
-                    <div style="flex-shrink:0;text-align:center;">
-                      <p style="font-size:.58rem;font-weight:700;color:#1d4ed8;line-height:1;">16/04</p>
-                      <p style="font-size:.58rem;color:#64748b;">14:30</p>
-                    </div>
-                    <div style="width:1px;height:24px;background:#bfdbfe;flex-shrink:0;"></div>
-                    <p style="font-size:.67rem;font-weight:600;color:#0f172a;">Reunião — Grupo Medicenter</p>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border-radius:8px;background:#fef9c3;border-left:3px solid #ca8a04;">
-                    <div style="flex-shrink:0;text-align:center;">
-                      <p style="font-size:.58rem;font-weight:700;color:#ca8a04;line-height:1;">18/04</p>
-                      <p style="font-size:.58rem;color:#64748b;">23:59</p>
-                    </div>
-                    <div style="width:1px;height:24px;background:#fde68a;flex-shrink:0;"></div>
-                    <p style="font-size:.67rem;font-weight:600;color:#0f172a;">Prazo: Recurso de Apelação</p>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
+  <!-- ═══ 05 · ANÁLISE DE DOCUMENTOS ═══ -->
+<section class="module reveal" aria-label="Módulo de análise de documentos">
+  <div class="module-inner">
+    <div class="module-text">
+      <span class="pretitle">Módulo 01</span>
+      <div><span class="gold-rule"></span></div>
+      <h2>Risco identificado <em>antes do protocolo.</em></h2>
+      <p>Carregue petições, contratos e pareceres. O JuriAI extrai o texto via OCR, percorre cada cláusula e devolve um índice de risco com red flags categorizados.</p>
+      <ul class="module-bullets">
+        <li>OCR automático em PDF, DOCX e imagens</li>
+        <li>Índice de risco de 0 a 100 com explicação por categoria</li>
+        <li>Red flags por tema: prazo, jurisprudência, formatação, coerência interna</li>
+        <li>Citações aos artigos do CPC e acórdãos aplicáveis</li>
+      </ul>
+      <div class="module-chips">
+        <span class="chip-light">PDF</span>
+        <span class="chip-light">DOCX</span>
+        <span class="chip-light">OCR</span>
+        <span class="chip-light">Petições</span>
+        <span class="chip-light">Contratos</span>
+        <span class="chip-light">Pareceres</span>
+      </div>
+    </div>
+    <div class="module-mockup">
+      <div class="mockup-title">Análise · Silva vs Construtora</div>
+      <div class="mockup-risk">
+        <div class="risk-big"><span class="num">28</span><span class="lbl">/ 100 · Risco baixo</span></div>
+        <div class="flag">
+          <div class="cat">Prazo</div>
+          <div class="desc">3 inconsistências de prazo identificadas (fls. 4, 9 e 12).</div>
+        </div>
+        <div class="flag">
+          <div class="cat">Jurisprudência</div>
+          <div class="desc">Cláusula 4ª contradiz Art. 523 CPC sobre multa de 10%.</div>
+        </div>
+        <div class="flag">
+          <div class="cat">Precedente</div>
+          <div class="desc">Falta menção ao acórdão STJ Tema 1.061 (precedente aplicável).</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-
-<!-- ══════════════════════════════════════════
-     MOCKUP DUPLO — IA em Ação
-══════════════════════════════════════════ -->
-<section style="background:#ffffff;padding:5rem 2rem 4.5rem;">
-  <div style="max-width:1100px;margin:0 auto;">
-
-    <!-- Título da seção -->
-    <div style="text-align:center;margin-bottom:3rem;">
-      <p class="section-label" style="margin-bottom:.75rem;">IA aplicada ao direito</p>
-      <h2 class="serif" style="font-size:clamp(1.75rem,3.2vw,2.5rem);font-weight:500;color:#0f172a;line-height:1.15;letter-spacing:-.022em;">
-        Inteligência artificial aplicada ao direito.
-      </h2>
-      <p style="margin-top:.75rem;font-size:.9375rem;font-weight:300;color:#64748b;line-height:1.65;">
-        Do rascunho ao protocolo, a IA trabalha ao seu lado.
-      </p>
+  <!-- ═══ 06 · CALCULADORA JUDICIAL ═══ -->
+<section class="module calc reveal" aria-label="Módulo de calculadora judicial">
+  <div class="module-inner reverse">
+    <div class="module-text">
+      <span class="pretitle">Módulo 02</span>
+      <div><span class="gold-rule"></span></div>
+      <h2>Cálculos prontos <em>para protocolo.</em></h2>
+      <p>Atualização monetária mês a mês pelo índice oficial, juros conforme o regime do processo e exportação em PDF pronta para protocolo. Sem planilha à parte.</p>
+      <ul class="module-bullets">
+        <li>Índices: IPCA-E, INPC, SELIC, TR, IGP-M e Taxa Legal (Lei 14.905/2024)</li>
+        <li>Juros simples ou compostos, com regime customizável por período</li>
+        <li>Multa Art. 523 CPC e honorários sucumbenciais configuráveis</li>
+        <li>Tabelas próprias dos TJs (SP, RJ, MG, PR, RS), CJF e TST</li>
+        <li>Comparador de cenários lado a lado para negociação</li>
+      </ul>
     </div>
-
-    <!-- Grid 2 colunas -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;">
-
-      <!-- ══ MOCKUP 1 — Geração de Documento ══ -->
-      <div>
-        <div style="margin-bottom:1.25rem;">
-          <h3 style="font-size:1.05rem;font-weight:600;color:#0f172a;letter-spacing:-.015em;">Documentos jurídicos em segundos</h3>
-          <p style="margin-top:.35rem;font-size:.875rem;font-weight:300;color:#64748b;line-height:1.6;">Selecione um template, informe o contexto e a IA redige o documento completo.</p>
-        </div>
-        <div style="border-radius:14px;overflow:hidden;box-shadow:0 20px 50px -10px rgba(15,23,42,.14),0 0 0 1px rgba(15,23,42,.07);">
-          <!-- Window bar -->
-          <div style="background:#1e293b;padding:.45rem .85rem;display:flex;align-items:center;gap:.4rem;">
-            <span style="width:9px;height:9px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
-            <span style="width:9px;height:9px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
-            <span style="width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
-            <span style="flex:1;background:#334155;border-radius:3px;height:16px;margin-left:.4rem;display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:.58rem;color:#94a3b8;font-family:monospace;">app.juriai.com.br/gerar-documento</span>
-            </span>
-          </div>
-          <!-- App -->
-          <div style="height:340px;background:#f8fafc;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-            <!-- Header -->
-            <div style="background:#ffffff;border-bottom:1px solid #e2e8f0;padding:.6rem 1.1rem;flex-shrink:0;">
-              <p style="font-size:.75rem;font-weight:700;color:#0f172a;">Gerar Documento com IA</p>
-              <p style="font-size:.6rem;color:#94a3b8;margin-top:1px;">Preencha os campos e clique em gerar</p>
-            </div>
-            <!-- Body: 2 col -->
-            <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;">
-              <!-- Form col -->
-              <div style="padding:.85rem 1rem;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;gap:.6rem;overflow:hidden;">
-                <div>
-                  <label style="font-size:.58rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.25rem;">Template</label>
-                  <div style="border:1px solid #c7d2fe;border-radius:6px;padding:.35rem .6rem;background:#eef2ff;display:flex;align-items:center;justify-content:space-between;">
-                    <span style="font-size:.63rem;font-weight:500;color:#3730a3;">Contrato de Honorários</span>
-                    <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="#6366f1" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
-                  </div>
-                </div>
-                <div>
-                  <label style="font-size:.58rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.25rem;">Cliente</label>
-                  <div style="border:1px solid #e2e8f0;border-radius:6px;padding:.35rem .6rem;background:#ffffff;display:flex;align-items:center;justify-content:space-between;">
-                    <span style="font-size:.63rem;color:#0f172a;">Agropecuária São Jorge</span>
-                    <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
-                  </div>
-                </div>
-                <div>
-                  <label style="font-size:.58rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.25rem;">Processo</label>
-                  <div style="border:1px solid #e2e8f0;border-radius:6px;padding:.35rem .6rem;background:#ffffff;">
-                    <span style="font-size:.58rem;color:#475569;font-family:monospace;">4003526-34.2025.8.26.0032</span>
-                  </div>
-                </div>
-                <div style="flex:1;display:flex;flex-direction:column;">
-                  <label style="font-size:.58rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.25rem;">Instruções</label>
-                  <div style="flex:1;border:1px solid #e2e8f0;border-radius:6px;padding:.4rem .6rem;background:#ffffff;font-size:.6rem;color:#475569;line-height:1.55;overflow:hidden;">
-                    Contrato de honorários advocatícios com cláusula de êxito de 20%. Partes: escritório Dr. Rafael Mendes e Agropecuária São Jorge LTDA. Vigência de 12 meses...
-                  </div>
-                </div>
-                <button style="width:100%;padding:.45rem;background:#4f46e5;border:none;border-radius:7px;color:#ffffff;font-size:.65rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.35rem;">
-                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
-                  Gerar documento
-                </button>
-              </div>
-              <!-- Output col -->
-              <div style="padding:.85rem 1rem;display:flex;flex-direction:column;overflow:hidden;">
-                <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.5rem;">
-                  <div style="width:6px;height:6px;border-radius:50%;background:#22c55e;"></div>
-                  <span style="font-size:.6rem;font-weight:600;color:#16a34a;">Gerando...</span>
-                </div>
-                <div style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:.6rem .7rem;overflow:hidden;font-size:.6rem;color:#1e293b;line-height:1.7;">
-                  <p style="font-weight:700;margin-bottom:.3rem;font-size:.62rem;">CONTRATO DE HONORÁRIOS ADVOCATÍCIOS</p>
-                  <p style="margin-bottom:.3rem;color:#475569;">Pelo presente instrumento particular, de um lado <strong>Dr. Rafael Mendes</strong>, OAB/SP 98.234, e de outro lado <strong>Agropecuária São Jorge LTDA</strong>, CNPJ 12.345.678/0001-90...</p>
-                  <p style="margin-bottom:.3rem;color:#475569;"><strong>Cláusula 1ª — Do Objeto:</strong> O presente contrato tem por objeto a prestação de serviços advocatícios referentes ao processo nº 4003526-34.2025...</p>
-                  <p style="color:#475569;"><strong>Cláusula 2ª — Dos Honorários:</strong> A remuneração pelos serviços será de R$ 8.000,00 (oito mil reais) mensais, acrescida de 20% de honorários de êxito<span style="display:inline-block;width:2px;height:.75em;background:#4f46e5;margin-left:1px;animation:blink 1s step-end infinite;vertical-align:text-bottom;"></span></p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="module-mockup mockup-calc">
+      <div class="calc-summary">
+        <div class="item"><div class="lbl">Corrigido</div><div class="val">R$ 38.420,16</div></div>
+        <div class="item"><div class="lbl">Juros</div><div class="val">R$ 6.708,03</div></div>
+        <div class="item"><div class="lbl">Multa</div><div class="val">R$ 4.512,82</div></div>
+        <div class="item total"><div class="lbl">Total</div><div class="val">R$ 49.641,01</div></div>
       </div>
-
-      <!-- ══ MOCKUP 2 — Análise de Risco ══ -->
-      <div>
-        <div style="margin-bottom:1.25rem;">
-          <h3 style="font-size:1.05rem;font-weight:600;color:#0f172a;letter-spacing:-.015em;">Análise de risco antes do protocolo</h3>
-          <p style="margin-top:.35rem;font-size:.875rem;font-weight:300;color:#64748b;line-height:1.6;">Score 0–100, red flags e inconsistências identificadas automaticamente.</p>
-        </div>
-        <div style="border-radius:14px;overflow:hidden;box-shadow:0 20px 50px -10px rgba(15,23,42,.14),0 0 0 1px rgba(15,23,42,.07);">
-          <!-- Window bar -->
-          <div style="background:#1e293b;padding:.45rem .85rem;display:flex;align-items:center;gap:.4rem;">
-            <span style="width:9px;height:9px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
-            <span style="width:9px;height:9px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
-            <span style="width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
-            <span style="flex:1;background:#334155;border-radius:3px;height:16px;margin-left:.4rem;display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:.58rem;color:#94a3b8;font-family:monospace;">app.juriai.com.br/analise-risco</span>
-            </span>
-          </div>
-          <!-- App -->
-          <div style="height:340px;background:#f8fafc;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden;">
-            <!-- Header -->
-            <div style="background:#ffffff;border-bottom:1px solid #e2e8f0;padding:.6rem 1.1rem;flex-shrink:0;">
-              <p style="font-size:.75rem;font-weight:700;color:#0f172a;">Análise de Risco — Contestação</p>
-              <p style="font-size:.6rem;color:#94a3b8;margin-top:1px;">JurisprudênciaAI · Processado em 4.2s</p>
-            </div>
-            <!-- Body -->
-            <div style="flex:1;overflow:hidden;padding:.85rem 1.1rem;display:flex;flex-direction:column;gap:.75rem;">
-              <!-- Score -->
-              <div style="background:#ffffff;border:1px solid #fecaca;border-radius:10px;padding:.75rem 1rem;display:flex;align-items:center;gap:1rem;flex-shrink:0;">
-                <div style="text-align:center;flex-shrink:0;">
-                  <p style="font-size:2.25rem;font-weight:800;color:#dc2626;line-height:1;letter-spacing:-.04em;">82</p>
-                  <span style="font-size:.55rem;font-weight:700;color:#dc2626;background:#fee2e2;border-radius:3px;padding:1px 5px;display:inline-block;margin-top:2px;">CRÍTICO</span>
-                </div>
-                <div style="flex:1;">
-                  <p style="font-size:.6rem;font-weight:600;color:#64748b;margin-bottom:.3rem;">Índice de risco</p>
-                  <div style="background:#fee2e2;border-radius:99px;height:7px;overflow:hidden;">
-                    <div style="width:82%;height:100%;background:linear-gradient(90deg,#f87171,#dc2626);border-radius:99px;"></div>
-                  </div>
-                  <p style="font-size:.57rem;color:#94a3b8;margin-top:.3rem;">Requer revisão imediata antes do protocolo</p>
-                </div>
-              </div>
-              <!-- Red Flags -->
-              <div style="flex-shrink:0;">
-                <p style="font-size:.62rem;font-weight:700;color:#0f172a;margin-bottom:.4rem;display:flex;align-items:center;gap:.3rem;">
-                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="#dc2626" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3l1.664 1.664M21 21l-1.5-1.5m-5.485-1.242L13.5 11.5M12 12L3 21m9-9l4.5-4.5M4.5 4.5L12 12"/></svg>
-                  Red Flags identificados
-                </p>
-                <div style="display:flex;flex-direction:column;gap:.3rem;">
-                  <div style="display:flex;align-items:flex-start;gap:.4rem;padding:.4rem .6rem;background:#fef2f2;border-radius:6px;border-left:2px solid #dc2626;">
-                    <span style="font-size:.6rem;color:#dc2626;flex-shrink:0;margin-top:.05rem;">●</span>
-                    <p style="font-size:.6rem;color:#1e293b;line-height:1.4;">Ausência de fundamentação legal no pedido principal</p>
-                  </div>
-                  <div style="display:flex;align-items:flex-start;gap:.4rem;padding:.4rem .6rem;background:#fef2f2;border-radius:6px;border-left:2px solid #dc2626;">
-                    <span style="font-size:.6rem;color:#dc2626;flex-shrink:0;margin-top:.05rem;">●</span>
-                    <p style="font-size:.6rem;color:#1e293b;line-height:1.4;">Prazo prescricional em risco — verificar art. 206 CC</p>
-                  </div>
-                  <div style="display:flex;align-items:flex-start;gap:.4rem;padding:.4rem .6rem;background:#fef2f2;border-radius:6px;border-left:2px solid #dc2626;">
-                    <span style="font-size:.6rem;color:#dc2626;flex-shrink:0;margin-top:.05rem;">●</span>
-                    <p style="font-size:.6rem;color:#1e293b;line-height:1.4;">Contradição entre cláusula 3ª e pedido liminar</p>
-                  </div>
-                </div>
-              </div>
-              <!-- Recomendações -->
-              <div>
-                <p style="font-size:.62rem;font-weight:700;color:#0f172a;margin-bottom:.4rem;display:flex;align-items:center;gap:.3rem;">
-                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  Recomendações
-                </p>
-                <div style="display:flex;flex-direction:column;gap:.3rem;">
-                  <div style="display:flex;align-items:flex-start;gap:.4rem;padding:.4rem .6rem;background:#f0fdf4;border-radius:6px;border-left:2px solid #16a34a;">
-                    <span style="font-size:.6rem;color:#16a34a;flex-shrink:0;margin-top:.05rem;">●</span>
-                    <p style="font-size:.6rem;color:#1e293b;line-height:1.4;">Incluir citação dos arts. 319 e 320 do CPC na contestação</p>
-                  </div>
-                  <div style="display:flex;align-items:flex-start;gap:.4rem;padding:.4rem .6rem;background:#f0fdf4;border-radius:6px;border-left:2px solid #16a34a;">
-                    <span style="font-size:.6rem;color:#16a34a;flex-shrink:0;margin-top:.05rem;">●</span>
-                    <p style="font-size:.6rem;color:#1e293b;line-height:1.4;">Revisar coerência entre pedido subsidiário e documentos anexados</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <table>
+        <thead><tr><th>Mês</th><th class="r">IPCA-E %</th><th class="r">Correção</th><th class="r">Juros</th><th class="r">Subtotal</th></tr></thead>
+        <tbody>
+          <tr><td>jan/26</td><td class="r">0,47</td><td class="r">141,12</td><td class="r">300,42</td><td class="r">30.441,54</td></tr>
+          <tr><td>fev/26</td><td class="r">0,33</td><td class="r">100,57</td><td class="r">301,04</td><td class="r">30.843,15</td></tr>
+          <tr><td>mar/26</td><td class="r">0,55</td><td class="r">169,77</td><td class="r">302,06</td><td class="r">31.314,98</td></tr>
+          <tr><td>abr/26</td><td class="r">0,29</td><td class="r">90,93</td><td class="r">302,99</td><td class="r">31.708,90</td></tr>
+          <tr><td>… 18 meses</td><td class="r">…</td><td class="r">…</td><td class="r">…</td><td class="r">…</td></tr>
+          <tr><td>Total</td><td class="r">-</td><td class="r"><strong>R$ 8.420,16</strong></td><td class="r"><strong>R$ 6.708,03</strong></td><td class="r"><strong>R$ 45.128,19</strong></td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
 
-
-<!-- ══════════════════════════════════════════
-     STATS STRIP
-══════════════════════════════════════════ -->
-<div class="stat-strip">
-  <div style="max-width:1160px;margin:0 auto;padding:0 2rem;display:grid;grid-template-columns:repeat(3,1fr);">
-
-    <div style="padding:1.625rem 2rem;display:flex;align-items:center;gap:.875rem;border-right:1px solid var(--rule);">
-      <div class="icon-pill">
-        <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="#1e40af" stroke-width="1.75">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
-        </svg>
-      </div>
-      <div>
-        <p style="font-size:.9375rem;font-weight:600;color:#0f172a;letter-spacing:-.015em;">3 agentes de IA especializados</p>
-        <p style="font-size:.8rem;color:var(--muted);margin-top:2px;font-weight:300;">JuriAI · SecretariaAI · JurisprudênciaAI</p>
-      </div>
+  <!-- ═══ 07 · PROCESSOS + DATAJUD + PRAZOS ═══ -->
+<section class="module reveal" aria-label="Módulo de acompanhamento de processos">
+  <div class="module-inner">
+    <div class="module-text">
+      <span class="pretitle">Módulo 03</span>
+      <div><span class="gold-rule"></span></div>
+      <h2>Cada processo <em>sempre atualizado.</em></h2>
+      <p>Vincule o número CNJ e o JuriAI consulta o DataJud todo dia. Andamentos chegam automáticos, prazos viram alerta de e-mail e evento no Google Calendar.</p>
+      <ul class="module-bullets">
+        <li>Integração nativa com DataJud (CNJ) e atualização diária automática</li>
+        <li>Timeline visual de andamentos com origem (DataJud ou manual)</li>
+        <li>Prazos com alerta por e-mail nos dias configurados antes do vencimento</li>
+        <li>Sincronização bidirecional com Google Calendar</li>
+        <li>Cobertura de todos os tribunais brasileiros suportados pelo DataJud</li>
+      </ul>
     </div>
-
-    <div style="padding:1.625rem 2rem;display:flex;align-items:center;gap:.875rem;border-right:1px solid var(--rule);">
-      <div class="icon-pill">
-        <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="#1e40af" stroke-width="1.75">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.97zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.97z"/>
-        </svg>
-      </div>
-      <div>
-        <p style="font-size:.9375rem;font-weight:600;color:#0f172a;letter-spacing:-.015em;">Análise jurisprudencial em segundos</p>
-        <p style="font-size:.8rem;color:var(--muted);margin-top:2px;font-weight:300;">Índice de risco e red flags automáticos</p>
-      </div>
-    </div>
-
-    <div style="padding:1.625rem 2rem;display:flex;align-items:center;gap:.875rem;">
-      <div class="icon-pill">
-        <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="#1e40af" stroke-width="1.75">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/>
-        </svg>
-      </div>
-      <div>
-        <p style="font-size:.9375rem;font-weight:600;color:#0f172a;letter-spacing:-.015em;">Secretaria autônoma 24/7</p>
-        <p style="font-size:.8rem;color:var(--muted);margin-top:2px;font-weight:300;">WhatsApp + Google Calendar integrados</p>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-
-<!-- ══════════════════════════════════════════
-     FEATURES
-══════════════════════════════════════════ -->
-<section id="como-funciona" style="padding:7rem 2rem 7.5rem;background:#ffffff;">
-  <div style="max-width:1160px;margin:0 auto;">
-
-    <!-- Header -->
-    <div style="margin-bottom:3.75rem;max-width:520px;">
-      <p class="section-label" style="margin-bottom:.875rem;">Funcionalidades</p>
-      <h2 class="serif" style="font-size:clamp(2.1rem,3.8vw,3rem);font-weight:500;color:#0f172a;line-height:1.13;letter-spacing:-.025em;">O que o JuriAI<br>faz por você</h2>
-      <p style="margin-top:.875rem;font-size:.9375rem;font-weight:300;color:var(--muted);line-height:1.7;">Três capacidades distintas. Um único ambiente de trabalho.</p>
-    </div>
-
-    <!-- Grid -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.125rem;">
-
-      <!-- Card 1 -->
-      <div class="card" style="padding:2rem;">
-        <div class="icon-pill" style="margin-bottom:1.5rem;">
-          <svg width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="#1e40af" stroke-width="1.75">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
-          </svg>
-        </div>
-        <h3 style="font-size:1.025rem;font-weight:600;color:#0f172a;letter-spacing:-.015em;margin-bottom:.625rem;line-height:1.3;">Análise de Documentos</h3>
-        <p style="font-size:.875rem;font-weight:300;color:var(--muted);line-height:1.75;">Carregue petições, contratos e pareceres. O JuriAI aponta riscos, inconsistências e red flags antes que você protocole.</p>
-        <div style="margin-top:1.625rem;padding-top:1.625rem;border-top:1px solid var(--rule);display:flex;gap:.4rem;flex-wrap:wrap;">
-          <span class="chip">PDF / DOCX</span>
-          <span class="chip">OCR automático</span>
-          <span class="chip">Índice de risco</span>
+    <div class="module-mockup mockup-timeline">
+      <div class="mockup-title">0042586-12.2025.8.26.0100 · Silva vs Construtora</div>
+      <div class="tl-item">
+        <div class="tl-dot datajud"></div>
+        <div class="tl-content">
+          <div class="tl-date">14/05/2026<span class="tl-src datajud">DataJud</span></div>
+          <div class="tl-desc">Decisão interlocutória publicada. Concedida tutela provisória parcial.</div>
         </div>
       </div>
-
-      <!-- Card 2 (featured) -->
-      <div class="card card-accent" style="padding:2rem;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;background:radial-gradient(circle,rgba(30,64,175,.1) 0%,transparent 70%);pointer-events:none;"></div>
-        <div class="icon-pill" style="margin-bottom:1.5rem;background:#dbeafe;border-color:#93c5fd;">
-          <svg width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="#1e40af" stroke-width="1.75">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/>
-          </svg>
-        </div>
-        <h3 style="font-size:1.025rem;font-weight:600;color:#0f172a;letter-spacing:-.015em;margin-bottom:.625rem;line-height:1.3;">Chat Jurídico por Cliente</h3>
-        <p style="font-size:.875rem;font-weight:300;color:var(--muted);line-height:1.75;">Cada cliente tem seu próprio assistente treinado com seus documentos. Perguntas respondidas com base nos fatos do caso.</p>
-        <div style="margin-top:1.625rem;padding-top:1.625rem;border-top:1px solid #bfdbfe;display:flex;gap:.4rem;flex-wrap:wrap;">
-          <span class="chip chip-indigo">RAG por cliente</span>
-          <span class="chip chip-indigo">Isolamento de dados</span>
-          <span class="chip chip-indigo">Fontes auditáveis</span>
+      <div class="tl-item">
+        <div class="tl-dot datajud"></div>
+        <div class="tl-content">
+          <div class="tl-date">02/05/2026<span class="tl-src datajud">DataJud</span></div>
+          <div class="tl-desc">Audiência de conciliação designada para 18/06/2026 às 14h.</div>
         </div>
       </div>
-
-      <!-- Card 3 -->
-      <div class="card" style="padding:2rem;">
-        <div class="icon-pill" style="margin-bottom:1.5rem;">
-          <svg width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="#1e40af" stroke-width="1.75">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/>
-          </svg>
-        </div>
-        <h3 style="font-size:1.025rem;font-weight:600;color:#0f172a;letter-spacing:-.015em;margin-bottom:.625rem;line-height:1.3;">Secretaria Autônoma</h3>
-        <p style="font-size:.875rem;font-weight:300;color:var(--muted);line-height:1.75;">Atende clientes no WhatsApp, agenda reuniões no Google Calendar e mantém a comunicação fluindo — sem intervenção humana.</p>
-        <div style="margin-top:1.625rem;padding-top:1.625rem;border-top:1px solid var(--rule);display:flex;gap:.4rem;flex-wrap:wrap;">
-          <span class="chip">WhatsApp</span>
-          <span class="chip">Google Calendar</span>
-          <span class="chip">Agendamento 24/7</span>
+      <div class="tl-item">
+        <div class="tl-dot manual"></div>
+        <div class="tl-content">
+          <div class="tl-date">28/04/2026<span class="tl-src manual">Manual</span></div>
+          <div class="tl-desc">Contrato original anexado ao processo (revisado pelo escritório).</div>
         </div>
       </div>
-
+      <div class="tl-item">
+        <div class="tl-dot datajud"></div>
+        <div class="tl-content">
+          <div class="tl-date">15/04/2026<span class="tl-src datajud">DataJud</span></div>
+          <div class="tl-desc">Distribuição inicial. 4ª Vara Cível de São Paulo.</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
+  <!-- ═══ 08 · MANIFESTO ═══ -->
+<section class="manifesto grain reveal" aria-labelledby="manifesto-heading">
+  <div class="manifesto-inner">
+    <span class="pretitle">Manifesto</span>
+    <div><span class="gold-rule"></span></div>
+    <h2 id="manifesto-heading">Tradição que pensa, <em>inteligência que age.</em></h2>
+    <p>Cada decisão jurídica nasce sobre séculos de doutrina. O JuriAI torna esse acervo, e o seu próprio, instantaneamente acessível. O julgamento continua seu.</p>
+  </div>
+</section>
 
-<!-- ══════════════════════════════════════════
-     CTA — solid blue-800
-══════════════════════════════════════════ -->
-<section class="cta-bg" style="padding:6.5rem 2rem;position:relative;overflow:hidden;">
+  <!-- ═══ 09 · FINANCEIRO + GERAÇÃO ═══ -->
+<section class="duo reveal" aria-label="Módulos financeiro e redação jurídica">
+  <div class="duo-inner">
+    <div class="duo-head">
+      <span class="pretitle">Módulos 04 e 05</span>
+      <div><span class="gold-rule"></span></div>
+      <h2>Operação financeira e <em>redação jurídica.</em></h2>
+      <p class="sub">Dois módulos que fecham o ciclo: gerir receita do escritório e produzir as peças escritas que sustentam cada processo.</p>
+    </div>
+    <div class="duo-grid">
+      <div class="duo-col">
+        <h3>Receita visível, <em>inadimplência controlada.</em></h3>
+        <p>Honorários por tipo (fixo, êxito, hora, mensalidade), pagamentos parciais, alertas de vencimento e fluxo de caixa exportável.</p>
+        <ul>
+          <li>Painel com receita do mês, a receber e em atraso</li>
+          <li>Alerta de inadimplência via WhatsApp para o advogado</li>
+          <li>Exportação em PDF e Excel para contabilidade</li>
+        </ul>
+        <div class="mini-mock">
+          <div class="kpis">
+            <div class="kpi"><div class="lbl">Recebido</div><div class="val">R$ 24.800</div></div>
+            <div class="kpi"><div class="lbl">A receber</div><div class="val">R$ 18.200</div></div>
+            <div class="kpi warn"><div class="lbl">Em atraso</div><div class="val">R$ 4.350</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="duo-col">
+        <h3>Petições e contratos <em>em minutos.</em></h3>
+        <p>Templates editáveis em markdown, variáveis automáticas do cliente e do processo, agente especializado em redação jurídica brasileira.</p>
+        <ul>
+          <li>5 templates pré-prontos: honorários, procuração, notificação, petição inicial, acordo</li>
+          <li>Variáveis: nome do cliente, número CNJ, data, valor da causa</li>
+          <li>Exportação direta em .docx e .pdf prontos para protocolo</li>
+        </ul>
+        <div class="mini-mock editor-mock">
+          <div class="em-head">
+            <span class="em-tab active">Editor</span>
+            <span class="em-tab">Preview</span>
+            <span class="em-tab">Exportar</span>
+          </div>
+          <div class="em-body">
+            Excelentíssimo Senhor Doutor Juiz da <strong>4ª Vara Cível</strong> da Comarca de São Paulo,<br><br>
+            <strong>{% verbatim %}{{cliente.nome}}{% endverbatim %}</strong>, qualificado nos autos, vem respeitosamente perante Vossa Excelência…
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:640px;height:400px;background:radial-gradient(ellipse,rgba(255,255,255,.07) 0%,transparent 68%);filter:blur(32px);pointer-events:none;"></div>
+  <!-- ═══ 10 · INTEGRAÇÕES ═══ -->
+<section class="integrations reveal" aria-label="Integrações disponíveis">
+  <div class="integrations-inner">
+    <span class="pretitle">Integrado com o que você já usa</span>
+    <div class="integrations-logos">
+      <span class="integration-logo">DataJud · CNJ</span>
+      <span class="integration-logo">Google Calendar</span>
+      <span class="integration-logo">WhatsApp</span>
+      <span class="integration-logo">Stripe</span>
+      <span class="integration-logo">Modelos avançados</span>
+    </div>
+  </div>
+</section>
 
-  <div style="position:relative;max-width:600px;margin:0 auto;text-align:center;">
+  <!-- ═══ 11 · TRUST / LGPD ═══ -->
+<section class="trust reveal" id="seguranca">
+  <div class="trust-inner">
+    <div class="trust-head">
+      <span class="pretitle">Confiança</span>
+      <div><span class="gold-rule"></span></div>
+      <h2>Seus dados, <em>seu controle.</em></h2>
+      <p class="sub">Construído desde o primeiro dia para advogados que levam dados de clientes a sério.</p>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-icon">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+        </div>
+        <h3>Dados criptografados</h3>
+        <p>Em trânsito e em repouso, com chave gerenciada pelo escritório.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/></svg>
+        </div>
+        <h3>LGPD nativo</h3>
+        <p>Consentimento auditado, exclusão de conta completa, exportação de dados.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
+        </div>
+        <h3>Auditoria completa</h3>
+        <p>Cada alteração em cliente, processo ou documento fica registrada e visível.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"/></svg>
+        </div>
+        <h3>Isolamento por cliente</h3>
+        <p>Cada cliente tem seu próprio espaço de busca. Nada vaza entre casos.</p>
+      </div>
+    </div>
+    <div class="trust-featured">
+      <span class="flag">100% Brasil.</span>
+      <span class="body">Plataforma e infraestrutura no Brasil, suporte em português, conformidade com LGPD desde o primeiro commit.</span>
+    </div>
+  </div>
+</section>
 
-    <h2 class="serif" style="font-size:clamp(2.4rem,4.5vw,3.5rem);font-weight:500;color:#ffffff;line-height:1.08;letter-spacing:-.025em;margin-bottom:.875rem;">
-      Pronto para trabalhar <em style="font-style:italic;color:#bfdbfe;">diferente?</em>
-    </h2>
-
-    <p style="font-size:.9375rem;font-weight:300;color:rgba(255,255,255,.7);margin-bottom:2.5rem;line-height:1.65;">
-      Comece hoje. Sem cartão de crédito.
-    </p>
-
-    <!-- Inverted button: white bg, blue text -->
-    <a href="{% url 'cadastro' %}" style="padding:.875rem 2.25rem;border-radius:10px;font-size:.9375rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:.6rem;letter-spacing:-.01em;background:#ffffff;color:#1e40af;border:1px solid rgba(255,255,255,.3);transition:background .18s,box-shadow .18s,transform .14s;" onmouseover="this.style.background='#eff6ff';this.style.boxShadow='0 0 28px rgba(255,255,255,.15)';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#ffffff';this.style.boxShadow='none';this.style.transform='none'">
-      Criar conta gratuita
-      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
-      </svg>
+  <!-- ═══ 12 · CTA + FOOTER ═══ -->
+<section class="cta-final grain" aria-label="Chamada para ação">
+  <div class="cta-final-inner">
+    <div class="badge"><span class="dot"></span>Comece grátis</div>
+    <h2>Pronto para trabalhar <em>diferente?</em></h2>
+    <p>Crie sua conta. Sem cartão de crédito.</p>
+    <a href="{% url 'cadastro' %}" class="btn-gold">Criar conta gratuita
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
     </a>
-
-    <!-- Trust row -->
-    <div style="display:flex;align-items:center;justify-content:center;gap:2rem;margin-top:2.5rem;padding-top:2rem;border-top:1px solid rgba(255,255,255,.15);flex-wrap:wrap;">
-
-      <div style="display:flex;align-items:center;gap:.375rem;font-size:.78rem;font-weight:400;color:rgba(255,255,255,.55);">
-        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
-        </svg>
+    <div class="trust-line">
+      <span>
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
         Dados criptografados
-      </div>
-
-      <div style="width:1px;height:14px;background:rgba(255,255,255,.15);"></div>
-
-      <div style="display:flex;align-items:center;gap:.375rem;font-size:.78rem;font-weight:400;color:rgba(255,255,255,.55);">
-        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
-        </svg>
-        Configuração em minutos
-      </div>
-
-      <div style="width:1px;height:14px;background:rgba(255,255,255,.15);"></div>
-
-      <div style="display:flex;align-items:center;gap:.375rem;font-size:.78rem;font-weight:400;color:rgba(255,255,255,.55);">
-        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/>
-        </svg>
-        Suporte em português
-      </div>
-
+      </span>
+      <span class="sep"></span>
+      <span>Configuração em minutos</span>
+      <span class="sep"></span>
+      <span>Suporte em português</span>
     </div>
   </div>
 </section>
 
-
-<!-- ══════════════════════════════════════════
-     FOOTER
-══════════════════════════════════════════ -->
-<footer style="padding:1.875rem 2rem;background:#0f172a;border-top:1px solid #1e293b;">
-  <div style="max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-
-    <a href="/" style="display:flex;align-items:center;text-decoration:none;">
-      <span style="font-weight:700;font-size:1.1rem;color:#ffffff;letter-spacing:-.02em;">Juri</span>
-      <span style="font-weight:700;font-size:1.1rem;color:#60a5fa;letter-spacing:-.02em;">AI</span>
-    </a>
-
-    <span style="font-size:.78rem;color:#475569;">© 2026 JuriAI. Todos os direitos reservados.</span>
-
-    <div style="display:flex;align-items:center;gap:1.5rem;">
-      <a href="{% url 'privacidade' %}" style="font-size:.78rem;color:#475569;text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">Privacidade</a>
-      <a href="{% url 'termos' %}" style="font-size:.78rem;color:#475569;text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">Termos</a>
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="col brand">
+      <div class="logo">Juri<em>AI</em></div>
+      <p class="tag">Plataforma de inteligência jurídica para escritórios brasileiros.</p>
     </div>
-
+    <div class="col">
+      <h4>Produto</h4>
+      <ul>
+        <li><a href="#funcionalidades">Funcionalidades</a></li>
+        <li><a href="#seguranca">Segurança</a></li>
+        <li><a href="{% url 'login' %}">Entrar</a></li>
+        <li><a href="{% url 'cadastro' %}">Criar conta</a></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="/privacidade/">Privacidade</a></li>
+        <li><a href="/termos/">Termos de uso</a></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>Contato</h4>
+      <ul>
+        <li>contato@juriai.com.br</li>
+        <li>São Paulo, Brasil</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 JuriAI. Todos os direitos reservados.</span>
+    <span>Feito no Brasil para o Direito brasileiro.</span>
   </div>
 </footer>
+
+  <script>
+    const navToggle = document.getElementById('navToggle');
+    const navMobileMenu = document.getElementById('navMobileMenu');
+    navToggle?.addEventListener('click', () => {
+      const isOpen = navMobileMenu.classList.toggle('is-open');
+      navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      navToggle.setAttribute('aria-label', isOpen ? 'Fechar menu' : 'Abrir menu');
+    });
+
+    // Reveal sections as they enter viewport (respects prefers-reduced-motion)
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reveals = document.querySelectorAll('.reveal');
+
+    if (prefersReducedMotion) {
+      reveals.forEach(el => el.classList.add('is-visible'));
+    } else {
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+      reveals.forEach(el => revealObserver.observe(el));
+    }
+
+    // Glass nav becomes more solid on scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 100) nav.classList.add('is-scrolled');
+      else nav.classList.remove('is-scrolled');
+    }, { passive: true });
+  </script>
 
 </body>
 </html>
