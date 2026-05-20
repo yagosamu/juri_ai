@@ -235,6 +235,34 @@
     .manifesto h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(2.2rem, 4.2vw, 3.4rem); line-height: 1.08; letter-spacing: -.02em; margin: 1rem 0; color: var(--cream); }
     .manifesto h2 em { font-style: italic; color: var(--gold); }
     .manifesto p { font-size: 1.05rem; line-height: 1.7; opacity: .8; margin: 1.4rem 0 0; }
+
+    .duo { padding: 7rem 2rem; }
+    .duo-inner { max-width: 1200px; margin: 0 auto; }
+    .duo-head { max-width: 580px; margin-bottom: 3.5rem; }
+    .duo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .duo-col { background: #fff; border: 1px solid #e3dcc8; border-radius: 14px; padding: 2.25rem; }
+    .duo-col h3 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.65rem; line-height: 1.12; margin: 0 0 .8rem; }
+    .duo-col h3 em { font-style: italic; color: var(--navy-700); }
+    .duo-col p { font-size: .92rem; color: var(--text-muted); line-height: 1.65; margin: 0 0 1rem; }
+    .duo-col ul { list-style: none; padding: 0; margin: 0 0 1.5rem; }
+    .duo-col ul li { display: flex; gap: .55rem; font-size: .88rem; padding: .25rem 0; color: var(--text-light); }
+    .duo-col ul li::before { content: '·'; color: var(--gold); font-weight: 700; font-size: 1.2rem; line-height: 1; flex-shrink: 0; }
+
+    .mini-mock { background: var(--cream); border: 1px solid #e3dcc8; border-radius: 10px; padding: 1rem; }
+    .mini-mock .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; }
+    .mini-mock .kpi .lbl { font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+    .mini-mock .kpi .val { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 500; margin-top: 4px; }
+    .mini-mock .kpi.warn .val { color: #b8860b; }
+
+    .editor-mock { background: var(--ink); color: var(--cream); border-radius: 10px; overflow: hidden; }
+    .editor-mock .em-head { padding: .5rem .9rem; background: rgba(255,255,255,.05); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); border-bottom: 1px solid rgba(255,255,255,.05); display: flex; gap: .5rem; }
+    .editor-mock .em-tab.active { color: var(--cream); }
+    .editor-mock .em-body { padding: 1rem; font-size: .8rem; line-height: 1.6; font-family: 'Fraunces', serif; opacity: .9; }
+    .editor-mock .em-body strong { color: var(--gold); font-weight: 500; }
+
+    @media (max-width: 900px) {
+      .duo-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 
@@ -519,6 +547,54 @@
 </section>
 
   <!-- ═══ 09 · FINANCEIRO + GERAÇÃO ═══ -->
+<section class="duo reveal">
+  <div class="duo-inner">
+    <div class="duo-head">
+      <span class="pretitle">Módulos 04 e 05</span>
+      <div><span class="gold-rule"></span></div>
+      <h2 style="font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(2rem, 3.6vw, 2.9rem); line-height: 1.08; letter-spacing: -.018em;">Operação financeira e <em style="font-style: italic; color: var(--navy-700);">redação jurídica.</em></h2>
+      <p class="sub">Dois módulos que fecham o ciclo: gerir receita do escritório e produzir as peças escritas que sustentam cada processo.</p>
+    </div>
+    <div class="duo-grid">
+      <div class="duo-col">
+        <h3>Receita visível, <em>inadimplência controlada.</em></h3>
+        <p>Honorários por tipo (fixo, êxito, hora, mensalidade), pagamentos parciais, alertas de vencimento e fluxo de caixa exportável.</p>
+        <ul>
+          <li>Painel com receita do mês, a receber e em atraso</li>
+          <li>Alerta de inadimplência via WhatsApp para o advogado</li>
+          <li>Exportação em PDF e Excel para contabilidade</li>
+        </ul>
+        <div class="mini-mock">
+          <div class="kpis">
+            <div class="kpi"><div class="lbl">Recebido</div><div class="val">R$ 24.800</div></div>
+            <div class="kpi"><div class="lbl">A receber</div><div class="val">R$ 18.200</div></div>
+            <div class="kpi warn"><div class="lbl">Em atraso</div><div class="val">R$ 4.350</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="duo-col">
+        <h3>Petições e contratos <em>em minutos.</em></h3>
+        <p>Templates editáveis em markdown, variáveis automáticas do cliente e do processo, agente especializado em redação jurídica brasileira.</p>
+        <ul>
+          <li>5 templates pré-prontos: honorários, procuração, notificação, petição inicial, acordo</li>
+          <li>Variáveis: nome do cliente, número CNJ, data, valor da causa</li>
+          <li>Exportação direta em .docx e .pdf prontos para protocolo</li>
+        </ul>
+        <div class="mini-mock editor-mock">
+          <div class="em-head">
+            <span class="em-tab active">Editor</span>
+            <span class="em-tab">Preview</span>
+            <span class="em-tab">Exportar</span>
+          </div>
+          <div class="em-body">
+            Excelentíssimo Senhor Doutor Juiz da <strong>4ª Vara Cível</strong> da Comarca de São Paulo,<br><br>
+            <strong>{% verbatim %}{{cliente.nome}}{% endverbatim %}</strong>, qualificado nos autos, vem respeitosamente perante Vossa Excelência…
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
   <!-- ═══ 10 · INTEGRAÇÕES ═══ -->
 
