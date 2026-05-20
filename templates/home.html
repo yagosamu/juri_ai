@@ -219,6 +219,22 @@
     .mockup-timeline .tl-src { display: inline-block; font-size: .6rem; padding: .15rem .45rem; border-radius: 3px; margin-left: .4rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; vertical-align: middle; }
     .mockup-timeline .tl-src.datajud { background: rgba(30,58,95,.1); color: var(--navy-700); }
     .mockup-timeline .tl-src.manual { background: rgba(100,116,139,.1); color: var(--text-muted); }
+
+    .manifesto {
+      position: relative; overflow: hidden;
+      padding: 9rem 2rem;
+      background:
+        linear-gradient(90deg, rgba(10,10,10,.92) 0%, rgba(10,10,10,.5) 50%, rgba(10,10,10,.92) 100%),
+        url("{% static 'landing/books.jpg' %}") center / cover,
+        #0a0a0a;
+      color: var(--cream);
+      text-align: center;
+    }
+    .manifesto-inner { position: relative; z-index: 2; max-width: 640px; margin: 0 auto; }
+    .manifesto .pretitle { color: var(--gold); }
+    .manifesto h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(2.2rem, 4.2vw, 3.4rem); line-height: 1.08; letter-spacing: -.02em; margin: 1rem 0; color: var(--cream); }
+    .manifesto h2 em { font-style: italic; color: var(--gold); }
+    .manifesto p { font-size: 1.05rem; line-height: 1.7; opacity: .8; margin: 1.4rem 0 0; }
   </style>
 </head>
 
@@ -493,6 +509,14 @@
 </section>
 
   <!-- ═══ 08 · MANIFESTO ═══ -->
+<section class="manifesto grain reveal">
+  <div class="manifesto-inner">
+    <span class="pretitle">Manifesto</span>
+    <div><span class="gold-rule"></span></div>
+    <h2>Tradição que pensa, <em>inteligência que age.</em></h2>
+    <p>Cada decisão jurídica nasce sobre séculos de doutrina. O JuriAI torna esse acervo, e o seu próprio, instantaneamente acessível. O julgamento continua seu.</p>
+  </div>
+</section>
 
   <!-- ═══ 09 · FINANCEIRO + GERAÇÃO ═══ -->
 
