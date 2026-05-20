@@ -792,6 +792,13 @@
       }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
       reveals.forEach(el => revealObserver.observe(el));
     }
+
+    // Glass nav becomes more solid on scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 100) nav.classList.add('is-scrolled');
+      else nav.classList.remove('is-scrolled');
+    }, { passive: true });
   </script>
 
 </body>
