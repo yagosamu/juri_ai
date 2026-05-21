@@ -35,6 +35,7 @@ venv/
 # IDE
 .vscode/
 .idea/
+.claude/
 
 # Brainstorming companion
 .superpowers/
