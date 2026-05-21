@@ -85,7 +85,7 @@
       <div>
         <p class="text-xs text-slate-400 font-medium uppercase tracking-wide mb-0.5">Cliente</p>
         <a href="{% url 'cliente' processo.cliente.id %}"
-           class="text-sm font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
+           class="text-sm font-medium text-[#1E3A5F] hover:text-[#D4A547] transition-colors">
           {{ processo.cliente.nome }}
         </a>
       </div>
@@ -130,37 +130,37 @@
     <nav class="flex gap-1 -mb-px">
       <a href="?tab=documentos"
          class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-                {% if tab == 'documentos' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
+                {% if tab == 'documentos' %}border-indigo-600 text-[#1E3A5F]{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
         Documentos
         <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ docs_vinculados|length }}</span>
       </a>
       <a href="?tab=analises"
          class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-                {% if tab == 'analises' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
+                {% if tab == 'analises' %}border-indigo-600 text-[#1E3A5F]{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
         Análises de Risco
         <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ analises|length }}</span>
       </a>
       <a href="?tab=prazos"
          class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-                {% if tab == 'prazos' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
+                {% if tab == 'prazos' %}border-indigo-600 text-[#1E3A5F]{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
         Prazos
         <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ prazos|length }}</span>
       </a>
       <a href="?tab=andamentos"
          class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-                {% if tab == 'andamentos' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
+                {% if tab == 'andamentos' %}border-indigo-600 text-[#1E3A5F]{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
         Andamentos
         <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ andamentos|length }}</span>
       </a>
       <a href="?tab=honorarios"
          class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-                {% if tab == 'honorarios' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
+                {% if tab == 'honorarios' %}border-indigo-600 text-[#1E3A5F]{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
         Honorários
         <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ honorarios|length }}</span>
       </a>
       <a href="?tab=calculos"
          class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-                {% if tab == 'calculos' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
+                {% if tab == 'calculos' %}border-indigo-600 text-[#1E3A5F]{% else %}border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300{% endif %}">
         Cálculo Judicial
         <span class="ml-1.5 bg-slate-100 text-slate-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{{ calculos|length }}</span>
       </a>
@@ -172,21 +172,21 @@
 
   <!-- Vincular documento existente -->
   {% if docs_disponiveis %}
-  <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-5">
+  <div class="bg-[rgba(212,165,71,0.08)] border border-[#1E3A5F]/15 rounded-xl p-4 mb-5">
     <p class="text-sm font-medium text-indigo-800 mb-3">Vincular documento do cliente a este processo</p>
     <form method="POST" action="{% url 'vincular_documento' processo.id %}" class="flex flex-wrap gap-3 items-end">
       {% csrf_token %}
       <div class="flex-1 min-w-48">
         <select name="documento_id"
-          class="w-full border border-indigo-200 rounded-xl px-3 py-2 text-sm text-slate-700 bg-white
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+          class="w-full border border-[#1E3A5F]/20 rounded-xl px-3 py-2 text-sm text-slate-700 bg-white
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
           {% for doc in docs_disponiveis %}
           <option value="{{ doc.id }}">{{ doc.get_tipo_display }} — {{ doc.data_upload|date:"d/m/Y" }}</option>
           {% endfor %}
         </select>
       </div>
       <button type="submit"
-        class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+        class="bg-[#0F172A] hover:bg-[#0C1D3D] text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors">
         Vincular
       </button>
     </form>
@@ -218,7 +218,7 @@
           </td>
           <td class="px-5 py-3.5 text-right">
             <a href="{% url 'cliente' processo.cliente.id %}"
-               class="text-xs text-slate-500 hover:text-indigo-600 transition-colors">Ver →</a>
+               class="text-xs text-slate-500 hover:text-[#1E3A5F] transition-colors">Ver →</a>
           </td>
         </tr>
         {% endfor %}
@@ -238,7 +238,7 @@
     <p class="text-slate-400 text-xs mt-1">Use o painel acima para vincular documentos do cliente.</p>
     {% else %}
     <p class="text-slate-400 text-xs mt-1">
-      <a href="{% url 'cliente' processo.cliente.id %}" class="text-indigo-600 hover:underline">Faça upload de documentos</a>
+      <a href="{% url 'cliente' processo.cliente.id %}" class="text-[#1E3A5F] hover:underline">Faça upload de documentos</a>
       na página do cliente primeiro.
     </p>
     {% endif %}
@@ -324,7 +324,7 @@
   <div class="flex items-center justify-between mb-5">
     <p class="text-sm text-slate-500">{{ prazos|length }} prazo{{ prazos|length|pluralize:"s" }} cadastrado{{ prazos|length|pluralize:"s" }}</p>
     <a href="{% url 'criar_prazo' processo.id %}"
-       class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white
+       class="inline-flex items-center gap-1.5 bg-[#0F172A] hover:bg-[#0C1D3D] text-white
               text-sm font-medium px-4 py-2 rounded-xl transition-colors">
       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
@@ -341,13 +341,13 @@
         <div class="flex items-start gap-3 min-w-0">
           {# Ícone de tipo #}
           <div class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center mt-0.5
-            {% if prazo.tipo == 'audiencia' %}bg-indigo-50
+            {% if prazo.tipo == 'audiencia' %}bg-[rgba(212,165,71,0.08)]
             {% elif prazo.tipo == 'protocolo' %}bg-amber-50
             {% elif prazo.tipo == 'recurso' %}bg-violet-50
             {% elif prazo.tipo == 'diligencia' %}bg-emerald-50
             {% else %}bg-slate-100{% endif %}">
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"
-              class="{% if prazo.tipo == 'audiencia' %}text-indigo-600
+              class="{% if prazo.tipo == 'audiencia' %}text-[#1E3A5F]
                      {% elif prazo.tipo == 'protocolo' %}text-amber-600
                      {% elif prazo.tipo == 'recurso' %}text-violet-600
                      {% elif prazo.tipo == 'diligencia' %}text-emerald-600
@@ -361,7 +361,7 @@
               <span class="text-sm font-semibold text-slate-800">{{ prazo.descricao }}</span>
               {# Badge tipo #}
               {% if prazo.tipo == 'audiencia' %}
-                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">Audiência</span>
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-[rgba(212,165,71,0.15)] text-indigo-700">Audiência</span>
               {% elif prazo.tipo == 'protocolo' %}
                 <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Protocolo</span>
               {% elif prazo.tipo == 'recurso' %}
@@ -460,7 +460,7 @@
     <form method="POST" action="{% url 'atualizar_datajud' processo.id %}">
       {% csrf_token %}
       <button type="submit"
-        class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500
+        class="inline-flex items-center gap-1.5 bg-[#0F172A] hover:bg-[#0C1D3D]
                text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors">
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round"
@@ -556,7 +556,7 @@
   <div class="flex items-center justify-between mb-5">
     <p class="text-sm text-slate-500">{{ honorarios|length }} honorário{{ honorarios|length|pluralize }}</p>
     <a href="{% url 'criar_honorario' %}?processo_id={{ processo.id }}&cliente_id={{ processo.cliente.id }}"
-       class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white
+       class="inline-flex items-center gap-1.5 bg-[#0F172A] hover:bg-[#0C1D3D] text-white
               text-sm font-medium px-4 py-2 rounded-xl transition-colors">
       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
@@ -637,18 +637,18 @@
           <input type="text" name="valor_pago" required
             value="{{ h.valor_total|floatformat:'2g' }}" placeholder="0,00"
             data-mask="currency"
-            class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none"/>
+            class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none"/>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Data do pagamento</label>
           <input type="text" name="data_pagamento" required
             placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
-            class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none"/>
+            class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none"/>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Observação <span class="text-slate-400 font-normal">(opcional)</span></label>
           <input type="text" name="observacao"
-            class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none"/>
+            class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none"/>
         </div>
         <div class="flex gap-2 pt-1">
           <button type="submit"
@@ -671,7 +671,7 @@
     <p class="text-slate-500 text-sm">Nenhum honorário vinculado a este processo.</p>
     <p class="text-slate-400 text-xs mt-1">
       <a href="{% url 'criar_honorario' %}?processo_id={{ processo.id }}&cliente_id={{ processo.cliente.id }}"
-         class="text-indigo-500 hover:text-indigo-600 underline">Cadastrar honorário para este processo</a>
+         class="text-indigo-500 hover:text-[#1E3A5F] underline">Cadastrar honorário para este processo</a>
     </p>
   </div>
   {% endif %}
@@ -684,7 +684,7 @@
   <div class="flex items-center justify-between mb-5">
     <p class="text-sm text-slate-500">{{ calculos|length }} cálculo{{ calculos|length|pluralize }} salvo{{ calculos|length|pluralize }}</p>
     <a href="{% url 'calculadora' %}?processo_id={{ processo.id }}"
-       class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white
+       class="inline-flex items-center gap-1.5 bg-[#0F172A] hover:bg-[#0C1D3D] text-white
               text-sm font-medium px-4 py-2 rounded-xl transition-colors">
       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
@@ -732,7 +732,7 @@
   <div class="bg-white rounded-2xl border border-slate-100 shadow-sm px-8 py-12 text-center">
     <p class="text-slate-500 text-sm">Nenhum cálculo judicial salvo para este processo.</p>
     <p class="text-slate-400 text-xs mt-1">
-      <a href="{% url 'calculadora' %}?processo_id={{ processo.id }}" class="text-indigo-500 hover:text-indigo-600 underline">
+      <a href="{% url 'calculadora' %}?processo_id={{ processo.id }}" class="text-indigo-500 hover:text-[#1E3A5F] underline">
         Abrir calculadora
       </a>
       para calcular e salvar o débito.

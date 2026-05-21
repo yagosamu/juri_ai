@@ -32,7 +32,7 @@
       </label>
       <select name="cliente_id" id="id_cliente" required
         class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
-               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+               focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
         {% for c in clientes %}
         <option value="{{ c.id }}" {% if honorario.cliente.id == c.id %}selected{% endif %}>
           {{ c.nome }}{% if c.tipo == 'PJ' %} (PJ){% endif %}
@@ -47,7 +47,7 @@
       </label>
       <select name="processo_id" id="id_processo"
         class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
-               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+               focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
         <option value="">Nenhum</option>
         {% for p in processos %}
         <option value="{{ p.id }}" data-cliente-id="{{ p.cliente.id }}"
@@ -66,7 +66,7 @@
       </label>
       <input type="text" name="descricao" required value="{{ honorario.descricao }}"
         class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+               focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -76,7 +76,7 @@
         </label>
         <select name="tipo" required
           class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
           {% for value, label in tipo_choices %}
           <option value="{{ value }}" {% if honorario.tipo == value %}selected{% endif %}>{{ label }}</option>
           {% endfor %}
@@ -86,7 +86,7 @@
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
         <select name="status"
           class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
           <option value="pendente"  {% if honorario.status == 'pendente' %}selected{% endif %}>Pendente</option>
           <option value="pago"      {% if honorario.status == 'pago' %}selected{% endif %}>Pago</option>
           <option value="atrasado"  {% if honorario.status == 'atrasado' %}selected{% endif %}>Atrasado</option>
@@ -104,7 +104,7 @@
           value="{{ honorario.valor_total|floatformat:'2g' }}" placeholder="0,00"
           data-mask="currency"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
@@ -113,32 +113,32 @@
         <input type="text" name="vencimento" required value="{{ honorario.vencimento|date:'d/m/Y' }}"
           placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       </div>
     </div>
 
     {# ── Campos extras: Por Hora ── #}
-    <div id="campos-hora" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-indigo-50/60 rounded-xl border border-indigo-100">
+    <div id="campos-hora" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-[rgba(212,165,71,0.08)]/60 rounded-xl border border-[#1E3A5F]/15">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
           Preço por hora (R$/h) <span class="text-red-500">*</span>
         </label>
         <input type="text" id="preco_hora" placeholder="0,00" data-mask="currency"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors bg-white"/>
+                 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors bg-white"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Estimativa de horas</label>
         <input type="text" id="horas_total" placeholder="0" inputmode="decimal"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors bg-white"/>
+                 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors bg-white"/>
         <p class="text-xs text-slate-400 mt-1">O valor total é calculado automaticamente.</p>
       </div>
     </div>
 
     <div class="flex items-center gap-3 pt-2">
       <button type="submit"
-        class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+        class="bg-[#0F172A] hover:bg-[#0C1D3D] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
         Salvar alterações
       </button>
       <a href="{% url 'lista_financeiro' %}"

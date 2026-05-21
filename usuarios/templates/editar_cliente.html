@@ -31,19 +31,19 @@
       <div class="px-6 py-4 flex items-center gap-4">
         <label class="w-32 text-sm font-medium text-slate-600 flex-shrink-0">Nome *</label>
         <input type="text" name="nome" value="{{ cliente.nome }}" required
-               class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+               class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A547]">
       </div>
 
       <div class="px-6 py-4 flex items-center gap-4">
         <label class="w-32 text-sm font-medium text-slate-600 flex-shrink-0">E-mail *</label>
         <input type="email" name="email" value="{{ cliente.email }}" required
-               class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+               class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A547]">
       </div>
 
       <div class="px-6 py-4 flex items-center gap-4">
         <label class="w-32 text-sm font-medium text-slate-600 flex-shrink-0">Tipo</label>
         <select name="tipo"
-                class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A547]">
           <option value="PF" {% if cliente.tipo == 'PF' %}selected{% endif %}>Pessoa Física</option>
           <option value="PJ" {% if cliente.tipo == 'PJ' %}selected{% endif %}>Pessoa Jurídica</option>
         </select>
@@ -52,7 +52,7 @@
       <div class="px-6 py-4 flex items-center gap-4">
         <label class="w-32 text-sm font-medium text-slate-600 flex-shrink-0">Telefone</label>
         <input type="text" name="telefone" value="{{ cliente.telefone }}"
-               class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+               class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A547]"
                placeholder="(11) 99999-9999">
       </div>
 
@@ -60,7 +60,7 @@
         <label class="w-32 text-sm font-medium text-slate-600 flex-shrink-0">Status</label>
         <label class="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" name="status" {% if cliente.status %}checked{% endif %}
-                 class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                 class="w-4 h-4 rounded border-slate-300 text-[#1E3A5F] focus:ring-[#D4A547]">
           <span class="text-sm text-slate-700">Cliente ativo</span>
         </label>
       </div>
@@ -69,7 +69,7 @@
 
     <div class="flex gap-3 mt-6">
       <button type="submit"
-              class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-colors">
+              class="bg-[#0F172A] hover:bg-[#0C1D3D] text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-colors">
         Salvar alterações
       </button>
       <a href="{% url 'cliente' cliente.id %}"

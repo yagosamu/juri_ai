@@ -56,7 +56,7 @@
         </label>
         <select id="id_template"
           class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
           <option value="">Selecione um template...</option>
           {% for t in templates %}{% ifchanged t.tipo %}{% if not forloop.first %}</optgroup>{% endif %}<optgroup label="{{ t.get_tipo_display }}">{% endifchanged %}<option value="{{ t.id }}">{{ t.nome }}{% if t.is_global %} · Sistema{% endif %}</option>{% endfor %}{% if templates %}</optgroup>{% endif %}
         </select>
@@ -68,7 +68,7 @@
         </label>
         <select id="id_cliente"
           class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
           <option value="">Selecione um cliente...</option>
           {% for c in clientes %}
           <option value="{{ c.id }}">{{ c.nome }}{% if c.tipo == 'PJ' %} (PJ){% endif %}</option>
@@ -88,7 +88,7 @@
         </label>
         <select id="id_processo"
           class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
           <option value="">Nenhum</option>
         </select>
         <p class="text-xs text-slate-400 mt-1">Selecione um cliente para ver os processos vinculados.</p>
@@ -99,13 +99,13 @@
         <textarea id="id_instrucoes" rows="5"
           placeholder="Ex: O réu é João da Silva. A ação é por rescisão sem justa causa. Incluir pedido de danos morais de R$ 10.000,00. Comarca de São Paulo, 3ª Vara do Trabalho."
           class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900
-                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300
+                 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547]
                  outline-none transition-colors resize-y leading-relaxed"></textarea>
         <p class="text-xs text-slate-400 mt-1">Descreva o contexto do caso. Quanto mais detalhes, melhor o resultado.</p>
       </div>
 
       <button id="btn_gerar"
-        class="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500
+        class="w-full inline-flex items-center justify-center gap-2 bg-[#0F172A] hover:bg-[#0C1D3D]
                disabled:bg-slate-300 disabled:cursor-not-allowed
                text-white text-sm font-semibold px-5 py-3 rounded-xl transition-colors">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -120,7 +120,7 @@
       <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
         <h2 class="text-base font-semibold text-slate-900">Documento gerado</h2>
         <span id="status_badge"
-              class="hidden inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700
+              class="hidden inline-flex items-center gap-1.5 bg-[rgba(212,165,71,0.08)] text-indigo-700
                      text-xs font-medium px-3 py-1 rounded-full">
           <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
           Gerando...
@@ -146,7 +146,7 @@
       <div id="output_actions"
            class="hidden px-6 py-4 border-t border-slate-100 flex items-center gap-3 flex-wrap">
         <button id="btn_salvar"
-          class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white
+          class="inline-flex items-center gap-2 bg-[#0F172A] hover:bg-[#0C1D3D] text-white
                  text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
           <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>

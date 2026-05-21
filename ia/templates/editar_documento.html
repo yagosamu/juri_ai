@@ -72,7 +72,7 @@
                      border-none outline-none leading-relaxed bg-transparent">{{ doc.conteudo }}</textarea>
             <div class="px-6 py-4 border-t border-slate-100 flex items-center gap-3">
               <button type="submit"
-                class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white
+                class="inline-flex items-center gap-2 bg-[#0F172A] hover:bg-[#0C1D3D] text-white
                        text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
                 <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
@@ -115,7 +115,7 @@
             <dt class="text-slate-500 flex-shrink-0">Cliente</dt>
             <dd class="text-slate-800 font-medium text-right truncate">
               <a href="{% url 'cliente' doc.cliente.id %}"
-                 class="hover:text-indigo-600 transition-colors">{{ doc.cliente.nome }}</a>
+                 class="hover:text-[#1E3A5F] transition-colors">{{ doc.cliente.nome }}</a>
             </dd>
           </div>
           {% if doc.processo %}
@@ -183,8 +183,8 @@
         <form method="POST" action="{% url 'vincular_doc_gerado' doc.id %}">
           {% csrf_token %}
           <button type="submit"
-            class="w-full inline-flex items-center justify-center gap-2 border border-indigo-200
-                   bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm font-medium px-4 py-2.5
+            class="w-full inline-flex items-center justify-center gap-2 border border-[#1E3A5F]/20
+                   bg-[rgba(212,165,71,0.08)] hover:bg-[rgba(212,165,71,0.15)] text-indigo-700 text-sm font-medium px-4 py-2.5
                    rounded-xl transition-colors">
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round"

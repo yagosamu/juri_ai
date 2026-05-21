@@ -33,7 +33,7 @@
       {% endif %}
 
       {# Info banner #}
-      <div class="flex items-start gap-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3.5">
+      <div class="flex items-start gap-3 bg-[rgba(212,165,71,0.08)] border border-[#1E3A5F]/15 rounded-xl px-4 py-3.5">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" class="text-indigo-500 mt-0.5 flex-shrink-0">
           <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
         </svg>
@@ -54,7 +54,7 @@
             <input type="url" name="base_url" id="base_url" required
               value="{{ config.base_url|default:'' }}"
               placeholder="https://meuservidor.com"
-              class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors" />
+              class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors" />
           </div>
 
           <div>
@@ -64,7 +64,7 @@
             <input type="text" name="instancia" id="instancia" required
               value="{{ config.instancia|default:'' }}"
               placeholder="minha-instancia"
-              class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors" />
+              class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors" />
           </div>
 
           <div>
@@ -79,7 +79,7 @@
               {% if not config %}required{% endif %}
               placeholder="{% if config %}••••••••••••••••{% else %}Cole sua API Key aqui{% endif %}"
               autocomplete="new-password"
-              class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors" />
+              class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors" />
             {% if config %}
             <div class="flex items-center gap-1.5 mt-1.5">
               <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="text-emerald-500">
@@ -96,7 +96,7 @@
               Cancelar
             </a>
             <button type="submit"
-              class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+              class="flex-1 bg-[#0F172A] hover:bg-[#0C1D3D] text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors">
               Salvar configuração
             </button>
           </div>

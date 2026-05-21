@@ -38,7 +38,7 @@
       <input type="text" name="descricao" required
         value="{{ prazo.descricao }}"
         class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-               placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+               placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
     </div>
 
     <!-- Tipo + Data -->
@@ -49,7 +49,7 @@
         </label>
         <select name="tipo" required
           class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
           {% for code, label in tipo_choices %}
           <option value="{{ code }}" {% if prazo.tipo == code %}selected{% endif %}>{{ label }}</option>
           {% endfor %}
@@ -63,7 +63,7 @@
           value="{{ prazo.data_prazo|date:'d/m/Y' }}"
           placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       </div>
     </div>
 
@@ -75,7 +75,7 @@
       <input type="number" name="alerta_dias_antes" min="0" max="30"
         value="{{ prazo.alerta_dias_antes }}"
         class="w-32 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+               focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       <p class="text-xs text-slate-400 mt-1">O advogado recebe um e-mail de alerta neste número de dias antes do prazo.</p>
     </div>
 
@@ -95,7 +95,7 @@
     <!-- Ações -->
     <div class="flex items-center gap-3 pt-2">
       <button type="submit"
-        class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+        class="bg-[#0F172A] hover:bg-[#0C1D3D] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
         Salvar alterações
       </button>
       <a href="{% url 'processo' prazo.processo.id %}?tab=prazos"

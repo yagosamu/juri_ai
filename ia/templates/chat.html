@@ -24,7 +24,7 @@
 
         {# Mensagem de boas-vindas #}
         <div class="flex items-start gap-3">
-          <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
+          <div class="w-10 h-10 rounded-full bg-[#0F172A] flex items-center justify-center flex-shrink-0">
             <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.75">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.97zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.97z" />
             </svg>
@@ -51,7 +51,7 @@
           <input type="text" name="pergunta" id="pergunta" placeholder="Digite sua pergunta jurídica..."
               class="flex-1 border-none outline-none text-sm text-gray-800 bg-transparent">
           <button type="submit"
-              class="rounded-xl cursor-pointer bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+              class="rounded-xl cursor-pointer bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0C1D3D] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
             Enviar
           </button>
         </div>
@@ -79,7 +79,7 @@
                     <div class="flex items-center justify-end space-x-2 rtl:space-x-reverse">
                     <span class="text-sm font-semibold text-gray-900">Você</span>
                     </div>
-                        <div class="flex flex-col leading-1.5 p-4 bg-indigo-100 text-gray-900 rounded-s-xl rounded-ee-xl">
+                        <div class="flex flex-col leading-1.5 p-4 bg-[rgba(212,165,71,0.15)] text-gray-900 rounded-s-xl rounded-ee-xl">
                         <p class="text-sm font-normal py-2.5">
                             ${pergunta}
                         </p>
@@ -92,7 +92,7 @@
         novaMensagem.className = "flex items-start gap-3";
 
         novaMensagem.innerHTML = `
-                <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
+                <div class="w-10 h-10 rounded-full bg-[#0F172A] flex items-center justify-center flex-shrink-0">
                   <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.75">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.97zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.97z" />
                   </svg>

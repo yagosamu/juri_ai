@@ -35,7 +35,7 @@
       </p>
       <ul class="space-y-3">
         <li class="flex items-center gap-3 text-slate-300 text-sm">
-          <span class="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 flex-shrink-0">
+          <span class="flex items-center justify-center w-5 h-5 rounded-full bg-[#0F172A] flex-shrink-0">
             <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
@@ -43,7 +43,7 @@
           Análise de documentos com RAG
         </li>
         <li class="flex items-center gap-3 text-slate-300 text-sm">
-          <span class="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 flex-shrink-0">
+          <span class="flex items-center justify-center w-5 h-5 rounded-full bg-[#0F172A] flex-shrink-0">
             <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
@@ -51,7 +51,7 @@
           Atendimento WhatsApp 24h
         </li>
         <li class="flex items-center gap-3 text-slate-300 text-sm">
-          <span class="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 flex-shrink-0">
+          <span class="flex items-center justify-center w-5 h-5 rounded-full bg-[#0F172A] flex-shrink-0">
             <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
@@ -74,13 +74,13 @@
       {# Mobile logo #}
       <a href="{% url 'home' %}" class="flex items-center gap-0.5 mb-10 lg:hidden">
         <span class="text-slate-900 font-bold text-xl tracking-tight">Juri</span>
-        <span class="text-indigo-600 font-bold text-xl tracking-tight">AI</span>
+        <span class="text-[#1E3A5F] font-bold text-xl tracking-tight">AI</span>
       </a>
 
       <h1 class="text-2xl font-bold tracking-tight text-slate-900">Crie sua conta</h1>
       <p class="text-slate-500 text-sm mt-1.5">
         Já tem conta?
-        <a href="{% url 'login' %}" class="text-indigo-600 hover:text-indigo-500 font-medium transition-colors">Entrar</a>
+        <a href="{% url 'login' %}" class="text-[#1E3A5F] hover:text-[#D4A547] font-medium transition-colors">Entrar</a>
       </p>
 
       {# Messages #}
@@ -101,33 +101,33 @@
         <div>
           <label for="username" class="block text-sm font-medium text-slate-700 mb-1.5">Username</label>
           <input id="username" type="text" name="username" required autocomplete="username"
-            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"
+            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"
             placeholder="seunome" />
         </div>
         <div>
           <label for="password" class="block text-sm font-medium text-slate-700 mb-1.5">Senha</label>
           <input id="password" type="password" name="senha" required autocomplete="new-password"
-            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"
+            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"
             placeholder="mínimo 6 caracteres" />
         </div>
         <div>
           <label for="confirmar_senha" class="block text-sm font-medium text-slate-700 mb-1.5">Confirmar senha</label>
           <input id="confirmar_senha" type="password" name="confirmar_senha" required autocomplete="new-password"
-            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"
+            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"
             placeholder="••••••••" />
         </div>
         <div class="flex items-start gap-3">
           <input id="aceito_termos" type="checkbox" name="aceito_termos" required
-            class="mt-0.5 w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 flex-shrink-0" />
+            class="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#1E3A5F] focus:ring-[#D4A547] flex-shrink-0" />
           <label for="aceito_termos" class="text-sm text-slate-600 leading-snug">
             Li e aceito os
-            <a href="/termos/" target="_blank" class="text-indigo-600 hover:text-indigo-500 underline">Termos de Uso</a>
+            <a href="/termos/" target="_blank" class="text-[#1E3A5F] hover:text-[#D4A547] underline">Termos de Uso</a>
             e a
-            <a href="/privacidade/" target="_blank" class="text-indigo-600 hover:text-indigo-500 underline">Política de Privacidade</a>
+            <a href="/privacidade/" target="_blank" class="text-[#1E3A5F] hover:text-[#D4A547] underline">Política de Privacidade</a>
           </label>
         </div>
         <button type="submit"
-          class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors mt-2">
+          class="w-full bg-[#0F172A] hover:bg-[#0C1D3D] text-white py-2.5 rounded-xl text-sm font-semibold transition-colors mt-2">
           Criar conta
         </button>
       </form>
