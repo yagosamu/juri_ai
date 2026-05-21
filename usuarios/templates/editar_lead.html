@@ -16,7 +16,7 @@
       </svg>
       <span class="text-slate-600">Editar Lead</span>
     </div>
-    <h1 class="text-slate-900 text-xl font-semibold tracking-tight">{{ lead.nome }}</h1>
+    <h1 class="serif-title text-slate-900 text-2xl">{{ lead.nome }}</h1>
   </div>
   <div>
     <form method="POST" action="{% url 'converter_lead' lead.id %}" id="form-converter-header">
