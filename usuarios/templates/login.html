@@ -29,8 +29,8 @@
     .brand-panel {
       position: relative;
       background:
-        linear-gradient(180deg, rgba(15,23,42,.55) 0%, rgba(15,23,42,.78) 60%, rgba(15,23,42,.95) 100%),
-        linear-gradient(90deg, rgba(15,23,42,.68) 0%, rgba(15,23,42,.35) 50%, rgba(15,23,42,.85) 100%),
+        linear-gradient(180deg, rgba(15,23,42,.32) 0%, rgba(15,23,42,.5) 55%, rgba(15,23,42,.82) 100%),
+        linear-gradient(90deg, rgba(15,23,42,.4) 0%, rgba(15,23,42,.1) 50%, rgba(15,23,42,.55) 100%),
         url("{% static 'landing/woodhammer.jpg' %}") center / cover,
         #0a0a0a;
       overflow: hidden;
@@ -49,10 +49,10 @@
     .brand-badge .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: dot-pulse 2.5s ease-in-out infinite; }
     @keyframes dot-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
 
-    .brand-title { font-family: 'Fraunces', serif; font-weight: 500; font-variation-settings: "opsz" 144; font-size: clamp(2.5rem, 4.5vw, 3.5rem); line-height: 1.04; letter-spacing: -.022em; color: var(--cream); margin: 0 0 1.3rem; }
+    .brand-title { font-family: 'Fraunces', serif; font-weight: 500; font-variation-settings: "opsz" 144; font-size: clamp(2.5rem, 4.5vw, 3.5rem); line-height: 1.04; letter-spacing: -.022em; color: var(--cream); margin: 0 0 1.3rem; text-shadow: 0 2px 18px rgba(0,0,0,.45); }
     .brand-title em { color: var(--gold); font-style: italic; }
 
-    .brand-body { font-size: 1rem; color: rgba(245,239,226,.78); line-height: 1.7; margin: 0; }
+    .brand-body { font-size: 1rem; color: rgba(245,239,226,.85); line-height: 1.7; margin: 0; text-shadow: 0 1px 12px rgba(0,0,0,.5); }
     .brand-body strong { color: var(--cream); font-weight: 500; }
 
     .brand-stat-row { position: relative; z-index: 2; display: flex; align-items: center; gap: 1.75rem; padding-top: 1.75rem; border-top: 1px solid rgba(245,239,226,.1); }
