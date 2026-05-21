@@ -9,7 +9,7 @@
       <span class="text-slate-300">/</span>
       <span class="text-slate-600">Calculadora</span>
     </div>
-    <h1 class="text-slate-900 text-xl font-semibold tracking-tight">Calculadora Judicial</h1>
+    <h1 class="serif-title text-slate-900 text-2xl">Calculadora Judicial</h1>
   </div>
   <a href="{% url 'lista_calculos' %}"
      class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-xl transition-colors">
@@ -19,7 +19,7 @@
 
 <div class="px-8 py-8 max-w-6xl mx-auto space-y-6">
   {% if processo %}
-  <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-sm text-indigo-800">
+  <div class="bg-[rgba(212,165,71,0.08)] border border-[#1E3A5F]/15 rounded-2xl p-4 text-sm text-indigo-800">
     Calculadora vinculada ao processo <span class="font-mono font-semibold">{{ processo }}</span>.
   </div>
   {% endif %}
@@ -30,15 +30,15 @@
       {% if processo %}<input type="hidden" name="processo_id" value="{{ processo.id }}">{% endif %}
 
       <label class="flex items-center gap-2 text-sm text-slate-700">
-        <input type="checkbox" id="modo-multiplo" class="rounded border-slate-300 text-indigo-600">
+        <input type="checkbox" id="modo-multiplo" class="rounded border-slate-300 text-[#1E3A5F]">
         Múltiplas parcelas
       </label>
       <label class="flex items-center gap-2 text-sm text-slate-700">
-        <input type="checkbox" id="modo-comparar" class="rounded border-slate-300 text-indigo-600">
+        <input type="checkbox" id="modo-comparar" class="rounded border-slate-300 text-[#1E3A5F]">
         Comparar cenários
       </label>
       <label class="flex items-center gap-2 text-sm text-slate-700">
-        <input type="checkbox" id="modo-trabalhista" class="rounded border-slate-300 text-indigo-600">
+        <input type="checkbox" id="modo-trabalhista" class="rounded border-slate-300 text-[#1E3A5F]">
         Calculadora Trabalhista
       </label>
 
@@ -47,24 +47,24 @@
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Salário base (R$)</label>
           <input type="text" name="salario_base" data-mask="currency" placeholder="0,00"
-                 class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                 class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-xs font-medium text-slate-600 mb-1">Data de admissão</label>
             <input type="text" name="data_admissao" data-mask="date" placeholder="dd/mm/yyyy" maxlength="10"
-                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-600 mb-1">Data de demissão</label>
             <input type="text" name="data_demissao" data-mask="date" placeholder="dd/mm/yyyy" maxlength="10"
-                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
           </div>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Tipo de demissão</label>
           <select name="tipo_demissao"
-                  class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                  class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
             <option value="sem_justa_causa">Sem justa causa</option>
             <option value="com_justa_causa">Com justa causa</option>
             <option value="pedido_demissao">Pedido de demissão</option>
@@ -74,18 +74,18 @@
           <div>
             <label class="block text-xs font-medium text-slate-600 mb-1">Horas extras 50%</label>
             <input type="number" name="horas_extras_50" value="0" min="0"
-                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-600 mb-1">Horas extras 100%</label>
             <input type="number" name="horas_extras_100" value="0" min="0"
-                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
           </div>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Aviso prévio</label>
           <select name="aviso_previo"
-                  class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                  class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
             <option value="indenizado">Indenizado</option>
             <option value="trabalhado">Trabalhado</option>
             <option value="nenhum">Nenhum</option>
@@ -94,7 +94,7 @@
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Saldo FGTS conhecido (R$)</label>
           <input type="text" name="saldo_fgts" data-mask="currency" placeholder="0,00"
-                 class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                 class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
         </div>
       </div>
 
@@ -102,7 +102,7 @@
         <label class="block text-xs font-medium text-slate-600 mb-1">Valor principal (R$)</label>
         <input type="text" name="valor_principal" data-mask="currency" placeholder="0,00" required
                value="{{ valor_principal }}"
-               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
       </div>
 
       <div id="parcelas-box" class="hidden space-y-3 border border-slate-100 rounded-2xl p-3 bg-slate-50/60">
@@ -121,20 +121,20 @@
           <label class="block text-xs font-medium text-slate-600 mb-1">Data inicial</label>
           <input type="text" name="data_inicio" data-mask="date" placeholder="dd/mm/yyyy" maxlength="10" required
                  value="{{ data_inicio }}"
-                 class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                 class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Data final</label>
           <input type="text" name="data_fim" data-mask="date" placeholder="dd/mm/yyyy" maxlength="10" required
                  value="{{ data_fim }}"
-                 class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                 class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
         </div>
       </div>
 
       <div class="campo-cenario-principal campo-padrao">
         <label class="block text-xs font-medium text-slate-600 mb-1">Tabela do Tribunal</label>
         <select name="tribunal" id="tribunal-tabela"
-                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
           <option value="">Nenhuma (índice manual)</option>
           {% for tribunal in tribunais_tj %}
           <option value="{{ tribunal.codigo }}"{% if tribunal.codigo == tribunal_selecionado %} selected{% endif %}>
@@ -142,13 +142,13 @@
           </option>
           {% endfor %}
         </select>
-        <p id="tribunal-badge" class="hidden mt-2 rounded-lg bg-indigo-50 border border-indigo-100 px-3 py-2 text-xs font-medium text-indigo-700"></p>
+        <p id="tribunal-badge" class="hidden mt-2 rounded-lg bg-[rgba(212,165,71,0.08)] border border-[#1E3A5F]/15 px-3 py-2 text-xs font-medium text-indigo-700"></p>
       </div>
 
       <div class="campo-cenario-principal campo-padrao">
         <label class="block text-xs font-medium text-slate-600 mb-1">Índice de correção</label>
         <select name="indice_correcao" id="indice-correcao"
-                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
           {% for value, label in indice_choices %}
           <option value="{{ value }}">{{ label }}</option>
           {% endfor %}
@@ -158,7 +158,7 @@
       <div class="campo-cenario-principal campo-padrao">
         <label class="block text-xs font-medium text-slate-600 mb-1">Tipo de juros</label>
         <select name="juros_tipo"
-                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
           {% for value, label in juros_choices %}
           <option value="{{ value }}">{{ label }}</option>
           {% endfor %}
@@ -168,7 +168,7 @@
       <div class="campo-cenario-principal campo-padrao">
         <label class="block text-xs font-medium text-slate-600 mb-1">Juros % a.m.</label>
         <input type="text" name="juros_percentual" value="1,00" placeholder="1,00"
-               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
       </div>
 
       <div id="cenarios-box" class="hidden space-y-3 border border-slate-100 rounded-2xl p-3 bg-slate-50/60">
@@ -183,21 +183,21 @@
       </div>
 
       <label class="flex items-center gap-2 text-sm text-slate-700 campo-padrao">
-        <input type="checkbox" name="multa_523" class="rounded border-slate-300 text-indigo-600">
+        <input type="checkbox" name="multa_523" class="rounded border-slate-300 text-[#1E3A5F]">
         Multa Art. 523 CPC (10%)
       </label>
 
       <div class="space-y-2 campo-padrao">
         <label class="flex items-center gap-2 text-sm text-slate-700">
-          <input type="checkbox" name="honorarios_sucumb" class="rounded border-slate-300 text-indigo-600">
+          <input type="checkbox" name="honorarios_sucumb" class="rounded border-slate-300 text-[#1E3A5F]">
           Honorários sucumbenciais
         </label>
         <input type="text" name="honorarios_percent" value="10,00" placeholder="10,00"
-               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
       </div>
 
       <button type="submit"
-              class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
+              class="w-full bg-[#0F172A] hover:bg-[#0C1D3D] text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
         Calcular
       </button>
       <button type="button" id="salvar-btn" disabled
@@ -286,7 +286,7 @@
           <p class="text-xs font-semibold text-slate-400 uppercase">Honorários</p>
           <p id="res-honorarios" class="text-lg font-bold text-slate-900 mt-1">R$ 0,00</p>
         </div>
-        <div class="bg-indigo-600 rounded-2xl shadow-sm p-4">
+        <div class="bg-[#0F172A] rounded-2xl shadow-sm p-4">
           <p class="text-xs font-semibold text-indigo-100 uppercase">Total</p>
           <p id="res-total" class="text-lg font-bold text-white mt-1">R$ 0,00</p>
         </div>
@@ -396,7 +396,7 @@ function adicionarParcela(descricao = '', valor = '', data = '') {
       <div class="flex items-center gap-2">
         <input type="text" data-parcela="descricao" placeholder="Descrição"
                value="${descricao}"
-               class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+               class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
         <button type="button" class="remover-parcela border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium px-3 py-2 rounded-xl">
           Remover
         </button>
@@ -404,10 +404,10 @@ function adicionarParcela(descricao = '', valor = '', data = '') {
       <div class="grid grid-cols-2 gap-2">
         <input type="text" data-parcela="valor" data-mask="currency" placeholder="0,00"
                value="${valor}"
-               class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+               class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
         <input type="text" data-parcela="data" data-mask="date" placeholder="dd/mm/yyyy" maxlength="10"
                value="${data}"
-               class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+               class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
       </div>
     </div>
   `);
@@ -428,26 +428,26 @@ function adicionarCenario(nome = '', indice = 'ipca_e', juros = 'simples_1', per
       <div class="flex items-center gap-2">
         <input type="text" data-cenario="nome" placeholder="Nome do cenário"
                value="${titulo}"
-               class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+               class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
         <button type="button" class="remover-cenario border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium px-3 py-2 rounded-xl">
           Remover
         </button>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
         <select data-cenario="indice_correcao"
-                class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
           {% for value, label in indice_choices %}
           <option value="{{ value }}">{{ label }}</option>
           {% endfor %}
         </select>
         <select data-cenario="juros_tipo"
-                class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+                class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
           {% for value, label in juros_choices %}
           <option value="{{ value }}">{{ label }}</option>
           {% endfor %}
         </select>
         <input type="text" data-cenario="juros_percentual" value="${percentual}" placeholder="1,00"
-               class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+               class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
       </div>
     </div>
   `);

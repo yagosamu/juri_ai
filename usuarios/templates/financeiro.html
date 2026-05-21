@@ -13,10 +13,10 @@
       </svg>
       <span class="text-slate-600">Financeiro</span>
     </div>
-    <h1 class="text-slate-900 text-xl font-semibold tracking-tight">Financeiro</h1>
+    <h1 class="serif-title text-slate-900 text-2xl">Financeiro</h1>
   </div>
   <a href="{% url 'criar_honorario' %}"
-     class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm
+     class="inline-flex items-center gap-2 bg-[#0F172A] hover:bg-[#0C1D3D] text-white text-sm
             font-medium px-4 py-2.5 rounded-xl transition-colors">
     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
       <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
@@ -88,7 +88,7 @@
   <form method="GET" class="flex flex-wrap gap-3">
     <select name="status"
       class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 bg-white
-             focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+             focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
       <option value="">Todos os status</option>
       {% for value, label in status_choices %}
       <option value="{{ value }}" {% if status_filtro == value %}selected{% endif %}>{{ label }}</option>
@@ -96,7 +96,7 @@
     </select>
     <select name="tipo"
       class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 bg-white
-             focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+             focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
       <option value="">Todos os tipos</option>
       {% for value, label in tipo_choices %}
       <option value="{{ value }}" {% if tipo_filtro == value %}selected{% endif %}>{{ label }}</option>
@@ -131,7 +131,7 @@
         <tr class="hover:bg-slate-50/50 transition-colors">
           <td class="px-5 py-4">
             <a href="{% url 'cliente' h.cliente.id %}"
-               class="font-medium text-slate-800 hover:text-indigo-600 transition-colors">{{ h.cliente.nome }}</a>
+               class="font-medium text-slate-800 hover:text-[#1E3A5F] transition-colors">{{ h.cliente.nome }}</a>
           </td>
           <td class="px-5 py-4 text-slate-600">{{ h.descricao }}</td>
           <td class="px-5 py-4 text-slate-500">{{ h.get_tipo_display }}</td>
@@ -170,7 +170,7 @@
               </button>
               {% endif %}
               <a href="{% url 'editar_honorario' h.id %}"
-                 class="text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors">Editar</a>
+                 class="text-xs font-medium text-slate-500 hover:text-[#1E3A5F] transition-colors">Editar</a>
               {% if h.status != 'cancelado' %}
               <form method="POST" action="{% url 'cancelar_honorario' h.id %}"
                     onsubmit="return confirm('Cancelar o honorário &quot;{{ h.descricao }}&quot;?')">
@@ -200,14 +200,14 @@
     <p class="text-slate-500 text-sm mb-6">
       {% if status_filtro or tipo_filtro %}
         Tente ajustar os filtros ou
-        <a href="{% url 'lista_financeiro' %}" class="text-indigo-600 hover:underline">limpar a busca</a>.
+        <a href="{% url 'lista_financeiro' %}" class="text-[#1E3A5F] hover:underline">limpar a busca</a>.
       {% else %}
         Cadastre o primeiro honorário para começar a controlar seu financeiro.
       {% endif %}
     </p>
     {% if not status_filtro and not tipo_filtro %}
     <a href="{% url 'criar_honorario' %}"
-       class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm
+       class="inline-flex items-center gap-2 bg-[#0F172A] hover:bg-[#0C1D3D] text-white text-sm
               font-medium px-5 py-2.5 rounded-xl transition-colors">
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
@@ -220,7 +220,7 @@
 
   <div class="flex justify-end">
     <a href="{% url 'relatorio_financeiro' %}"
-       class="text-sm text-indigo-600 hover:text-indigo-500 font-medium transition-colors">
+       class="text-sm text-[#1E3A5F] hover:text-[#D4A547] font-medium transition-colors">
       Ver relatório completo →
     </a>
   </div>
@@ -258,7 +258,7 @@
           value="{{ h.valor_total|floatformat:'2g' }}" placeholder="0,00"
           data-mask="currency"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">
@@ -267,17 +267,17 @@
         <input type="text" name="data_pagamento" required value="{{ hoje|date:'d/m/Y' }}"
           placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Observação</label>
         <textarea name="observacao" rows="2" placeholder="Opcional..."
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 resize-none
-                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"></textarea>
+                 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"></textarea>
       </div>
       <div class="flex gap-3 pt-1">
         <button type="submit"
-          class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
+          class="flex-1 bg-[#0F172A] hover:bg-[#0C1D3D] text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
           Confirmar pagamento
         </button>
         <button type="button"

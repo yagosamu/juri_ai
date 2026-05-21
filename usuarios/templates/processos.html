@@ -12,7 +12,7 @@
       <p class="text-slate-500 text-sm mt-0.5">Gerencie seus processos judiciais</p>
     </div>
     <a href="{% url 'criar_processo' %}"
-       class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm
+       class="inline-flex items-center gap-2 bg-[#0F172A] hover:bg-[#0C1D3D] text-white text-sm
               font-medium px-4 py-2.5 rounded-xl transition-colors">
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
@@ -38,7 +38,7 @@
   <form method="GET" class="flex flex-wrap gap-3 mb-6">
     <select name="status"
       class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 bg-white
-             focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+             focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
       <option value="">Todos os status</option>
       <option value="ativo"     {% if status_filtro == 'ativo' %}selected{% endif %}>Ativo</option>
       <option value="suspenso"  {% if status_filtro == 'suspenso' %}selected{% endif %}>Suspenso</option>
@@ -47,7 +47,7 @@
 
     <select name="tribunal"
       class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 bg-white
-             focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none">
+             focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none">
       <option value="">Todos os tribunais</option>
       {% for code, label in tribunal_choices %}
       <option value="{{ code }}" {% if tribunal_filtro == code %}selected{% endif %}>{{ label }}</option>
@@ -86,7 +86,7 @@
         <tr class="hover:bg-slate-50/50 transition-colors">
           <td class="px-5 py-4">
             <a href="{% url 'processo' p.id %}"
-               class="font-mono text-sm text-indigo-600 hover:text-indigo-500 font-medium">
+               class="font-mono text-sm text-[#1E3A5F] hover:text-[#D4A547] font-medium">
               {{ p }}
             </a>
           </td>
@@ -94,7 +94,7 @@
             {{ p.get_tribunal_display_completo }}
           </td>
           <td class="px-5 py-4 text-slate-700">
-            <a href="{% url 'cliente' p.cliente.id %}" class="hover:text-indigo-600 transition-colors">
+            <a href="{% url 'cliente' p.cliente.id %}" class="hover:text-[#1E3A5F] transition-colors">
               {{ p.cliente.nome }}
             </a>
           </td>
@@ -118,7 +118,7 @@
           </td>
           <td class="px-5 py-4 text-right">
             <a href="{% url 'processo' p.id %}"
-               class="text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors">
+               class="text-xs font-medium text-slate-500 hover:text-[#1E3A5F] transition-colors">
               Ver →
             </a>
           </td>
@@ -142,14 +142,14 @@
     <p class="text-slate-500 text-sm mb-6">
       {% if status_filtro or tribunal_filtro %}
         Tente ajustar os filtros ou
-        <a href="{% url 'lista_processos' %}" class="text-indigo-600 hover:underline">limpar a busca</a>.
+        <a href="{% url 'lista_processos' %}" class="text-[#1E3A5F] hover:underline">limpar a busca</a>.
       {% else %}
         Cadastre seu primeiro processo para começar.
       {% endif %}
     </p>
     {% if not status_filtro and not tribunal_filtro %}
     <a href="{% url 'criar_processo' %}"
-       class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm
+       class="inline-flex items-center gap-2 bg-[#0F172A] hover:bg-[#0C1D3D] text-white text-sm
               font-medium px-5 py-2.5 rounded-xl transition-colors">
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>

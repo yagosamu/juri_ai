@@ -14,7 +14,7 @@
       </svg>
       <span class="text-slate-600">Agenda</span>
     </div>
-    <h1 class="text-slate-900 text-xl font-semibold tracking-tight">Agenda de Prazos</h1>
+    <h1 class="serif-title text-slate-900 text-2xl">Agenda de Prazos</h1>
   </div>
   <p class="text-xs text-slate-400 font-medium hidden sm:block">
     Próximos 30 dias · até {{ limite|date:"d/m/Y" }}
@@ -30,7 +30,7 @@
       <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Tipo</label>
       <select name="tipo"
         class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 bg-white
-               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+               focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
         <option value="">Todos os tipos</option>
         {% for code, label in tipo_choices %}
         <option value="{{ code }}" {% if tipo_filtro == code %}selected{% endif %}>{{ label }}</option>
@@ -41,7 +41,7 @@
       <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Status</label>
       <select name="status"
         class="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 bg-white
-               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+               focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
         <option value="" {% if status_filtro == '' %}selected{% endif %}>Todos</option>
         <option value="pendente"  {% if status_filtro == 'pendente' %}selected{% endif %}>Pendente</option>
         <option value="concluido" {% if status_filtro == 'concluido' %}selected{% endif %}>Concluído</option>
@@ -95,7 +95,7 @@
 
               {# Badge tipo #}
               {% if prazo.tipo == 'audiencia' %}
-                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">Audiência</span>
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-[rgba(212,165,71,0.15)] text-indigo-700">Audiência</span>
               {% elif prazo.tipo == 'protocolo' %}
                 <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Protocolo</span>
               {% elif prazo.tipo == 'recurso' %}
@@ -115,7 +115,7 @@
             </div>
             <p class="text-xs text-slate-400">
               <a href="{% url 'processo' prazo.processo.id %}?tab=prazos"
-                 class="text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
+                 class="text-[#1E3A5F] hover:text-[#D4A547] font-medium transition-colors">
                 {{ prazo.processo }}
               </a>
               &middot; {{ prazo.processo.cliente.nome }}

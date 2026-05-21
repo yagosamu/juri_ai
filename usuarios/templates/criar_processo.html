@@ -37,7 +37,7 @@
         value="{{ form_data.numero_cnj|default:'' }}"
         placeholder="0000000-00.0000.0.00.0000"
         class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900
-               placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+               placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       <p class="text-xs text-slate-400 mt-1">20 dígitos, com ou sem pontuação.</p>
     </div>
 
@@ -49,7 +49,7 @@
         </label>
         <select name="tribunal" id="id_tribunal" required
           class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
           <option value="">Selecione...</option>
           {% for code, label in tribunal_choices %}
           <option value="{{ code }}"
@@ -63,7 +63,7 @@
           value="{{ form_data.tribunal_outro|default:'' }}"
           placeholder="Ex: TJCE — Comarca de Fortaleza"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+                 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       </div>
     </div>
 
@@ -74,7 +74,7 @@
       </label>
       <select name="cliente_id" required
         class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
-               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+               focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
         <option value="">Selecione um cliente...</option>
         {% for c in clientes %}
         <option value="{{ c.id }}"
@@ -100,14 +100,14 @@
         <input type="text" name="vara" value="{{ form_data.vara|default:'' }}"
           placeholder="Ex: 3ª Vara Cível"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+                 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Comarca</label>
         <input type="text" name="comarca" value="{{ form_data.comarca|default:'' }}"
           placeholder="Ex: São Paulo"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+                 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       </div>
     </div>
 
@@ -117,7 +117,7 @@
       <input type="text" name="tipo_acao" value="{{ form_data.tipo_acao|default:'' }}"
         placeholder="Ex: Ação de Cobrança, Ação Trabalhista..."
         class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-               placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+               placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
     </div>
 
     <!-- Polo ativo + Polo passivo -->
@@ -127,14 +127,14 @@
         <input type="text" name="polo_ativo" value="{{ form_data.polo_ativo|default:'' }}"
           placeholder="Nome da parte autora"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+                 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Polo passivo</label>
         <input type="text" name="polo_passivo" value="{{ form_data.polo_passivo|default:'' }}"
           placeholder="Nome da parte ré"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+                 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       </div>
     </div>
 
@@ -146,7 +146,7 @@
           value="{{ form_data.data_distribuicao|default:'' }}"
           placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" data-mask="date"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Valor da causa (R$)</label>
@@ -154,13 +154,13 @@
           value="{{ form_data.valor_causa|default:'' }}"
           placeholder="0,00"
           class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900
-                 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"/>
+                 placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors"/>
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
         <select name="status"
           class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
-                 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+                 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
           <option value="ativo"    {% if form_data.status == 'ativo' or not form_data %}selected{% endif %}>Ativo</option>
           <option value="suspenso" {% if form_data.status == 'suspenso' %}selected{% endif %}>Suspenso</option>
           <option value="arquivado"{% if form_data.status == 'arquivado' %}selected{% endif %}>Arquivado</option>
@@ -171,7 +171,7 @@
     <!-- Ações -->
     <div class="flex items-center gap-3 pt-2">
       <button type="submit"
-        class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+        class="bg-[#0F172A] hover:bg-[#0C1D3D] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
         Cadastrar processo
       </button>
       <a href="{% url 'lista_processos' %}"

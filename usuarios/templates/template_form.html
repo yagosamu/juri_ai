@@ -53,7 +53,7 @@
               <input type="text" name="nome" value="{{ template.nome|default:'' }}" required
                 placeholder="Ex: Contrato de Prestação de Serviços"
                 class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700
-                       focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+                       focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1.5">
@@ -61,7 +61,7 @@
               </label>
               <select name="tipo" required
                 class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white
-                       focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors">
+                       focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547] outline-none transition-colors">
                 <option value="">Selecione...</option>
                 <option value="contrato"   {% if template.tipo == 'contrato'    %}selected{% endif %}>Contrato de Honorários</option>
                 <option value="procuracao" {% if template.tipo == 'procuracao'  %}selected{% endif %}>Procuração</option>
@@ -83,13 +83,13 @@
             <textarea name="conteudo_markdown" id="editor_conteudo" rows="24" required
               placeholder="# Título do Documento&#10;&#10;Escreva o conteúdo do template aqui..."
               class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-800
-                     placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300
+                     placeholder-slate-400 focus:ring-2 focus:ring-[#D4A547]/20 focus:border-[#D4A547]
                      outline-none transition-colors resize-y leading-relaxed">{{ template.conteudo_markdown|default:'' }}</textarea>
           </div>
 
           <div class="flex items-center gap-3 pt-1">
             <button type="submit"
-              class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white
+              class="inline-flex items-center gap-2 bg-[#0F172A] hover:bg-[#0C1D3D] text-white
                      text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
               <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
@@ -118,7 +118,7 @@
           <div class="flex items-center justify-between gap-2 rounded-lg px-3 py-2 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group"
                onclick="inserirVariavel('{{ var }}')">
             <div class="min-w-0">
-              <code class="text-xs font-mono text-indigo-600">{{ var }}</code>
+              <code class="text-xs font-mono text-[#1E3A5F]">{{ var }}</code>
               <p class="text-xs text-slate-500 mt-0.5 truncate">{{ desc }}</p>
             </div>
             <button type="button"
