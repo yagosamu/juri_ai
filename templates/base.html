@@ -6,36 +6,81 @@
   <title>{% block 'title' %}JuriAI{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,500;9..144,1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    :root {
+      --ink:         #0F172A;
+      --ink-2:       #0C1D3D;
+      --navy-700:    #1E3A5F;
+      --gold:        #D4A547;
+      --gold-hover:  #E0B558;
+      --cream:       #F5EFE2;
+      --cream-light: #FAFAF7;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--cream-light); }
     svg { display: inline-block; flex-shrink: 0; }
+
+    /* Serif page title — opt-in via .serif-title */
+    .serif-title { font-family: 'Fraunces', Georgia, serif; font-weight: 500; letter-spacing: -.018em; font-variation-settings: "opsz" 96; }
+    .serif-title em { font-style: italic; color: var(--gold); }
+
+    /* Sidebar brand */
+    .sidebar { background: var(--ink); }
+    .brand-logo { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.2rem; letter-spacing: -.015em; color: #fff; text-decoration: none; }
+    .brand-logo em { font-style: italic; color: var(--gold); }
+
+    /* Nav links in sidebar */
+    .nav-link {
+      position: relative; display: flex; align-items: center; gap: .75rem;
+      padding: .6rem .85rem; border-radius: 8px;
+      font-size: .875rem; font-weight: 500;
+      color: rgba(255,255,255,.55);
+      transition: color 180ms, background 180ms;
+      text-decoration: none;
+    }
+    .nav-link:hover { color: #fff; background: rgba(255,255,255,.04); }
+    .nav-link.is-active { color: #fff; background: rgba(255,255,255,.05); }
+    .nav-link.is-active::before {
+      content: ''; position: absolute; left: -1rem; top: 50%; transform: translateY(-50%);
+      width: 3px; height: 65%;
+      background: var(--gold); border-radius: 2px;
+    }
+    .nav-section { font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .14em; color: rgba(255,255,255,.32); padding: 0 .35rem .6rem; }
+
+    /* User block */
+    .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--navy-700); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .user-name { color: #fff; font-size: .78rem; font-weight: 500; }
+    .user-role { color: rgba(255,255,255,.4); font-size: .72rem; }
+
+    /* Sidebar logout */
+    .nav-logout { color: rgba(255,255,255,.5); }
+    .nav-logout:hover { color: #f87171; background: rgba(239,68,68,.08); }
+
+    /* Sidebar dividers */
+    .sb-divider { border-color: rgba(255,255,255,.08); }
   </style>
   {% block 'head' %}{% endblock %}
 </head>
-<body class="bg-slate-50">
+<body>
 
 <div class="flex h-screen overflow-hidden">
 
   <!-- ─── SIDEBAR ────────────────────────────────────────────────── -->
-  <aside style="width:240px; min-width:240px;" class="bg-slate-950 flex flex-col h-full overflow-hidden">
+  <aside class="sidebar flex flex-col h-full overflow-hidden" style="width:240px; min-width:240px;">
 
     <!-- Logo -->
-    <div class="px-5 pt-6 pb-5 border-b border-slate-800">
-      <a href="{% url 'dashboard' %}" class="flex items-center gap-0.5">
-        <span class="text-white font-bold text-xl tracking-tight">Juri</span>
-        <span class="text-indigo-400 font-bold text-xl tracking-tight">AI</span>
-      </a>
+    <div class="px-5 pt-6 pb-5 border-b sb-divider">
+      <a href="{% url 'dashboard' %}" class="brand-logo">Juri<em>AI</em></a>
     </div>
 
     <!-- Nav -->
-    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-      <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest px-2 pb-2">Menu</p>
+    <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+      <p class="nav-section">Menu</p>
 
       <!-- Dashboard -->
       <a href="{% url 'dashboard' %}"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {% if request.resolver_match.url_name == 'dashboard' %}bg-indigo-600 text-white{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">
+         class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
         </svg>
@@ -44,8 +89,7 @@
 
       <!-- Processos -->
       <a href="{% url 'lista_processos' %}"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {% if request.resolver_match.url_name == 'lista_processos' or request.resolver_match.url_name == 'processo' or request.resolver_match.url_name == 'criar_processo' or request.resolver_match.url_name == 'editar_processo' %}bg-indigo-600 text-white{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">
+         class="nav-link {% if request.resolver_match.url_name == 'lista_processos' or request.resolver_match.url_name == 'processo' or request.resolver_match.url_name == 'criar_processo' or request.resolver_match.url_name == 'editar_processo' %}is-active{% endif %}">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.97zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.97z"/>
         </svg>
@@ -54,8 +98,7 @@
 
       <!-- Agenda / Prazos -->
       <a href="{% url 'lista_prazos' %}"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {% if request.resolver_match.url_name == 'lista_prazos' or request.resolver_match.url_name == 'criar_prazo' or request.resolver_match.url_name == 'editar_prazo' %}bg-indigo-600 text-white{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">
+         class="nav-link {% if request.resolver_match.url_name == 'lista_prazos' or request.resolver_match.url_name == 'criar_prazo' or request.resolver_match.url_name == 'editar_prazo' %}is-active{% endif %}">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"/>
         </svg>
@@ -64,8 +107,7 @@
 
       <!-- Financeiro -->
       <a href="{% url 'lista_financeiro' %}"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {% if request.resolver_match.url_name == 'lista_financeiro' or request.resolver_match.url_name == 'criar_honorario' or request.resolver_match.url_name == 'editar_honorario' or request.resolver_match.url_name == 'relatorio_financeiro' %}bg-indigo-600 text-white{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">
+         class="nav-link {% if request.resolver_match.url_name == 'lista_financeiro' or request.resolver_match.url_name == 'criar_honorario' or request.resolver_match.url_name == 'editar_honorario' or request.resolver_match.url_name == 'relatorio_financeiro' %}is-active{% endif %}">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
         </svg>
@@ -74,8 +116,7 @@
 
       <!-- Calculadora Judicial -->
       <a href="{% url 'calculadora' %}"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {% if request.resolver_match.url_name == 'calculadora' or request.resolver_match.url_name == 'lista_calculos' or request.resolver_match.url_name == 'exportar_calculo' %}bg-indigo-600 text-white{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">
+         class="nav-link {% if request.resolver_match.url_name == 'calculadora' or request.resolver_match.url_name == 'lista_calculos' or request.resolver_match.url_name == 'exportar_calculo' %}is-active{% endif %}">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6h7.5m-7.5-3h7.5m-9 9h.008v.008H6.75V18zm0-6h.008v.008H6.75V12zm0-3h.008v.008H6.75V9zm-3 12h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/>
         </svg>
@@ -85,8 +126,7 @@
       <!-- CRM -->
       {% leads_novos as n_leads %}
       <a href="{% url 'lista_crm' %}"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {% if request.resolver_match.url_name == 'lista_crm' or request.resolver_match.url_name == 'criar_lead' or request.resolver_match.url_name == 'editar_lead' or request.resolver_match.url_name == 'relatorio_crm' %}bg-indigo-600 text-white{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">
+         class="nav-link {% if request.resolver_match.url_name == 'lista_crm' or request.resolver_match.url_name == 'criar_lead' or request.resolver_match.url_name == 'editar_lead' or request.resolver_match.url_name == 'relatorio_crm' %}is-active{% endif %}">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" />
         </svg>
@@ -98,8 +138,7 @@
 
       <!-- Clientes -->
       <a href="{% url 'clientes' %}"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {% if request.resolver_match.url_name == 'clientes' or request.resolver_match.url_name == 'cliente' %}bg-indigo-600 text-white{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">
+         class="nav-link {% if request.resolver_match.url_name == 'clientes' or request.resolver_match.url_name == 'cliente' %}is-active{% endif %}">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
         </svg>
@@ -108,8 +147,7 @@
 
       <!-- Análise Jurídica -->
       <a href="{% url 'lista_chats' %}"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {% if request.resolver_match.url_name == 'lista_chats' or request.resolver_match.url_name == 'chat' %}bg-indigo-600 text-white{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">
+         class="nav-link {% if request.resolver_match.url_name == 'lista_chats' or request.resolver_match.url_name == 'chat' %}is-active{% endif %}">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
         </svg>
@@ -118,8 +156,7 @@
 
       <!-- Jurisprudência -->
       <a href="{% url 'lista_analises' %}"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {% if request.resolver_match.url_name == 'lista_analises' or request.resolver_match.url_name == 'analise_jurisprudencia' %}bg-indigo-600 text-white{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">
+         class="nav-link {% if request.resolver_match.url_name == 'lista_analises' or request.resolver_match.url_name == 'analise_jurisprudencia' %}is-active{% endif %}">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.97zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.97z" />
         </svg>
@@ -128,8 +165,7 @@
 
       <!-- Documentos IA -->
       <a href="{% url 'gerar_documento' %}"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {% if request.resolver_match.url_name == 'gerar_documento' or request.resolver_match.url_name == 'editar_documento' or request.resolver_match.url_name == 'salvar_documento' or request.resolver_match.url_name == 'exportar_documento' or request.resolver_match.url_name == 'vincular_doc_gerado' or request.resolver_match.url_name == 'lista_templates' or request.resolver_match.url_name == 'criar_template' or request.resolver_match.url_name == 'editar_template' or request.resolver_match.url_name == 'deletar_template' %}bg-indigo-600 text-white{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">
+         class="nav-link {% if request.resolver_match.url_name == 'gerar_documento' or request.resolver_match.url_name == 'editar_documento' or request.resolver_match.url_name == 'salvar_documento' or request.resolver_match.url_name == 'exportar_documento' or request.resolver_match.url_name == 'vincular_doc_gerado' or request.resolver_match.url_name == 'lista_templates' or request.resolver_match.url_name == 'criar_template' or request.resolver_match.url_name == 'editar_template' or request.resolver_match.url_name == 'deletar_template' %}is-active{% endif %}">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
         </svg>
@@ -138,8 +174,7 @@
 
       <!-- Config. WhatsApp -->
       <a href="{% url 'configuracao_whatsapp' %}"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {% if request.resolver_match.url_name == 'configuracao_whatsapp' %}bg-indigo-600 text-white{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">
+         class="nav-link {% if request.resolver_match.url_name == 'configuracao_whatsapp' %}is-active{% endif %}">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
         </svg>
@@ -148,18 +183,17 @@
     </nav>
 
     <!-- Bottom: usuário + logout -->
-    <div class="border-t border-slate-800 px-3 py-4 space-y-1">
+    <div class="border-t sb-divider px-3 py-4 space-y-1">
       <div class="flex items-center gap-3 px-3 py-2">
-        <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
+        <div class="user-avatar">
           <span class="text-white text-xs font-semibold">{{ request.user.username|first|upper }}</span>
         </div>
         <div class="flex-1 min-w-0">
-          <p class="text-white text-xs font-medium truncate">{{ request.user.username }}</p>
-          <p class="text-slate-500 text-xs">Advogado</p>
+          <p class="user-name truncate">{{ request.user.username }}</p>
+          <p class="user-role">Advogado</p>
         </div>
       </div>
-      <a href="{% url 'logout' %}"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-950 text-sm font-medium transition-colors">
+      <a href="{% url 'logout' %}" class="nav-link nav-logout">
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
         </svg>
@@ -170,7 +204,7 @@
   </aside>
 
   <!-- ─── MAIN ────────────────────────────────────────────────────── -->
-  <main class="flex-1 overflow-y-auto bg-slate-50">
+  <main class="flex-1 overflow-y-auto" style="background: var(--cream-light);">
     {% block 'content' %}{% endblock %}
   </main>
 
