@@ -324,31 +324,31 @@
 
 ---
 
-## 🟣 FASE 5 — Calculadora de Débitos Judiciais
+## ✅ FASE 5 — Calculadora de Débitos Judiciais
 
-### Sprint 5.1 — Infraestrutura de Índices
+### Sprint 5.1 — Infraestrutura de Índices ✅
 
-- [ ] **Criar model `IndiceEconomico`**
+- [x] **Criar model `IndiceEconomico`**
   - Campos: `tipo` (IPCA-E/INPC/SELIC/TR/IGP-M/Taxa Legal), `data` (date, mês de referência), `valor` (Decimal — variação percentual mensal), `fonte` (BCB/IBGE/TJSP)
   - Índice único em `(tipo, data)` para evitar duplicatas
 
-- [ ] **Criar management command para importar índices históricos**
+- [x] **Criar management command para importar índices históricos**
   - `python manage.py importar_indices` via API SGS do Banco Central
   - IPCA-E (série 13522), INPC (série 188), SELIC (série 4390), TR (série 226), IGP-M (série 189)
   - Taxa Legal = SELIC − IPCA, conforme Lei 14.905/2024
   - Tabelas práticas do TJSP (IPCA-E acumulado desde jan/1992)
   - Cobertura temporal: janeiro/1994 (Plano Real) até mês atual
 
-- [ ] **Criar task django-q para atualização mensal automática**
+- [x] **Criar task django-q para atualização mensal automática**
   - Schedule mensal que busca o índice do mês anterior (D+1 de publicação)
   - Atualiza `IndiceEconomico` sem duplicar registros existentes
 
-### Sprint 5.2 — Motor de Cálculo
+### Sprint 5.2 — Motor de Cálculo ✅
 
-- [ ] **Criar model `CalculoJudicial`**
+- [x] **Criar model `CalculoJudicial`**
   - Campos: `processo` (FK nullable), `valor_principal` (Decimal), `data_inicio` (date), `data_fim` (date), `indice_correcao` (choices), `juros_tipo` (simples/taxa_legal/selic/customizado), `juros_percentual` (Decimal), `multa_523` (bool), `honorarios_sucumbencia` (bool), `honorarios_percentual` (Decimal), `resultado_json` (JSONField), `user` (FK), `criado_em`
 
-- [ ] **Implementar engine de cálculo em Python**
+- [x] **Implementar engine de cálculo em Python**
   - Correção monetária mês a mês pelo índice selecionado (leitura de `IndiceEconomico`)
   - Juros simples: 1% a.m., 0,5% a.m. (Fazenda Pública), percentual customizado
   - Juros pela Taxa Legal (SELIC − IPCA, Lei 14.905/2024)
@@ -358,17 +358,17 @@
   - Suporte a troca de índice no meio do período
   - Suporte a múltiplas parcelas com datas diferentes
 
-- [ ] **Gerar tabela mensal de evolução**
+- [x] **Gerar tabela mensal de evolução**
   - Colunas: mês, índice do mês (%), correção acumulada, juros acumulados, subtotal
   - Armazenada em `resultado_json` para exibição e exportação
 
-### Sprint 5.3 — Interface e Exportação
+### Sprint 5.3 — Interface e Exportação ✅
 
-- [ ] **View calculadora acessível de 2 formas**
+- [x] **View calculadora acessível de 2 formas**
   - Item "Calculadora" na sidebar (acesso independente, processo nullable)
   - Aba "Cálculo Judicial" na página do processo (pré-preenche dados do processo)
 
-- [ ] **Template `calculadora.html`**
+- [x] **Template `calculadora.html`**
   - Selects inteligentes: tipo de ação sugere automaticamente índice e juros padrão
     * Cível → IPCA-E + 1% a.m.
     * Trabalhista → SELIC (EC 113/2021)
@@ -381,31 +381,31 @@
   - Toggle honorários (sim/não + slider 10–20%)
   - Recalcular ao alterar qualquer parâmetro (sem reload — fetch API)
 
-- [ ] **Resultado da calculadora**
+- [x] **Resultado da calculadora**
   - Cards: Valor Corrigido | Juros | Multa | Honorários | TOTAL
   - Tabela mensal expandível de evolução completa
   - Gráfico de evolução do valor ao longo do tempo (Chart.js)
 
-- [ ] **Exportar resultado como PDF (reportlab)**
+- [x] **Exportar resultado como PDF (reportlab)**
   - Cabeçalho com dados do processo e advogado
   - Tabela completa mês a mês
   - Resumo final com todos os componentes
   - Rodapé com aviso legal
 
-- [ ] **Salvar e listar cálculos**
+- [x] **Salvar e listar cálculos**
   - Salvar cálculo vinculado ao processo (se aplicável)
   - Histórico de cálculos salvos acessível pela sidebar
 
-### Sprint 5.4 — Funcionalidades Avançadas
+### Sprint 5.4 — Funcionalidades Avançadas ✅
 
-- [ ] **Suporte a tabelas específicas dos TJs**
+- [x] **Suporte a tabelas específicas dos TJs**
   - Tabela prática TJSP (índice composto por período histórico)
   - Tabela TJRJ, TJMG, TJPR, TJRS e demais tribunais estaduais
   - Tabela CJF (Justiça Federal — ações condenatórias)
   - Tabela TST (Débitos Trabalhistas)
   - Detecção automática de qual tabela usar pelo tribunal do processo
 
-- [ ] **Calculadora trabalhista completa**
+- [x] **Calculadora trabalhista completa**
   - Horas extras (50%, 75%, 100%) com DSR
   - 13º salário proporcional
   - Férias proporcionais + 1/3 constitucional
@@ -413,16 +413,11 @@
   - Multa 40% FGTS
   - Verbas rescisórias completas
 
-- [ ] **Suporte a múltiplos créditos em datas diferentes**
+- [x] **Suporte a múltiplos créditos em datas diferentes**
   - Interface para adicionar N parcelas (data + valor + descrição)
   - Cálculo individual por parcela + consolidado no final
 
-- [ ] **IA auxiliar na calculadora**
-  - Upload de sentença/decisão em PDF
-  - IA extrai: valor condenado, data, índice determinado, juros
-  - Pré-preenche os campos automaticamente
-
-- [ ] **Comparador de cenários**
+- [x] **Comparador de cenários**
   - Calcular com 2–3 índices diferentes lado a lado
   - Mostrar diferença absoluta e percentual entre cenários
   - Útil para negociação e estratégia processual
@@ -431,6 +426,7 @@
 
 ## 📦 Backlog (sem sprint definido)
 
+- [ ] IA auxiliar na calculadora (upload sentença PDF → extrai dados)
 - [ ] **Portal do Cliente** — login separado, dashboard do cliente, visualização de processos e documentos
 - [ ] **PWA** — `manifest.json`, `service-worker.js`, push notifications de prazo e novos leads
 - [ ] **Análise Preditiva** — jurimetria, probabilidade de êxito via DataJud, relatório comparativo de casos similares
@@ -456,7 +452,7 @@
 | Fase 2 — Financeiro | ✅ Concluída | 100% (Sprints 2.1 e 2.2 concluídos) |
 | Fase 3 — Geração Docs | ✅ Concluída | 100% (Sprints 3.1 e 3.2 concluídos) |
 | Fase 4 — CRM | ✅ Concluída | 100% (Sprints 4.1 e 4.2 concluídos) |
-| Fase 5 — Calculadora | ⬜ Não iniciada | 0% |
+| Fase 5 — Calculadora | ✅ Concluída | 100% |
 | Backlog | ⬜ Aguardando | — |
 
 ---
