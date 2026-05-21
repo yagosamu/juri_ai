@@ -4,121 +4,181 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Entrar — JuriAI</title>
+  <title>Entrar · JuriAI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,500;9..144,0,600;9..144,1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    :root {
+      --ink:         #0F172A;
+      --ink-2:       #0C1D3D;
+      --navy-700:    #1E3A5F;
+      --gold:        #D4A547;
+      --gold-hover:  #E0B558;
+      --cream:       #F5EFE2;
+      --cream-light: #FAFAF7;
+      --rule:        #E2E8F0;
+      --text-light:  #0F172A;
+      --text-muted:  #64748B;
+    }
+    body { font-family: 'Inter', sans-serif; background: #fff; }
     svg { display: inline-block; flex-shrink: 0; }
+
+    /* ─── BRAND PANEL (left) ─── */
+    .brand-panel {
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(15,23,42,.55) 0%, rgba(15,23,42,.78) 60%, rgba(15,23,42,.95) 100%),
+        linear-gradient(90deg, rgba(15,23,42,.68) 0%, rgba(15,23,42,.35) 50%, rgba(15,23,42,.85) 100%),
+        url("{% static 'landing/woodhammer.jpg' %}") center / cover,
+        #0a0a0a;
+      overflow: hidden;
+    }
+    .brand-panel::after {
+      content: ''; position: absolute; inset: 0; opacity: 0.07; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .brand-logo { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.35rem; letter-spacing: -.015em; color: var(--cream); text-decoration: none; position: relative; z-index: 2; }
+    .brand-logo em { font-style: italic; color: var(--gold); }
+
+    .brand-content { position: relative; z-index: 2; max-width: 480px; }
+
+    .brand-badge { display: inline-flex; align-items: center; gap: .45rem; padding: .35rem .85rem; border-radius: 20px; background: rgba(212,165,71,.13); border: 1px solid rgba(212,165,71,.3); font-size: .62rem; letter-spacing: .18em; text-transform: uppercase; font-weight: 600; color: var(--gold); margin-bottom: 1.6rem; }
+    .brand-badge .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: dot-pulse 2.5s ease-in-out infinite; }
+    @keyframes dot-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+    .brand-title { font-family: 'Fraunces', serif; font-weight: 500; font-variation-settings: "opsz" 144; font-size: clamp(2.5rem, 4.5vw, 3.5rem); line-height: 1.04; letter-spacing: -.022em; color: var(--cream); margin: 0 0 1.3rem; }
+    .brand-title em { color: var(--gold); font-style: italic; }
+
+    .brand-body { font-size: 1rem; color: rgba(245,239,226,.78); line-height: 1.7; margin: 0; }
+    .brand-body strong { color: var(--cream); font-weight: 500; }
+
+    .brand-stat-row { position: relative; z-index: 2; display: flex; align-items: center; gap: 1.75rem; padding-top: 1.75rem; border-top: 1px solid rgba(245,239,226,.1); }
+    .brand-stat .num { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.05rem; color: var(--cream); letter-spacing: -.015em; }
+    .brand-stat .lbl { font-size: .68rem; color: rgba(245,239,226,.55); margin-top: 3px; line-height: 1.4; }
+    .brand-stat-row .sep { width: 1px; height: 32px; background: rgba(245,239,226,.12); }
+
+    /* ─── FORM PANEL (right) ─── */
+    .form-panel { background: var(--cream-light); }
+
+    .form-logo { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.4rem; color: var(--ink); text-decoration: none; letter-spacing: -.015em; }
+    .form-logo em { font-style: italic; color: var(--gold); }
+
+    .form-title { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.9rem; letter-spacing: -.018em; color: var(--ink); margin: 0 0 .4rem; }
+
+    .form-subtitle { font-size: .92rem; color: var(--text-muted); margin: 0 0 1.75rem; }
+
+    .link-accent { color: var(--navy-700); font-weight: 600; text-decoration: none; transition: color 180ms; }
+    .link-accent:hover { color: var(--gold); }
+
+    .form-group { margin-bottom: 1.1rem; }
+    .form-label { display: block; font-size: .76rem; font-weight: 600; color: var(--ink); margin-bottom: .45rem; letter-spacing: .01em; }
+    .form-input { width: 100%; padding: .72rem .9rem; border: 1px solid var(--rule); border-radius: 8px; font-size: .92rem; color: var(--ink); background: #fff; transition: border-color 180ms, box-shadow 180ms; font-family: 'Inter', sans-serif; }
+    .form-input::placeholder { color: #94A3B8; }
+    .form-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,165,71,.14); }
+
+    .btn-submit { width: 100%; padding: .8rem 1rem; background: var(--ink); color: var(--cream); border: 0; border-radius: 8px; font-size: .92rem; font-weight: 600; cursor: pointer; transition: background 180ms, transform 140ms, box-shadow 180ms; margin-top: 1rem; }
+    .btn-submit:hover { background: var(--ink-2); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(15,23,42,.18); }
+
+    .forgot-link { text-align: center; font-size: .85rem; color: var(--text-muted); margin-top: 1rem; }
+
+    .divider { position: relative; margin: 2rem 0; text-align: center; }
+    .divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--rule); }
+    .divider span { position: relative; background: var(--cream-light); padding: 0 1rem; font-size: .72rem; color: var(--text-muted); letter-spacing: .1em; text-transform: uppercase; font-weight: 500; }
+
+    .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+    .social-btn { display: flex; align-items: center; justify-content: center; gap: .55rem; padding: .65rem 1rem; border: 1px solid var(--rule); border-radius: 8px; background: #fff; font-size: .85rem; font-weight: 500; color: var(--ink); text-decoration: none; transition: border-color 180ms, background 180ms; }
+    .social-btn:hover { border-color: var(--navy-700); background: #fafafa; }
+
+    .msg { padding: .8rem 1rem; border-radius: 8px; font-size: .85rem; font-weight: 500; margin-bottom: .65rem; }
+    .msg-ok { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .msg-err { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+    @media (max-width: 1024px) {
+      .brand-stat-row { flex-wrap: wrap; gap: 1rem; }
+      .brand-stat-row .sep { display: none; }
+    }
   </style>
 </head>
-<body class="bg-white">
+<body>
 
 <div class="flex min-h-screen">
 
-  {# ── Left: dark branding panel ── #}
-  <div class="hidden lg:flex lg:w-1/2 bg-slate-950 flex-col justify-between p-12">
-    <a href="{% url 'home' %}" class="flex items-center gap-0.5">
-      <span class="text-white font-bold text-xl tracking-tight">Juri</span>
-      <span class="text-indigo-400 font-bold text-xl tracking-tight">AI</span>
-    </a>
-    <div class="space-y-6">
-      <div class="inline-flex items-center bg-indigo-950 text-indigo-300 border border-indigo-800 rounded-full px-4 py-1 text-xs font-medium tracking-wide">
-        IA Jurídica &middot; Análise &middot; WhatsApp &middot; Calendar
-      </div>
-      <h2 class="text-white text-4xl font-bold tracking-tight leading-tight">
-        Seu escritório<br />trabalhando <span class="text-indigo-400">24h</span>
-      </h2>
-      <p class="text-slate-400 text-base leading-relaxed max-w-sm">
-        Três agentes de IA que analisam documentos, atendem clientes no WhatsApp e agendam reuniões — automaticamente.
+  {# ── Left: brand panel with woodhammer background ── #}
+  <div class="hidden lg:flex lg:w-1/2 brand-panel flex-col justify-between p-12 xl:p-16">
+    <a href="{% url 'home' %}" class="brand-logo">Juri<em>AI</em></a>
+
+    <div class="brand-content">
+      <div class="brand-badge"><span class="dot"></span>Plataforma de inteligência jurídica</div>
+      <h2 class="brand-title">Seu escritório <em>nunca para.</em></h2>
+      <p class="brand-body">
+        Documentos analisados, processos atualizados via DataJud e clientes acompanhados pelo WhatsApp. Uma plataforma construída para o ofício do advogado brasileiro, com a gravidade que o Direito exige.
       </p>
     </div>
-    <div class="flex items-center gap-8 border-t border-slate-800 pt-8">
-      <div>
-        <p class="text-white text-sm font-semibold">3 Agentes de IA</p>
-        <p class="text-slate-500 text-xs mt-0.5">especializados</p>
+
+    <div class="brand-stat-row">
+      <div class="brand-stat">
+        <div class="num">3 agentes</div>
+        <div class="lbl">JuriAI · SecretariaAI · JurisprudênciaAI</div>
       </div>
-      <div class="w-px h-8 bg-slate-800"></div>
-      <div>
-        <p class="text-white text-sm font-semibold">50+ Tribunais</p>
-        <p class="text-slate-500 text-xs mt-0.5">via DataJud/CNJ</p>
+      <div class="sep"></div>
+      <div class="brand-stat">
+        <div class="num">50+ tribunais</div>
+        <div class="lbl">Atualização diária via DataJud</div>
       </div>
-      <div class="w-px h-8 bg-slate-800"></div>
-      <div>
-        <p class="text-white text-sm font-semibold">Atendimento 24h</p>
-        <p class="text-slate-500 text-xs mt-0.5">sem intervenção</p>
+      <div class="sep"></div>
+      <div class="brand-stat">
+        <div class="num">24/7</div>
+        <div class="lbl">Secretaria autônoma no WhatsApp</div>
       </div>
     </div>
   </div>
 
   {# ── Right: form panel ── #}
-  <div class="flex flex-1 flex-col justify-center px-8 py-12 sm:px-12 lg:px-16 bg-white">
+  <div class="form-panel flex flex-1 flex-col justify-center px-8 py-12 sm:px-12 lg:px-16">
     <div class="w-full max-w-sm mx-auto">
 
       {# Mobile logo #}
-      <a href="{% url 'home' %}" class="flex items-center gap-0.5 mb-10 lg:hidden">
-        <span class="text-slate-900 font-bold text-xl tracking-tight">Juri</span>
-        <span class="text-indigo-600 font-bold text-xl tracking-tight">AI</span>
-      </a>
+      <a href="{% url 'home' %}" class="form-logo lg:hidden inline-block mb-10">Juri<em>AI</em></a>
 
-      <h1 class="text-2xl font-bold tracking-tight text-slate-900">Entre na sua conta</h1>
-      <p class="text-slate-500 text-sm mt-1.5">
+      <h1 class="form-title">Entre na sua conta</h1>
+      <p class="form-subtitle">
         Ainda não tem conta?
-        <a href="{% url 'cadastro' %}" class="text-indigo-600 hover:text-indigo-500 font-medium transition-colors">Cadastre-se grátis</a>
+        <a href="{% url 'cadastro' %}" class="link-accent">Cadastre-se grátis</a>
       </p>
 
       {# Messages #}
       {% if messages %}
-      <div class="mt-5 space-y-2">
+      <div class="mb-5">
         {% for message in messages %}
-        <div class="rounded-xl px-4 py-3 text-sm font-medium
-          {% if 'green' in message.tags %}bg-emerald-50 text-emerald-800 border border-emerald-200
-          {% else %}bg-red-50 text-red-800 border border-red-200{% endif %}">
-          {{ message }}
-        </div>
+        <div class="msg {% if 'green' in message.tags %}msg-ok{% else %}msg-err{% endif %}">{{ message }}</div>
         {% endfor %}
       </div>
       {% endif %}
 
-      <form action="{% url 'login' %}" method="POST" class="mt-8 space-y-5">
+      <form action="{% url 'login' %}" method="POST">
         {% csrf_token %}
-        <div>
-          <label for="username" class="block text-sm font-medium text-slate-700 mb-1.5">Usuário</label>
-          <input id="username" type="text" name="username" required autocomplete="username"
-            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"
-            placeholder="seunome" />
+        <div class="form-group">
+          <label for="username" class="form-label">Usuário</label>
+          <input id="username" type="text" name="username" required autocomplete="username" class="form-input" placeholder="seunome" />
         </div>
-        <div>
-          <label for="password" class="block text-sm font-medium text-slate-700 mb-1.5">Senha</label>
-          <input id="password" type="password" name="senha" required autocomplete="current-password"
-            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition-colors"
-            placeholder="••••••••" />
+        <div class="form-group">
+          <label for="password" class="form-label">Senha</label>
+          <input id="password" type="password" name="senha" required autocomplete="current-password" class="form-input" placeholder="••••••••" />
         </div>
-        <button type="submit"
-          class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors mt-2">
-          Entrar
-        </button>
-        <p class="mt-4 text-center text-sm text-slate-500">
-          <a href="{% url 'password_reset' %}" class="text-indigo-600 hover:text-indigo-500 font-medium transition-colors">
-            Esqueci minha senha?
-          </a>
+        <button type="submit" class="btn-submit">Entrar</button>
+        <p class="forgot-link">
+          <a href="{% url 'password_reset' %}" class="link-accent">Esqueci minha senha</a>
         </p>
       </form>
 
-      <div class="relative my-8">
-        <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-slate-100"></div>
-        </div>
-        <div class="relative flex justify-center">
-          <span class="bg-white px-4 text-xs text-slate-400 font-medium">ou continue com</span>
-        </div>
-      </div>
+      <div class="divider"><span>ou continue com</span></div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <a href="#"
-           class="flex items-center justify-center gap-2.5 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-          <svg viewBox="0 0 24 24" class="w-4 h-4">
+      <div class="social-grid">
+        <a href="#" class="social-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16">
             <path d="M12.0003 4.75C13.7703 4.75 15.3553 5.36002 16.6053 6.54998L20.0303 3.125C17.9502 1.19 15.2353 0 12.0003 0C7.31028 0 3.25527 2.69 1.28027 6.60998L5.27028 9.70498C6.21525 6.86002 8.87028 4.75 12.0003 4.75Z" fill="#EA4335"/>
             <path d="M23.49 12.275C23.49 11.49 23.415 10.73 23.3 10H12V14.51H18.47C18.18 15.99 17.34 17.25 16.08 18.1L19.945 21.1C22.2 19.01 23.49 15.92 23.49 12.275Z" fill="#4285F4"/>
             <path d="M5.26498 14.2949C5.02498 13.5699 4.88501 12.7999 4.88501 11.9999C4.88501 11.1999 5.01998 10.4299 5.26498 9.7049L1.275 6.60986C0.46 8.22986 0 10.0599 0 11.9999C0 13.9399 0.46 15.7699 1.28 17.3899L5.26498 14.2949Z" fill="#FBBC05"/>
@@ -126,9 +186,8 @@
           </svg>
           Google
         </a>
-        <a href="#"
-           class="flex items-center justify-center gap-2.5 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-          <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-800">
+        <a href="#" class="social-btn">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="#0F172A">
             <path d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd" fill-rule="evenodd"/>
           </svg>
           GitHub
