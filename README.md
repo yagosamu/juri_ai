@@ -49,35 +49,6 @@ The goal is simple: help lawyers spend less time on repetitive operational work 
 - **Frontend**: Django templates + Tailwind CDN
 - **Security and audit**: django-axes, django-auditlog, encrypted fields
 
-## Local Setup
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-Copy-Item .env.example .env
-python manage.py migrate
-python manage.py runserver
-```
-
-Run the async worker in a second terminal when testing document processing:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-python manage.py qcluster
-```
-
-Useful checks:
-
-```powershell
-python manage.py check
-python manage.py test
-```
-
-## Sensitive Data
-
-Never commit `.env`, local databases, backups, OAuth tokens, `client_secret.json`, `media/`, `lancedb/`, or real client data. Use `.env.example` as the public configuration reference.
-
 ## License
 
 This project is proprietary and all rights are reserved. See [LICENSE](LICENSE).

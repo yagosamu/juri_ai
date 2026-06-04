@@ -49,35 +49,6 @@ O objetivo é simples: reduzir tarefas operacionais repetitivas para que o advog
 - **Frontend**: Django templates + Tailwind CDN
 - **Segurança e auditoria**: django-axes, django-auditlog, campos criptografados
 
-## Setup local
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-Copy-Item .env.example .env
-python manage.py migrate
-python manage.py runserver
-```
-
-Para testar o processamento assíncrono de documentos, rode o worker em outro terminal:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-python manage.py qcluster
-```
-
-Verificações úteis:
-
-```powershell
-python manage.py check
-python manage.py test
-```
-
-## Dados sensíveis
-
-Nunca commite `.env`, bancos locais, backups, tokens OAuth, `client_secret.json`, `media/`, `lancedb/` ou dados reais de clientes. Use `.env.example` como referência pública de configuração.
-
 ## Licença
 
 Este projeto é proprietário e todos os direitos são reservados. Veja [LICENSE](LICENSE).

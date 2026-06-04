@@ -30,6 +30,13 @@ audit_playwright.py
 playwright_*.py
 audit_results.json
 screenshots/
+full_page.png
+mockup_*.png
+section_ia_mockups.png
+
+# Project-internal planning/reference artifacts
+references/
+docs/superpowers/
 
 # Virtual env
 venv/
