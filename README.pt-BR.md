@@ -15,6 +15,20 @@ O JuriAI é uma plataforma SaaS jurídica para advogados autônomos e pequenos e
 
 O objetivo é simples: reduzir tarefas operacionais repetitivas para que o advogado tenha mais tempo para estratégia jurídica, relacionamento com clientes e crescimento do escritório.
 
+## Prévia do produto
+
+**Landing page**
+
+![Landing page do JuriAI](screenshots/landing-page.png)
+
+**Dashboard operacional**
+
+![Dashboard do JuriAI](screenshots/dashboard-main.png)
+
+| Análise jurisprudencial de risco | Calculadora judicial |
+|---|---|
+| ![Análise jurisprudencial do JuriAI](screenshots/analise-jurisprudencial.png) | ![Calculadora judicial do JuriAI](screenshots/calculadora.png) |
+
 ## Principais funcionalidades
 
 - **Gestão de clientes e processos**: clientes, processos, prazos, andamentos, documentos e análises jurídicas em um só ambiente.

@@ -15,6 +15,20 @@ JuriAI is a legal SaaS platform for Brazilian solo lawyers and small law firms. 
 
 The goal is simple: help lawyers spend less time on repetitive operational work and more time on legal strategy, client relationships, and business growth.
 
+## Product Preview
+
+**Landing page**
+
+![JuriAI landing page](screenshots/landing-page.png)
+
+**Operational dashboard**
+
+![JuriAI dashboard](screenshots/dashboard-main.png)
+
+| Jurisprudential risk analysis | Judicial calculator |
+|---|---|
+| ![JuriAI jurisprudential analysis](screenshots/analise-jurisprudencial.png) | ![JuriAI judicial calculator](screenshots/calculadora.png) |
+
 ## Key Features
 
 - **Client and case management**: clients, lawsuits, deadlines, procedural events, documents, and legal analyses in one workspace.
