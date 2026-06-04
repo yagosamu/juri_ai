@@ -2,6 +2,15 @@
 
 **Portuguese version:** [README.pt-BR.md](README.pt-BR.md)
 
+![Django](https://img.shields.io/badge/Django-6-092E20?logo=django&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17.5-4169E1?logo=postgresql&logoColor=white)
+![OpenAI](https://img.shields.io/badge/OpenAI-Agents-412991?logo=openai&logoColor=white)
+![Agno](https://img.shields.io/badge/Agno-2.5.5-111827)
+![LangChain](https://img.shields.io/badge/LangChain-RAG-1C3C3C?logo=langchain&logoColor=white)
+![LanceDB](https://img.shields.io/badge/LanceDB-Vector_DB-F97316)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-CDN-06B6D4?logo=tailwindcss&logoColor=white)
+
 JuriAI is a legal SaaS platform for Brazilian solo lawyers and small law firms. It combines legal operations, client management, financial control, document automation, judicial calculations, and AI agents in a single Django application.
 
 The goal is simple: help lawyers spend less time on repetitive operational work and more time on legal strategy, client relationships, and business growth.

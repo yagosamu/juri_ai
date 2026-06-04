@@ -2,6 +2,15 @@
 
 **English version:** [README.md](README.md)
 
+![Django](https://img.shields.io/badge/Django-6-092E20?logo=django&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17.5-4169E1?logo=postgresql&logoColor=white)
+![OpenAI](https://img.shields.io/badge/OpenAI-Agents-412991?logo=openai&logoColor=white)
+![Agno](https://img.shields.io/badge/Agno-2.5.5-111827)
+![LangChain](https://img.shields.io/badge/LangChain-RAG-1C3C3C?logo=langchain&logoColor=white)
+![LanceDB](https://img.shields.io/badge/LanceDB-Vector_DB-F97316)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-CDN-06B6D4?logo=tailwindcss&logoColor=white)
+
 O JuriAI é uma plataforma SaaS jurídica para advogados autônomos e pequenos escritórios brasileiros. Ele reúne operação jurídica, gestão de clientes, financeiro, automação de documentos, cálculos judiciais e agentes de IA em uma única aplicação Django.
 
 O objetivo é simples: reduzir tarefas operacionais repetitivas para que o advogado tenha mais tempo para estratégia jurídica, relacionamento com clientes e crescimento do escritório.
