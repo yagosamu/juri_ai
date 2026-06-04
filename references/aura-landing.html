@@ -1102,8 +1102,8 @@
 
         // --- Contact Form Logic (Preserved) ---
         (function () {
-            const SUPABASE_URL = 'https://atlihrrlfxpmplldomoa.supabase.co';
-            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0bGlocnJsZnhwbXBsbGRvbW9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NTY3ODMsImV4cCI6MjA4MTMzMjc4M30.7NZdMQ3baRO1s10La5PA4RcQDcPmDcBemq_MjTk1tm0';
+            const SUPABASE_URL = 'https://example.supabase.co';
+            const SUPABASE_KEY = 'REDACTED_SUPABASE_ANON_KEY';
 
             if (typeof window.supabase === 'undefined') return;
 
@@ -1172,7 +1172,7 @@
         }
 
         function checkLogin() {
-            if (document.getElementById('admin-pass').value === 'Baandlaw2025!') {
+            if (document.getElementById('admin-pass').value === 'REDACTED_ADMIN_PASSWORD') {
                 document.getElementById('admin-login').classList.add('hidden');
                 document.getElementById('dashboard-content').classList.remove('hidden');
                 loadAdminMessages();
@@ -1182,8 +1182,8 @@
         }
 
         async function loadAdminMessages() {
-            const SUPABASE_URL = 'https://atlihrrlfxpmplldomoa.supabase.co';
-            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0bGlocnJsZnhwbXBsbGRvbW9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NTY3ODMsImV4cCI6MjA4MTMzMjc4M30.7NZdMQ3baRO1s10La5PA4RcQDcPmDcBemq_MjTk1tm0';
+            const SUPABASE_URL = 'https://example.supabase.co';
+            const SUPABASE_KEY = 'REDACTED_SUPABASE_ANON_KEY';
             const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
             const { data } = await client.from('contacts').select('*').order('created_at', { ascending: false });

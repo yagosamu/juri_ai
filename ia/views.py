@@ -244,7 +244,10 @@ def gerar_documento(request):
     processo_id = request.POST.get('processo_id') or None
     instrucoes  = request.POST.get('instrucoes', '').strip()
 
-    template  = get_object_or_404(TemplateDocumento, id=template_id)
+    template  = get_object_or_404(
+        TemplateDocumento.objects.filter(Q(is_global=True) | Q(user=request.user)),
+        id=template_id,
+    )
     cliente   = get_object_or_404(Cliente, id=cliente_id, user=request.user)
     processo  = (get_object_or_404(Processo, id=processo_id, user=request.user)
                  if processo_id else None)

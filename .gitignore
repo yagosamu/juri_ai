@@ -6,6 +6,9 @@ __pycache__/
 *.py[cod]
 *.pyo
 
+# Node
+node_modules/
+
 # Django
 db.sqlite3
 media/
@@ -42,4 +45,3 @@ venv/
 
 client_secret_*.json
 client_secret.json
-
