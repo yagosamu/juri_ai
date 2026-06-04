@@ -43,5 +43,10 @@ venv/
 # Brainstorming companion
 .superpowers/
 
+# Project-internal agent/workflow notes
+AGENTS.md
+CLAUDE.md
+TASKS.md
+
 client_secret_*.json
 client_secret.json
