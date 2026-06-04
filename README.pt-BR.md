@@ -75,6 +75,8 @@ Os cálculos salvos podem ser vinculados aos processos e exportados, integrando 
 - **SMTP** para alertas de prazos e financeiro
 - **ReportLab, OpenPyXL e python-docx** para exportações em PDF, Excel e DOCX
 
+O acesso ao DataJud/CNJ é usado apenas para consultar metadados públicos de processos judiciais brasileiros. A integração permanece visível no projeto porque não expõe segredos de clientes, credenciais privilegiadas ou dados jurídicos privados.
+
 ## Stack técnica
 
 - **Backend**: Django 6, Python 3.13

@@ -75,6 +75,8 @@ Saved calculations can be linked to lawsuits and exported, making financial revi
 - **SMTP** for deadline and financial alerts
 - **ReportLab, OpenPyXL, and python-docx** for PDF, Excel, and DOCX exports
 
+DataJud/CNJ access is used only to query public Brazilian judicial process metadata. The project keeps this integration visible because it does not expose client secrets, privileged credentials, or private legal data.
+
 ## Tech Stack
 
 - **Backend**: Django 6, Python 3.13
