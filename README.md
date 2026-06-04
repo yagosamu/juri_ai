@@ -23,11 +23,25 @@ The goal is simple: help lawyers spend less time on repetitive operational work 
 
 **Operational dashboard**
 
+The main dashboard gives the lawyer a daily operational snapshot: active clients, processed documents, high-risk analyses, upcoming deadlines, and calendar events in one place.
+
 ![JuriAI dashboard](screenshots/dashboard-main.png)
 
-| Jurisprudential risk analysis | Judicial calculator |
-|---|---|
-| ![JuriAI jurisprudential analysis](screenshots/analise-jurisprudencial.png) | ![JuriAI judicial calculator](screenshots/calculadora.png) |
+### Jurisprudential Risk Analysis
+
+JuriAI reviews legal documents with a structured AI pipeline and turns the result into an actionable risk report. The analysis highlights coherence issues, legal risks, formatting problems, and critical red flags, then summarizes the document's exposure with a risk score and classification.
+
+This helps lawyers quickly identify weak points before filing, revising, or negotiating a legal document.
+
+![JuriAI jurisprudential analysis](screenshots/analise-jurisprudencial.png)
+
+### Judicial Calculator
+
+The calculator supports monetary correction and interest scenarios for Brazilian legal workflows. It handles correction indexes, interest models, court-specific tables, labor calculations, multiple installments, penalties, attorney fees, and scenario comparison.
+
+Saved calculations can be linked to lawsuits and exported, making financial review part of the same case-management flow.
+
+![JuriAI judicial calculator](screenshots/calculadora.png)
 
 ## Key Features
 

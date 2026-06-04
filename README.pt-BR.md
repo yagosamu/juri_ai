@@ -23,11 +23,25 @@ O objetivo é simples: reduzir tarefas operacionais repetitivas para que o advog
 
 **Dashboard operacional**
 
+O dashboard principal oferece uma visão diária da operação do escritório: clientes ativos, documentos processados, análises de risco, prazos próximos e eventos de calendário em um só lugar.
+
 ![Dashboard do JuriAI](screenshots/dashboard-main.png)
 
-| Análise jurisprudencial de risco | Calculadora judicial |
-|---|---|
-| ![Análise jurisprudencial do JuriAI](screenshots/analise-jurisprudencial.png) | ![Calculadora judicial do JuriAI](screenshots/calculadora.png) |
+### Análise Jurisprudencial de Risco
+
+O JuriAI revisa documentos jurídicos com um pipeline estruturado de IA e transforma o resultado em um relatório acionável de risco. A análise destaca problemas de coerência, riscos jurídicos, falhas de formatação e red flags críticas, além de resumir a exposição do documento com score e classificação.
+
+Isso ajuda o advogado a identificar rapidamente pontos frágeis antes de protocolar, revisar ou negociar uma peça jurídica.
+
+![Análise jurisprudencial do JuriAI](screenshots/analise-jurisprudencial.png)
+
+### Calculadora Judicial
+
+A calculadora apoia fluxos jurídicos brasileiros com correção monetária e cenários de juros. Ela contempla índices de correção, modelos de juros, tabelas específicas de tribunais, cálculos trabalhistas, múltiplas parcelas, multas, honorários e comparação de cenários.
+
+Os cálculos salvos podem ser vinculados aos processos e exportados, integrando a revisão financeira ao fluxo de gestão do caso.
+
+![Calculadora judicial do JuriAI](screenshots/calculadora.png)
 
 ## Principais funcionalidades
 
