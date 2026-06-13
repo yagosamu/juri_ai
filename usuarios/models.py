@@ -204,6 +204,23 @@ class AndamentoProcesso(models.Model):
         return f"{self.data} — {self.descricao[:60]}"
 
 
+class LinkProcesso(models.Model):
+    processo   = models.ForeignKey(Processo, on_delete=models.CASCADE, related_name='links_externos')
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='links_processos')
+    titulo     = models.CharField(max_length=120, verbose_name='Título')
+    url        = models.URLField(max_length=500, verbose_name='URL')
+    observacao = models.CharField(max_length=255, blank=True, verbose_name='Observação')
+    criado_em  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['titulo']
+        verbose_name = 'Link do Processo'
+        verbose_name_plural = 'Links dos Processos'
+
+    def __str__(self):
+        return f"{self.titulo} — {self.processo}"
+
+
 class Cliente(models.Model):
     # a classe model esencial para criar a tabela no banco de dados, 
     # e os campos são definidos como atributos da classe. O campo user é uma 
@@ -533,6 +550,15 @@ class IndiceEconomico(models.Model):
 
 
 class CalculoJudicial(models.Model):
+    MARCO_INICIAL_CHOICES = [
+        ('fato_gerador',    'Data do fato gerador'),
+        ('citacao',         'Recebimento da citação'),
+        ('sentenca',        'Sentença'),
+        ('publicacao',      'Publicação/certificação'),
+        ('transito_julgado', 'Trânsito em julgado'),
+        ('customizado',     'Data customizada'),
+    ]
+
     INDICE_CHOICES = [
         ('ipca_e',     'IPCA-E'),
         ('inpc',       'INPC'),
@@ -556,6 +582,10 @@ class CalculoJudicial(models.Model):
                                           verbose_name='Descrição do cálculo')
     valor_principal    = models.DecimalField(max_digits=14, decimal_places=2,
                                              verbose_name='Valor principal (R$)')
+    marco_inicial_tipo = models.CharField(max_length=20, choices=MARCO_INICIAL_CHOICES,
+                                          default='fato_gerador', verbose_name='Marco inicial')
+    marco_inicial_observacao = models.CharField(max_length=255, blank=True,
+                                                verbose_name='Observação do marco inicial')
     data_inicio        = models.DateField(verbose_name='Data do fato gerador')
     data_fim           = models.DateField(verbose_name='Data do cálculo')
     indice_correcao    = models.CharField(max_length=15, choices=INDICE_CHOICES,
@@ -587,6 +617,7 @@ class CalculoJudicial(models.Model):
 
 auditlog.register(Processo)
 auditlog.register(AndamentoProcesso)
+auditlog.register(LinkProcesso)
 auditlog.register(Prazo)
 auditlog.register(Cliente)
 auditlog.register(Documentos)

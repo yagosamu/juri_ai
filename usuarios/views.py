@@ -8,7 +8,7 @@ from django.http import JsonResponse, HttpResponse
 from .models import (Cliente, Documentos, ConfiguracaoWhatsApp, ConsentimentoLGPD,
                       Processo, Prazo, AndamentoProcesso, TRIBUNAL_CHOICES,
                       Honorario, Pagamento, TemplateDocumento, DocumentoGerado, Lead,
-                      CalculoJudicial)
+                      CalculoJudicial, LinkProcesso)
 from django.db.models import Sum
 from ia.models import AnaliseJurisprudencia
 from django.urls import reverse
@@ -557,7 +557,10 @@ def processo(request, id):
     # Cálculos judiciais do processo
     calculos = CalculoJudicial.objects.filter(processo=processo_obj, user=request.user).order_by('-criado_em')
 
-    # Tab ativa (querystring ?tab=documentos|analises|prazos|andamentos|honorarios|calculos)
+    # Links externos cadastrados pelo advogado
+    links_externos = LinkProcesso.objects.filter(processo=processo_obj, user=request.user)
+
+    # Tab ativa (querystring ?tab=documentos|analises|prazos|andamentos|honorarios|calculos|links)
     tab = request.GET.get('tab', 'documentos')
 
     return render(request, 'processo.html', {
@@ -569,8 +572,51 @@ def processo(request, id):
         'andamentos':       andamentos,
         'honorarios':       honorarios,
         'calculos':         calculos,
+        'links_externos':   links_externos,
         'tab':              tab,
     })
+
+
+@login_required
+def criar_link_processo(request, id):
+    processo_obj = get_object_or_404(Processo, id=id, user=request.user)
+
+    if request.method != 'POST':
+        return redirect(reverse('processo', kwargs={'id': id}) + '?tab=links')
+
+    titulo = request.POST.get('titulo', '').strip()
+    url = request.POST.get('url', '').strip()
+    observacao = request.POST.get('observacao', '').strip()
+
+    if not titulo:
+        messages.add_message(request, constants.ERROR, 'Informe um título para o link.')
+        return redirect(reverse('processo', kwargs={'id': id}) + '?tab=links')
+
+    if not url.startswith(('http://', 'https://')):
+        messages.add_message(request, constants.ERROR, 'Informe uma URL completa começando com http:// ou https://.')
+        return redirect(reverse('processo', kwargs={'id': id}) + '?tab=links')
+
+    LinkProcesso.objects.create(
+        processo=processo_obj,
+        user=request.user,
+        titulo=titulo,
+        url=url,
+        observacao=observacao,
+    )
+    messages.add_message(request, constants.SUCCESS, 'Link salvo no processo.')
+    return redirect(reverse('processo', kwargs={'id': id}) + '?tab=links')
+
+
+@login_required
+def excluir_link_processo(request, id):
+    link = get_object_or_404(LinkProcesso, id=id, user=request.user, processo__user=request.user)
+    processo_id = link.processo_id
+
+    if request.method == 'POST':
+        link.delete()
+        messages.add_message(request, constants.SUCCESS, 'Link removido do processo.')
+
+    return redirect(reverse('processo', kwargs={'id': processo_id}) + '?tab=links')
 
 
 @login_required
@@ -1224,6 +1270,7 @@ def calculadora(request):
             'processo': processo_obj,
             'indice_choices': CalculoJudicial.INDICE_CHOICES,
             'juros_choices': CalculoJudicial.JUROS_CHOICES,
+            'marco_inicial_choices': CalculoJudicial.MARCO_INICIAL_CHOICES,
             'tribunais_tj': listar_tribunais_disponiveis(),
             'tribunal_selecionado': tribunal_selecionado,
             'valor_principal': _format_decimal_br(processo_obj.valor_causa) if processo_obj else '',
@@ -1292,6 +1339,8 @@ def salvar_calculo(request):
             processo=processo_obj,
             descricao=data.get('descricao', '').strip(),
             valor_principal=valor_principal,
+            marco_inicial_tipo=data.get('marco_inicial_tipo') or 'fato_gerador',
+            marco_inicial_observacao=data.get('marco_inicial_observacao', '').strip(),
             data_inicio=data_inicio,
             data_fim=parametros['data_fim'],
             indice_correcao=parametros.get('indice_correcao') or 'ipca_e',

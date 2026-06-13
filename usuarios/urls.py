@@ -21,6 +21,8 @@ urlpatterns = [
     path("processos/<int:id>/arquivar/", views.arquivar_processo, name='arquivar_processo'),
     path("processos/<int:id>/vincular-documento/", views.vincular_documento, name='vincular_documento'),
     path("processos/<int:id>/atualizar-datajud/", views.atualizar_datajud, name='atualizar_datajud'),
+    path("processos/<int:id>/links/novo/", views.criar_link_processo, name='criar_link_processo'),
+    path("processos/links/<int:id>/excluir/", views.excluir_link_processo, name='excluir_link_processo'),
     # ── Prazos ────────────────────────────────────────────────────────────────
     path("prazos/", views.lista_prazos, name='lista_prazos'),
     path("processos/<int:processo_id>/prazos/novo/", views.criar_prazo, name='criar_prazo'),

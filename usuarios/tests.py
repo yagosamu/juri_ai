@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from usuarios.models import CalculoJudicial, Cliente, IndiceEconomico, Processo
+from usuarios.models import CalculoJudicial, Cliente, IndiceEconomico, LinkProcesso, Processo
 from usuarios.services.calculo import (
     calcular_debito,
     calcular_debito_multiplo,
@@ -668,6 +668,65 @@ class CalculadoraViewsTests(TestCase):
         self.assertEqual(calculo.processo, self.processo)
         self.assertEqual(calculo.resultado_json['total'], 1122.0)
 
+    def test_salvar_calculo_persiste_marco_inicial_juridico(self):
+        payload = {
+            'processo_id': self.processo.id,
+            'valor_principal': '1.000,00',
+            'marco_inicial_tipo': 'publicacao',
+            'marco_inicial_observacao': 'Conforme certidão de publicação de 14/03/2025.',
+            'data_inicio': '14/03/2025',
+            'data_fim': '14/04/2025',
+            'indice_correcao': 'ipca_e',
+            'juros_tipo': 'simples_1',
+            'juros_percentual': '1,00',
+            'multa_523': False,
+            'honorarios_sucumb': False,
+            'honorarios_percent': '10,00',
+            'resultado_json': {'total': 1010.0, 'tabela_mensal': []},
+        }
+
+        response = self.client.post(
+            reverse('salvar_calculo'),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        calculo = CalculoJudicial.objects.get(id=response.json()['id'])
+        self.assertEqual(calculo.marco_inicial_tipo, 'publicacao')
+        self.assertEqual(calculo.marco_inicial_observacao, 'Conforme certidão de publicação de 14/03/2025.')
+        self.assertEqual(calculo.data_inicio, date(2025, 3, 14))
+
+    def test_salvar_calculo_persiste_juros_customizado_e_honorarios_percentuais(self):
+        payload = {
+            'processo_id': self.processo.id,
+            'valor_principal': '2.000,00',
+            'marco_inicial_tipo': 'citacao',
+            'data_inicio': '10/02/2025',
+            'data_fim': '10/04/2025',
+            'indice_correcao': 'ipca_e',
+            'juros_tipo': 'customizado',
+            'juros_percentual': '2,35',
+            'multa_523': True,
+            'honorarios_sucumb': True,
+            'honorarios_percent': '15,00',
+            'resultado_json': {'total': 2500.0, 'tabela_mensal': []},
+        }
+
+        response = self.client.post(
+            reverse('salvar_calculo'),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        calculo = CalculoJudicial.objects.get(id=response.json()['id'])
+        self.assertEqual(calculo.marco_inicial_tipo, 'citacao')
+        self.assertEqual(calculo.juros_tipo, 'customizado')
+        self.assertEqual(calculo.juros_percentual, Decimal('2.35'))
+        self.assertTrue(calculo.honorarios_sucumb)
+        self.assertEqual(calculo.honorarios_percent, Decimal('15.00'))
+
     def test_lista_calculos_filtra_por_usuario(self):
         CalculoJudicial.objects.create(
             valor_principal=Decimal('1000.00'),
@@ -687,6 +746,29 @@ class CalculadoraViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'R$ 1.000,00')
         self.assertNotContains(response, 'R$ 2.000,00')
+
+    def test_lista_calculos_exibe_parametros_juridicos_do_calculo(self):
+        CalculoJudicial.objects.create(
+            valor_principal=Decimal('1000.00'),
+            marco_inicial_tipo='publicacao',
+            marco_inicial_observacao='Conforme certidão de publicação.',
+            data_inicio=date(2025, 3, 14),
+            data_fim=date(2025, 4, 14),
+            juros_tipo='customizado',
+            juros_percentual=Decimal('2.35'),
+            honorarios_sucumb=True,
+            honorarios_percent=Decimal('15.00'),
+            user=self.user,
+        )
+
+        response = self.client.get(reverse('lista_calculos'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Publicação/certificação')
+        self.assertContains(response, 'Conforme certidão de publicação.')
+        self.assertContains(response, 'Percentual customizado')
+        self.assertContains(response, '2,35% a.m.')
+        self.assertContains(response, 'Honorários 15,00%')
 
     def test_exportar_calculo_requer_ownership_e_retorna_pdf(self):
         calculo = CalculoJudicial.objects.create(
@@ -792,3 +874,76 @@ class CalculadoraViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/pdf')
         self.assertTrue(response.content.startswith(b'%PDF'))
+
+
+class LinksProcessoViewsTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='advogado', password='abc123')
+        self.outro_user = User.objects.create_user(username='outro', password='abc123')
+        self.cliente = Cliente.objects.create(
+            nome='Cliente Teste',
+            email='cliente@example.com',
+            tipo='PF',
+            user=self.user,
+        )
+        self.processo = Processo.objects.create(
+            numero_cnj='12345678920248260001',
+            tribunal='tjsp',
+            tipo_acao='Cível',
+            cliente=self.cliente,
+            user=self.user,
+        )
+        self.client.force_login(self.user)
+
+    def test_cria_link_externo_do_processo(self):
+        response = self.client.post(
+            reverse('criar_link_processo', args=[self.processo.id]),
+            {
+                'titulo': 'e-SAJ TJSP',
+                'url': 'https://eproc-consulta.tjsp.jus.br/consulta_1g/externo_controlador.php',
+                'observacao': 'Consulta pública de primeiro grau',
+            },
+        )
+
+        self.assertRedirects(response, reverse('processo', args=[self.processo.id]) + '?tab=links')
+        link = LinkProcesso.objects.get(processo=self.processo)
+        self.assertEqual(link.user, self.user)
+        self.assertEqual(link.titulo, 'e-SAJ TJSP')
+        self.assertEqual(link.observacao, 'Consulta pública de primeiro grau')
+
+    def test_rejeita_url_sem_http_ou_https(self):
+        response = self.client.post(
+            reverse('criar_link_processo', args=[self.processo.id]),
+            {
+                'titulo': 'Consulta',
+                'url': 'www.tjsp.jus.br',
+            },
+        )
+
+        self.assertRedirects(response, reverse('processo', args=[self.processo.id]) + '?tab=links')
+        self.assertFalse(LinkProcesso.objects.exists())
+
+    def test_nao_exclui_link_de_outro_usuario(self):
+        outro_cliente = Cliente.objects.create(
+            nome='Outro Cliente',
+            email='outro@example.com',
+            tipo='PF',
+            user=self.outro_user,
+        )
+        outro_processo = Processo.objects.create(
+            numero_cnj='22345678920248260001',
+            tribunal='tjsp',
+            cliente=outro_cliente,
+            user=self.outro_user,
+        )
+        link = LinkProcesso.objects.create(
+            processo=outro_processo,
+            user=self.outro_user,
+            titulo='eproc',
+            url='https://eproc.example.com',
+        )
+
+        response = self.client.post(reverse('excluir_link_processo', args=[link.id]))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(LinkProcesso.objects.filter(id=link.id).exists())
