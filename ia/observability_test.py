@@ -1,3 +1,4 @@
+from langfuse._client.attributes import LangfuseOtelSpanAttributes
 from langfuse.types import MaskOtelSpansParams, OtelSpanData, OtelSpanIdentifier
 
 from ia.observability import REDACTED_VALUE, mask_otel_spans
@@ -30,6 +31,90 @@ def _masked_attributes(attributes):
     patch = result.span_patches[identifier]
 
     return _apply_patch(attributes, patch)
+
+
+def _langfuse_attribute_constants():
+    return {
+        name: value
+        for name, value in LangfuseOtelSpanAttributes.__dict__.items()
+        if name.isupper()
+    }
+
+
+def _safe_value_for(attribute):
+    if attribute == LangfuseOtelSpanAttributes.OBSERVATION_USAGE_DETAILS:
+        return '{"input": 120, "output": 45, "total": 165}'
+    if attribute == LangfuseOtelSpanAttributes.OBSERVATION_COST_DETAILS:
+        return '{"input": 0.001, "output": 0.002, "total": 0.003}'
+    if attribute == LangfuseOtelSpanAttributes.TRACE_TAGS:
+        return '["jurisprudencia", "fase-4"]'
+    if attribute == LangfuseOtelSpanAttributes.TRACE_PUBLIC:
+        return False
+    if attribute in {
+        LangfuseOtelSpanAttributes.AS_ROOT,
+        LangfuseOtelSpanAttributes.IS_APP_ROOT,
+    }:
+        return True
+    return "valor-operacional"
+
+
+def test_classifica_todas_as_constantes_reais_do_sdk_langfuse():
+    pass_attributes = {
+        LangfuseOtelSpanAttributes.ENVIRONMENT,
+        LangfuseOtelSpanAttributes.RELEASE,
+        LangfuseOtelSpanAttributes.VERSION,
+        LangfuseOtelSpanAttributes.OBSERVATION_TYPE,
+        LangfuseOtelSpanAttributes.OBSERVATION_LEVEL,
+        LangfuseOtelSpanAttributes.OBSERVATION_MODEL,
+        LangfuseOtelSpanAttributes.OBSERVATION_MODEL_PARAMETERS,
+        LangfuseOtelSpanAttributes.OBSERVATION_USAGE_DETAILS,
+        LangfuseOtelSpanAttributes.OBSERVATION_COST_DETAILS,
+        LangfuseOtelSpanAttributes.OBSERVATION_COMPLETION_START_TIME,
+        LangfuseOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE,
+        LangfuseOtelSpanAttributes.OBSERVATION_PROMPT_NAME,
+        LangfuseOtelSpanAttributes.OBSERVATION_PROMPT_VERSION,
+        LangfuseOtelSpanAttributes.TRACE_NAME,
+        LangfuseOtelSpanAttributes.TRACE_TAGS,
+        LangfuseOtelSpanAttributes.TRACE_PUBLIC,
+        LangfuseOtelSpanAttributes.AS_ROOT,
+        LangfuseOtelSpanAttributes.IS_APP_ROOT,
+    }
+    redact_attributes = {
+        LangfuseOtelSpanAttributes.OBSERVATION_INPUT,
+        LangfuseOtelSpanAttributes.OBSERVATION_OUTPUT,
+        LangfuseOtelSpanAttributes.OBSERVATION_METADATA,
+        LangfuseOtelSpanAttributes.TRACE_INPUT,
+        LangfuseOtelSpanAttributes.TRACE_OUTPUT,
+        LangfuseOtelSpanAttributes.TRACE_METADATA,
+        LangfuseOtelSpanAttributes.TRACE_SESSION_ID,
+        LangfuseOtelSpanAttributes.TRACE_USER_ID,
+        LangfuseOtelSpanAttributes.EXPERIMENT_ID,
+        LangfuseOtelSpanAttributes.EXPERIMENT_NAME,
+        LangfuseOtelSpanAttributes.EXPERIMENT_DESCRIPTION,
+        LangfuseOtelSpanAttributes.EXPERIMENT_METADATA,
+        LangfuseOtelSpanAttributes.EXPERIMENT_DATASET_ID,
+        LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ID,
+        LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT,
+        LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_METADATA,
+        LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID,
+    }
+    sdk_attributes = set(_langfuse_attribute_constants().values())
+
+    assert len(sdk_attributes) == 35
+    assert pass_attributes | redact_attributes == sdk_attributes
+    assert pass_attributes.isdisjoint(redact_attributes)
+
+    attributes = {
+        attribute: _safe_value_for(attribute)
+        for attribute in sdk_attributes
+    }
+    patched_attributes = _masked_attributes(attributes)
+
+    for attribute in pass_attributes:
+        assert patched_attributes[attribute] == attributes[attribute]
+
+    for attribute in redact_attributes:
+        assert patched_attributes[attribute] == REDACTED_VALUE
 
 
 def test_redige_conteudo_sensivel_conhecido():
@@ -86,13 +171,25 @@ def test_redige_atributo_desconhecido_por_default_fechado():
     assert patched_attributes["retrieval.query"] == REDACTED_VALUE
 
 
+def test_redige_identificadores_de_usuario_e_sessao():
+    attributes = {
+        "user.id": "42",
+        "session.id": "+5511999990000",
+    }
+
+    patched_attributes = _masked_attributes(attributes)
+
+    assert patched_attributes["user.id"] == REDACTED_VALUE
+    assert patched_attributes["session.id"] == REDACTED_VALUE
+
+
 def test_preserva_metricas_de_uso_e_custo():
     attributes = {
         "gen_ai.usage.input_tokens": 120,
         "gen_ai.usage.output_tokens": 45,
         "gen_ai.usage.total_tokens": 165,
-        "langfuse.observation.cost_details.total": 0.0012,
-        "langfuse.observation.latency": 1.42,
+        "langfuse.observation.usage_details": '{"input": 120, "output": 45, "total": 165}',
+        "langfuse.observation.cost_details": '{"input": 0.001, "output": 0.002, "total": 0.003}',
     }
 
     patched_attributes = _masked_attributes(attributes)
@@ -100,8 +197,8 @@ def test_preserva_metricas_de_uso_e_custo():
     assert patched_attributes["gen_ai.usage.input_tokens"] == 120
     assert patched_attributes["gen_ai.usage.output_tokens"] == 45
     assert patched_attributes["gen_ai.usage.total_tokens"] == 165
-    assert patched_attributes["langfuse.observation.cost_details.total"] == 0.0012
-    assert patched_attributes["langfuse.observation.latency"] == 1.42
+    assert patched_attributes["langfuse.observation.usage_details"] == '{"input": 120, "output": 45, "total": 165}'
+    assert patched_attributes["langfuse.observation.cost_details"] == '{"input": 0.001, "output": 0.002, "total": 0.003}'
 
 
 def test_preserva_modelo_e_tool_name():
@@ -109,6 +206,8 @@ def test_preserva_modelo_e_tool_name():
         "gen_ai.request.model": "gpt-4.1-mini",
         "gen_ai.response.model": "gpt-4.1-mini",
         "gen_ai.tool.name": "search_datajud_api",
+        "langfuse.observation.level": "DEFAULT",
+        "langfuse.observation.model.name": "gpt-4.1-mini",
     }
 
     patched_attributes = _masked_attributes(attributes)
@@ -116,15 +215,17 @@ def test_preserva_modelo_e_tool_name():
     assert patched_attributes["gen_ai.request.model"] == "gpt-4.1-mini"
     assert patched_attributes["gen_ai.response.model"] == "gpt-4.1-mini"
     assert patched_attributes["gen_ai.tool.name"] == "search_datajud_api"
+    assert patched_attributes["langfuse.observation.level"] == "DEFAULT"
+    assert patched_attributes["langfuse.observation.model.name"] == "gpt-4.1-mini"
 
 
 def test_rejeita_bool_como_metrica():
     attributes = {
         "gen_ai.usage.cache_hit": True,
-        "langfuse.observation.cost_details.estimated": False,
+        "langfuse.observation.cost_details": '{"estimated": false}',
     }
 
     patched_attributes = _masked_attributes(attributes)
 
     assert patched_attributes["gen_ai.usage.cache_hit"] == REDACTED_VALUE
-    assert patched_attributes["langfuse.observation.cost_details.estimated"] == REDACTED_VALUE
+    assert patched_attributes["langfuse.observation.cost_details"] == REDACTED_VALUE
