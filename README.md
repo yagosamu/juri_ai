@@ -3,13 +3,15 @@
 **Portuguese version:** [README.pt-BR.md](README.pt-BR.md)
 
 ![Django](https://img.shields.io/badge/Django-6-092E20?logo=django&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17.5-4169E1?logo=postgresql&logoColor=white)
 ![OpenAI](https://img.shields.io/badge/OpenAI-Agents-412991?logo=openai&logoColor=white)
-![Agno](https://img.shields.io/badge/Agno-2.5.5-111827)
+![Agno](https://img.shields.io/badge/Agno-2.4.7-111827)
 ![LangChain](https://img.shields.io/badge/LangChain-RAG-1C3C3C?logo=langchain&logoColor=white)
 ![LanceDB](https://img.shields.io/badge/LanceDB-Vector_DB-F97316)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-CDN-06B6D4?logo=tailwindcss&logoColor=white)
+![Langfuse](https://img.shields.io/badge/Langfuse-LLM_Observability-0A0A0A)
+![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Tracing-425CC7?logo=opentelemetry&logoColor=white)
 
 JuriAI is a legal SaaS platform for Brazilian solo lawyers and small law firms. It combines legal operations, client management, financial control, document automation, judicial calculations, and AI agents in a single Django application.
 
@@ -64,6 +66,12 @@ Saved calculations can be linked to lawsuits and exported, making financial revi
 | **JurisprudenciaAI** | LangChain + OpenAI | Structured risk analysis for legal documents |
 | **RedacaoAI** | Agno + OpenAI | AI-assisted drafting from legal templates and case context |
 
+## Observability
+
+JuriAI ships with an opt-in LLM observability layer built on Langfuse. When enabled, every agent call produces a trace with token usage, cost, latency, and model, across both engines: LangChain and Agno (the latter instrumented through OpenInference and OpenTelemetry).
+
+Because the agents handle privileged legal data, prompt and completion content never leaves the application. A closed-allowlist masking hook runs at the OpenTelemetry export stage and redacts all client content (document text, names, CPFs, chat messages) while keeping operational metadata such as tokens, cost, latency, and model. Tracing is off by default and controlled by a single environment flag.
+
 ## Integrations
 
 - **OpenAI** for AI agents and embeddings
@@ -72,6 +80,7 @@ Saved calculations can be linked to lawsuits and exported, making financial revi
 - **Google Calendar** for scheduling
 - **CNJ DataJud** for Brazilian judicial process data
 - **PostgreSQL** for production data storage
+- **Langfuse** for LLM observability with export-stage PII masking
 - **SMTP** for deadline and financial alerts
 - **ReportLab, OpenPyXL, and python-docx** for PDF, Excel, and DOCX exports
 
@@ -79,10 +88,11 @@ DataJud/CNJ access is used only to query public Brazilian judicial process metad
 
 ## Tech Stack
 
-- **Backend**: Django 6, Python 3.13
+- **Backend**: Django 6, Python 3.12
 - **Database**: PostgreSQL in production, environment-configurable local database
 - **Async tasks**: django-q
 - **AI orchestration**: Agno, LangChain
+- **Observability**: Langfuse, OpenTelemetry, OpenInference (opt-in, PII-masked)
 - **Vector database**: LanceDB
 - **Document processing**: Docling
 - **Frontend**: Django templates + Tailwind CDN

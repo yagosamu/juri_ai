@@ -3,13 +3,15 @@
 **English version:** [README.md](README.md)
 
 ![Django](https://img.shields.io/badge/Django-6-092E20?logo=django&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17.5-4169E1?logo=postgresql&logoColor=white)
 ![OpenAI](https://img.shields.io/badge/OpenAI-Agents-412991?logo=openai&logoColor=white)
-![Agno](https://img.shields.io/badge/Agno-2.5.5-111827)
+![Agno](https://img.shields.io/badge/Agno-2.4.7-111827)
 ![LangChain](https://img.shields.io/badge/LangChain-RAG-1C3C3C?logo=langchain&logoColor=white)
 ![LanceDB](https://img.shields.io/badge/LanceDB-Vector_DB-F97316)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-CDN-06B6D4?logo=tailwindcss&logoColor=white)
+![Langfuse](https://img.shields.io/badge/Langfuse-LLM_Observability-0A0A0A)
+![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Tracing-425CC7?logo=opentelemetry&logoColor=white)
 
 O JuriAI é uma plataforma SaaS jurídica para advogados autônomos e pequenos escritórios brasileiros. Ele reúne operação jurídica, gestão de clientes, financeiro, automação de documentos, cálculos judiciais e agentes de IA em uma única aplicação Django.
 
@@ -64,6 +66,12 @@ Os cálculos salvos podem ser vinculados aos processos e exportados, integrando 
 | **JurisprudenciaAI** | LangChain + OpenAI | Análise estruturada de risco em documentos jurídicos |
 | **RedacaoAI** | Agno + OpenAI | Redação assistida por IA a partir de templates e contexto do caso |
 
+## Observabilidade
+
+O JuriAI traz uma camada opcional de observabilidade de LLM construída sobre o Langfuse. Quando ativada, cada chamada de agente gera um trace com consumo de tokens, custo, latência e modelo, nos dois motores: LangChain e Agno (este instrumentado via OpenInference e OpenTelemetry).
+
+Como os agentes lidam com dados jurídicos privilegiados, o conteúdo de prompt e resposta nunca sai da aplicação. Um hook de masking por allowlist fechada roda na etapa de exportação do OpenTelemetry e redige todo o conteúdo do cliente (texto de documentos, nomes, CPFs, mensagens de chat), preservando apenas os metadados operacionais como tokens, custo, latência e modelo. O tracing fica desligado por padrão e é controlado por uma única variável de ambiente.
+
 ## Integrações
 
 - **OpenAI** para agentes de IA e embeddings
@@ -72,6 +80,7 @@ Os cálculos salvos podem ser vinculados aos processos e exportados, integrando 
 - **Google Calendar** para agendamento
 - **CNJ DataJud** para dados de processos judiciais brasileiros
 - **PostgreSQL** para banco de produção
+- **Langfuse** para observabilidade de LLM com masking de PII na exportação
 - **SMTP** para alertas de prazos e financeiro
 - **ReportLab, OpenPyXL e python-docx** para exportações em PDF, Excel e DOCX
 
@@ -79,10 +88,11 @@ O acesso ao DataJud/CNJ é usado apenas para consultar metadados públicos de pr
 
 ## Stack técnica
 
-- **Backend**: Django 6, Python 3.13
+- **Backend**: Django 6, Python 3.12
 - **Banco de dados**: PostgreSQL em produção, banco local configurável por ambiente
 - **Tasks assíncronas**: django-q
 - **Orquestração de IA**: Agno, LangChain
+- **Observabilidade**: Langfuse, OpenTelemetry, OpenInference (opcional, com masking de PII)
 - **Banco vetorial**: LanceDB
 - **Processamento de documentos**: Docling
 - **Frontend**: Django templates + Tailwind CDN
