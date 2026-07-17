@@ -43,6 +43,9 @@ def stream_resposta(request):
         from typing import Iterator
         from agno.agent import RunOutputEvent, RunEvent
         from .agents import JuriAI
+        from .observability import ensure_agno_tracing
+
+        ensure_agno_tracing()
         
         agent = JuriAI.build_agent(knowledge_filters={'cliente_id': pergunta.cliente.id})
         

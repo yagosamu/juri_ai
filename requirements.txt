@@ -25,6 +25,7 @@ Markdown==3.10.1
 martor==1.7.16
 mpire==2.10.2
 openai==2.16.0
+openinference-instrumentation-agno==0.1.27
 openpyxl==3.1.5
 pillow==11.3.0
 psycopg2-binary>=2.9,<3
@@ -39,3 +40,4 @@ semchunk==2.2.2
 SQLAlchemy==2.0.46
 tzlocal==5.3.1
 whitenoise[brotli]>=6.9,<7
+wrapt==1.17.3

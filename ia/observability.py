@@ -13,6 +13,8 @@ from langfuse.types import MaskOtelSpansParams, MaskOtelSpansResult, OtelSpanPat
 REDACTED_VALUE: Final = "[REDACTED]"
 logger = logging.getLogger(__name__)
 _LANGFUSE_CLIENT_INITIALIZED = False
+_AGNO_INSTRUMENTED = False
+_AGNO_INSTRUMENTOR = None
 
 _ALLOWED_LANGFUSE_EXACT_ATTRIBUTES: Final[set[str]] = {
     LangfuseOtelSpanAttributes.ENVIRONMENT,
@@ -38,6 +40,25 @@ _LANGFUSE_NUMERIC_DETAIL_ATTRIBUTES: Final[set[str]] = {
     LangfuseOtelSpanAttributes.OBSERVATION_COST_DETAILS,
 }
 
+_ALLOWED_OPENINFERENCE_EXACT_ATTRIBUTES: Final[set[str]] = {
+    "agent.name",
+    "agno.agent",
+    "agno.agent.id",
+    "agno.knowledge",
+    "agno.run.id",
+    "agno.tools",
+    "graph.node.id",
+    "graph.node.name",
+    "input.mime_type",
+    "llm.provider",
+    "openinference.span.kind",
+    "output.mime_type",
+}
+
+_ALLOWED_OPENINFERENCE_METRIC_PREFIXES: Final[tuple[str, ...]] = (
+    "llm.token_count.",
+)
+
 _REDACTED_LANGFUSE_EXACT_ATTRIBUTES: Final[set[str]] = {
     LangfuseOtelSpanAttributes.OBSERVATION_INPUT,
     LangfuseOtelSpanAttributes.OBSERVATION_OUTPUT,
@@ -55,8 +76,8 @@ _REDACTED_ATTRIBUTE_PREFIXES: Final[tuple[str, ...]] = (
     "langfuse.experiment.",
 )
 
-# These gen_ai/llm attributes are not yet verified against real Agno/OpenLIT
-# traffic. They remain conservative placeholders until Fase 5 trace validation.
+# These gen_ai attributes are not yet verified against future OpenLIT/OpenTelemetry
+# traffic. They remain conservative placeholders until a real trace requires them.
 _ALLOWED_UNVERIFIED_EXACT_ATTRIBUTES: Final[set[str]] = {
     "gen_ai.request.model",
     "gen_ai.response.model",
@@ -74,7 +95,6 @@ _ALLOWED_UNVERIFIED_METRIC_PREFIXES: Final[tuple[str, ...]] = (
     "gen_ai.usage.",
     "gen_ai.token.",
     "llm.usage.",
-    "llm.token_count.",
 )
 
 _SENSITIVE_KEY_FRAGMENTS: Final[tuple[str, ...]] = (
@@ -136,6 +156,16 @@ def get_langfuse_callback_handler():
         return None
 
 
+def ensure_agno_tracing() -> None:
+    if not settings.LANGFUSE_ENABLED:
+        return
+
+    try:
+        _ensure_langfuse_client()
+    except Exception as exc:
+        logger.warning("Agno tracing disabled for this run: %s", exc)
+
+
 def _ensure_langfuse_client() -> None:
     global _LANGFUSE_CLIENT_INITIALIZED
 
@@ -144,8 +174,33 @@ def _ensure_langfuse_client() -> None:
 
     from langfuse import Langfuse
 
-    Langfuse(mask_otel_spans=mask_otel_spans)
+    client = Langfuse(mask_otel_spans=mask_otel_spans)
     _LANGFUSE_CLIENT_INITIALIZED = True
+    _ensure_agno_instrumentation(client)
+
+
+def _ensure_agno_instrumentation(langfuse_client) -> None:
+    """Patch Agno once so its OpenInference spans use Langfuse's masked provider."""
+    global _AGNO_INSTRUMENTED, _AGNO_INSTRUMENTOR
+
+    if _AGNO_INSTRUMENTED:
+        return
+
+    try:
+        resources = getattr(langfuse_client, "_resources", None)
+        tracer_provider = getattr(resources, "tracer_provider", None)
+        if tracer_provider is None:
+            logger.warning("Agno tracing skipped: Langfuse tracer provider is unavailable")
+            return
+
+        from openinference.instrumentation.agno import AgnoInstrumentor
+
+        instrumentor = AgnoInstrumentor()
+        instrumentor.instrument(tracer_provider=tracer_provider)
+        _AGNO_INSTRUMENTOR = instrumentor
+        _AGNO_INSTRUMENTED = True
+    except Exception as exc:
+        logger.warning("Agno tracing disabled for this process: %s", exc)
 
 
 def _is_allowed_attribute(key: str, value: object) -> bool:
@@ -156,6 +211,12 @@ def _is_allowed_attribute(key: str, value: object) -> bool:
 
     if key in _LANGFUSE_NUMERIC_DETAIL_ATTRIBUTES:
         return _is_numeric_detail_value(value)
+
+    if key in _ALLOWED_OPENINFERENCE_EXACT_ATTRIBUTES:
+        return True
+
+    if key.startswith(_ALLOWED_OPENINFERENCE_METRIC_PREFIXES):
+        return _is_metric_value(value)
 
     if key in _REDACTED_LANGFUSE_EXACT_ATTRIBUTES:
         return False
