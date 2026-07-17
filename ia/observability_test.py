@@ -117,6 +117,83 @@ def test_classifica_todas_as_constantes_reais_do_sdk_langfuse():
         assert patched_attributes[attribute] == REDACTED_VALUE
 
 
+def test_classifica_atributos_reais_do_agno_openinference_0_1_27():
+    pass_attributes = {
+        "agent.name",
+        "agno.agent",
+        "agno.agent.id",
+        "agno.knowledge",
+        "agno.run.id",
+        "agno.tools",
+        "graph.node.id",
+        "graph.node.name",
+        "input.mime_type",
+        "langfuse.internal.is_app_root",
+        "llm.model_name",
+        "llm.provider",
+        "llm.token_count.completion",
+        "llm.token_count.prompt",
+        "openinference.span.kind",
+        "output.mime_type",
+    }
+    redact_attributes = {
+        "input.value",
+        "llm.input_messages.0.message.content",
+        "llm.input_messages.0.message.role",
+        "llm.input_messages.1.message.content",
+        "llm.input_messages.1.message.role",
+        "llm.output_messages.0.message.content",
+        "llm.output_messages.0.message.role",
+        "llm.tools.0.tool.json_schema",
+        "llm.tools.1.tool.json_schema",
+        "llm.tools.2.tool.json_schema",
+        "output.value",
+        "session.id",
+    }
+    captured_attributes = {
+        "agent.name": "Assistente Jurídico Virtual",
+        "agno.agent": "Assistente Jurídico Virtual",
+        "agno.agent.id": "assistente-juridico-virtual",
+        "agno.knowledge": "Knowledge",
+        "agno.run.id": "5e990685-cd8e-4129-837e-de9d556cf9c5",
+        "agno.tools": ("search_datajud_api",),
+        "graph.node.id": "1fb0b8afe10a19d0",
+        "graph.node.name": "Assistente Jurídico Virtual",
+        "input.mime_type": "application/json",
+        "input.value": '{"messages": [{"content": "João Carlos Ferreira CPF 123.456.789-01"}]}',
+        "langfuse.internal.is_app_root": True,
+        "llm.input_messages.0.message.content": "System prompt juridico",
+        "llm.input_messages.0.message.role": "system",
+        "llm.input_messages.1.message.content": "João Carlos Ferreira CPF 123.456.789-01",
+        "llm.input_messages.1.message.role": "user",
+        "llm.model_name": "gpt-4o",
+        "llm.output_messages.0.message.content": "OK.",
+        "llm.output_messages.0.message.role": "assistant",
+        "llm.provider": "OpenAI",
+        "llm.token_count.completion": 3,
+        "llm.token_count.prompt": 479,
+        "llm.tools.0.tool.json_schema": '{"function": {"name": "search_datajud_api"}}',
+        "llm.tools.1.tool.json_schema": '{"function": {"name": "search_knowledge_base"}}',
+        "llm.tools.2.tool.json_schema": '{"function": {"name": "delete_memory"}}',
+        "openinference.span.kind": "LLM",
+        "output.mime_type": "application/json",
+        "output.value": '{"messages": [{"role": "assistant", "content": "Ok."}]}',
+        "session.id": "5511999990000",
+    }
+
+    assert len(captured_attributes) == 28
+    assert pass_attributes | redact_attributes == set(captured_attributes)
+    assert pass_attributes.isdisjoint(redact_attributes)
+
+    patched_attributes = _masked_attributes(captured_attributes)
+
+    for attribute in pass_attributes:
+        assert patched_attributes[attribute] == captured_attributes[attribute]
+
+    for attribute in redact_attributes:
+        assert patched_attributes[attribute] == REDACTED_VALUE
+
+
 def test_redige_conteudo_sensivel_conhecido():
     attributes = {
         "gen_ai.prompt.0.content": "Sistema juridico do caso de João Carlos Ferreira",
