@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
 from typing import Final
 
+from django.conf import settings
 from langfuse.types import MaskOtelSpansParams, MaskOtelSpansResult, OtelSpanPatch
 
 
 REDACTED_VALUE: Final = "[REDACTED]"
+logger = logging.getLogger(__name__)
+_LANGFUSE_CLIENT_INITIALIZED = False
 
 _ALLOWED_EXACT_ATTRIBUTES: Final[set[str]] = {
     "gen_ai.request.model",
@@ -80,6 +84,32 @@ def mask_otel_spans(params: MaskOtelSpansParams) -> MaskOtelSpansResult:
         span_patches[identifier] = OtelSpanPatch(set_attributes=set_attributes)
 
     return MaskOtelSpansResult(span_patches=span_patches)
+
+
+def get_langfuse_callback_handler():
+    if not settings.LANGFUSE_ENABLED:
+        return None
+
+    try:
+        _ensure_langfuse_client()
+        from langfuse.langchain import CallbackHandler
+
+        return CallbackHandler()
+    except Exception as exc:
+        logger.warning("Langfuse tracing disabled for this run: %s", exc)
+        return None
+
+
+def _ensure_langfuse_client() -> None:
+    global _LANGFUSE_CLIENT_INITIALIZED
+
+    if _LANGFUSE_CLIENT_INITIALIZED:
+        return
+
+    from langfuse import Langfuse
+
+    Langfuse(mask_otel_spans=mask_otel_spans)
+    _LANGFUSE_CLIENT_INITIALIZED = True
 
 
 def _is_allowed_attribute(key: str, value: object) -> bool:
