@@ -186,6 +186,9 @@ GOOGLE_CLIENT_SECRET_PATH = os.environ.get(
 LANCEDB_URI = os.environ.get('LANCEDB_URI', str(DATA_DIR / 'lancedb'))
 AGNO_MEMORY_DB_FILE = os.environ.get('AGNO_MEMORY_DB_FILE', str(DATA_DIR / 'agno_memory.sqlite3'))
 
+# Langfuse SDK auto-configura chaves/URL via os.environ; a aplicação mantém só o kill switch.
+LANGFUSE_ENABLED = os.environ.get('LANGFUSE_ENABLED', 'False').lower() in ('1', 'true', 'yes', 'on')
+
 
 from django.contrib.messages import constants
 
