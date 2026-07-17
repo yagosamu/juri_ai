@@ -18,7 +18,9 @@ lance-namespace==0.4.5
 lance-namespace-urllib3-client==0.4.5
 lancedb==0.27.1
 langchain-core==1.2.8
+langchain==1.2.8
 langchain-openai==1.1.7
+langfuse==4.14.0
 Markdown==3.10.1
 martor==1.7.16
 mpire==2.10.2
