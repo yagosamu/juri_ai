@@ -49,7 +49,7 @@ def search_datajud_api(cls, tribunal: TribunalLiteral, process_number: str) -> s
         }
     }
     headers = {
-        "Authorization": f"APIKey cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==",
+        "Authorization": f"APIKey {settings.DATAJUD_API_KEY}",
         "Content-Type": "application/json"
     }
 
@@ -63,8 +63,6 @@ def search_datajud_api(cls, tribunal: TribunalLiteral, process_number: str) -> s
 
 class JuriAI:
 
-    DATAJUD_BASE_URL = "https://api-publica.datajud.cnj.jus.br"
-    DATAJUD_API_KEY = "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw=="
     VECTOR_DB_TABLE = "documentos"
     VECTOR_DB_URI = settings.LANCEDB_URI
     MEMORY_DB_FILE = settings.AGNO_MEMORY_DB_FILE

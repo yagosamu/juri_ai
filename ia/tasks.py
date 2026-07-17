@@ -102,6 +102,7 @@ def enviar_alertas_prazos():
 def consultar_datajud(processo_id):
     """Busca movimentos no DataJud e persiste apenas os novos."""
     import requests
+    from django.conf import settings
     from usuarios.models import Processo, AndamentoProcesso
 
     proc = Processo.objects.filter(id=processo_id).first()
@@ -111,7 +112,7 @@ def consultar_datajud(processo_id):
     numero = proc.numero_cnj.replace('-', '').replace('.', '')
     url = f"https://api-publica.datajud.cnj.jus.br/api_publica_{proc.tribunal}/_search"
     headers = {
-        'Authorization': 'APIKey cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==',
+        'Authorization': f'APIKey {settings.DATAJUD_API_KEY}',
         'Content-Type': 'application/json',
     }
     try:

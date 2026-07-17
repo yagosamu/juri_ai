@@ -183,6 +183,17 @@ GOOGLE_CLIENT_SECRET_PATH = os.environ.get(
     'GOOGLE_CLIENT_SECRET_PATH',
     str(BASE_DIR / 'client_secret.json'),
 )
+# Chave da API pública do DataJud, distribuída abertamente pelo CNJ em
+# https://datajud-wiki.cnj.jus.br/api-publica/acesso/ — é a mesma para todos os
+# consumidores da API pública e não identifica esta aplicação. Não é segredo.
+# Fica em env var para centralizar o valor e permitir troca caso o CNJ rotacione.
+# O `or` (em vez do default do .get) trata DATAJUD_API_KEY='' como ausente:
+# um .env com a chave vazia deve cair no default, não mandar header vazio.
+DATAJUD_API_KEY = (
+    os.environ.get('DATAJUD_API_KEY')
+    or 'cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw=='
+)
+
 LANCEDB_URI = os.environ.get('LANCEDB_URI', str(DATA_DIR / 'lancedb'))
 AGNO_MEMORY_DB_FILE = os.environ.get('AGNO_MEMORY_DB_FILE', str(DATA_DIR / 'agno_memory.sqlite3'))
 
