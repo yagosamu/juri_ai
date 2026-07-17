@@ -137,6 +137,13 @@ class JurisprudenciaAI(BaseAgent):
 
         return prompt
 
+    def _build_chain(self):
+        return self._prompt() | self.llm.with_structured_output(JurisprudenciaOutput)
+
     def run(self, documento: str):
-        chain = self._prompt() | self.llm.with_structured_output(JurisprudenciaOutput)
-        return chain.invoke({'documento': documento})
+        from ia.observability import get_langfuse_callback_handler
+
+        chain = self._build_chain()
+        callback = get_langfuse_callback_handler()
+        config = {'callbacks': [callback]} if callback else None
+        return chain.invoke({'documento': documento}, config=config)

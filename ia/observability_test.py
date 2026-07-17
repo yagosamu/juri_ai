@@ -55,6 +55,19 @@ def test_redige_conteudo_sensivel_conhecido():
     assert patched_attributes["algum.campo.novo.content"] == REDACTED_VALUE
 
 
+def test_redige_output_estruturado_serializado():
+    attributes = {
+        "langfuse.observation.output": (
+            '{"indice_risco": 82, "red_flags": ["João Carlos Ferreira '
+            'tem CPF 123.456.789-01 e segredo processual"]}'
+        ),
+    }
+
+    patched_attributes = _masked_attributes(attributes)
+
+    assert patched_attributes["langfuse.observation.output"] == REDACTED_VALUE
+
+
 def test_redige_atributo_desconhecido_por_default_fechado():
     attributes = {
         "custom.field": "valor operacional aparentemente inocuo",
