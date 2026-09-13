@@ -23,6 +23,24 @@ def ocr_and_markdown_file(instance_id):
     return 'Ok'
 
 
+def build_document_reader():
+    """Reader used to chunk client documents before they enter LanceDB.
+
+    Values come from ia.retrieval_config so evals/groundtruth measures the same chunking.
+    """
+    from agno.knowledge.chunking.fixed import FixedSizeChunking
+    from agno.knowledge.reader.text_reader import TextReader
+
+    from . import retrieval_config
+
+    return TextReader(
+        chunking_strategy=FixedSizeChunking(
+            chunk_size=retrieval_config.CHUNK_SIZE,
+            overlap=retrieval_config.CHUNK_OVERLAP,
+        )
+    )
+
+
 def rag_documentos(instance_id):
     from .agents import JuriAI
 
@@ -34,6 +52,7 @@ def rag_documentos(instance_id):
             "cliente_id": documentos.cliente.id,
             "name": documentos.arquivo.name,
         },
+        reader=build_document_reader(),
     )
 
 

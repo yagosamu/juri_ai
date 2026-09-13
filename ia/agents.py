@@ -6,6 +6,9 @@ from agno.knowledge.embedder.openai import OpenAIEmbedder
 from agno.knowledge.knowledge import Knowledge
 from agno.tools import tool
 from agno.vectordb.lancedb import LanceDb
+from agno.vectordb.distance import Distance
+from agno.vectordb.search import SearchType
+from . import retrieval_config
 from .literals import TribunalLiteral
 from dotenv import load_dotenv
 from tzlocal import get_localzone_name
@@ -91,8 +94,14 @@ class JuriAI:
         vector_db=LanceDb(
             table_name=VECTOR_DB_TABLE,
             uri=VECTOR_DB_URI,
-            embedder=OpenAIEmbedder()
+            embedder=OpenAIEmbedder(
+                id=retrieval_config.EMBEDDER_ID,
+                dimensions=retrieval_config.EMBEDDER_DIMENSIONS,
+            ),
+            search_type=SearchType(retrieval_config.SEARCH_TYPE),
+            distance=Distance(retrieval_config.DISTANCE),
         ),
+        max_results=retrieval_config.MAX_RESULTS,
     )
 
     @classmethod
