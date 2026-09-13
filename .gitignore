@@ -25,8 +25,8 @@ token.json
 backup_*.json
 
 # Test / auditoria temporária
-test_*.py
-inspect_*.py
+/test_*.py
+/inspect_*.py
 audit_playwright.py
 playwright_*.py
 audit_results.json
