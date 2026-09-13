@@ -1,0 +1,7 @@
+corpus/raw/
+cache/chunks/
+indexes/
+runtime/
+results/*.json
+generation/answers.jsonl
+generation/scores.json
