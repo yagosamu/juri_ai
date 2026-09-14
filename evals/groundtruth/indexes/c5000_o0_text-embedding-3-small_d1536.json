@@ -1,0 +1,21 @@
+{
+  "fingerprint": {
+    "chunk_size": 5000,
+    "chunk_overlap": 0,
+    "embedder_id": "text-embedding-3-small",
+    "embedder_dimensions": 1536
+  },
+  "n_chunks": 285,
+  "docs": [
+    "cdc",
+    "clt",
+    "cpc",
+    "lgpd"
+  ],
+  "corpus_sha256": {
+    "cdc": "df6ab0254a4fc68c07d24ae73d442474c29dc4d5ac09542fb22d44e8a6411cde",
+    "clt": "2cc57926b27dd5e39ed498914834560657ede6724c4edcb2a0c4411a2f91c4cd",
+    "cpc": "e077213cf2c2fe803987e7a552227a4ce5dad863a685217cb09422b45b26bbed",
+    "lgpd": "ed337256d27f580f67ada4226aafb6656c39472586dcd42863082f34f751ddd7"
+  }
+}
