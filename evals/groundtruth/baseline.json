@@ -1,0 +1,11 @@
+{
+  "config": "production",
+  "n_golden": 59,
+  "recall@10": 0.9152542372881356,
+  "index_fingerprint": {
+    "chunk_size": 5000,
+    "chunk_overlap": 0,
+    "embedder_id": "text-embedding-3-small",
+    "embedder_dimensions": 1536
+  }
+}

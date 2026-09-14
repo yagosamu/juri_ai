@@ -18,6 +18,7 @@ RESULTS_DIR = GROUNDTRUTH_DIR / "results"
 CALIBRATION_SAMPLE = GROUNDTRUTH_DIR / "golden" / "calibration_sample.json"
 HUMAN_LABELS = GROUNDTRUTH_DIR / "golden" / "human_labels.jsonl"
 CALIBRATION_REPORT = RESULTS_DIR / "golden_calibration.md"
+CONSENSUS_REPORT = RESULTS_DIR / "golden_consensus.md"
 BASELINE = GROUNDTRUTH_DIR / "baseline.json"
 
 
