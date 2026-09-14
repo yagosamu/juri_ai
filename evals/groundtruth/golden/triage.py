@@ -98,9 +98,9 @@ def _response_content(response) -> str:
 
 
 def judge(client, question: str, header: str, article: str, competitors: list[dict],
-          corpus: dict[str, str]) -> JudgeVerdict:
+          corpus: dict[str, str], prompt: str = PROMPT) -> JudgeVerdict:
     labels = {c["label"] for c in competitors}
-    content = PROMPT.format(question=question, header=header, article=article,
+    content = prompt.format(question=question, header=header, article=article,
                             competitors=competitor_block(competitors, corpus))
     last_error = ""
     for _ in range(MAX_JUDGE_ATTEMPTS):
