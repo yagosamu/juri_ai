@@ -82,6 +82,24 @@ def require_valid_category(input_fn: Callable[[str], str], category: str) -> str
     return category
 
 
+def decide(input_fn: Callable[[str], str], question: str, category: str) -> tuple[str, str, str]:
+    """Run the accept, edit, category, reject, quit loop; return (key, question, category)."""
+    while True:
+        key = input_fn("[a]ccept [e]dit [c]ategory [r]eject [q]uit > ").strip().lower()
+        if key == "e":
+            question = input_fn("new question > ").strip() or question
+        elif key == "c":
+            category = prompt_category(input_fn, category)
+        elif key == "a":
+            if category not in CATEGORIES:
+                category = require_valid_category(input_fn, category)
+            return key, question, category
+        elif key in ("r", "q"):
+            return key, question, category
+        else:
+            print(f"unknown command {key!r}; use a, e, c, r or q")
+
+
 def main(reviewer: str, input_fn: Callable[[str], str] = input) -> None:
     corpus = load_corpus()
     golden = load_golden(GOLDEN_SET) if GOLDEN_SET.exists() else []
@@ -103,20 +121,7 @@ def main(reviewer: str, input_fn: Callable[[str], str] = input) -> None:
         question, category = cand["question"], cand["category"]
         if category not in CATEGORIES:
             print(f"warning: stored category {category!r} is not valid; choose one of {CATEGORIES} to accept")
-        while True:
-            key = input_fn("[a]ccept [e]dit [c]ategory [r]eject [q]uit > ").strip().lower()
-            if key == "e":
-                question = input_fn("new question > ").strip() or question
-            elif key == "c":
-                category = prompt_category(input_fn, category)
-            elif key == "a":
-                if category not in CATEGORIES:
-                    category = require_valid_category(input_fn, category)
-                break
-            elif key in ("r", "q"):
-                break
-            else:
-                print(f"unknown command {key!r}; use a, e, c, r or q")
+        key, question, category = decide(input_fn, question, category)
         if key == "q":
             return
         if key == "a":
@@ -125,6 +130,7 @@ def main(reviewer: str, input_fn: Callable[[str], str] = input) -> None:
                 passages=[Passage(doc_id=cand["doc_id"], start=cand["start"], end=cand["end"])],
                 source_article=f"{cand['doc_id']} {cand['header']}",
                 reviewed_by=reviewer, reviewed_at=dt.date.today().isoformat(),
+                review_mode="human_full",
             ))
             save_golden(golden, GOLDEN_SET)
         with DECISIONS.open("a", encoding="utf-8") as f:
