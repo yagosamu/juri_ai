@@ -7,3 +7,4 @@ generation/answers.jsonl
 generation/scores.json
 golden/candidates.jsonl
 golden/decisions.jsonl
+cache/triage/
