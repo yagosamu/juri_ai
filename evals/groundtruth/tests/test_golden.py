@@ -23,13 +23,15 @@ def test_golden_item_rejects_empty_passage():
     with pytest.raises(ValueError):
         GoldenItem(id="x", question="q?", category="conceito",
                    passages=[Passage(doc_id="cpc", start=10, end=10)],
-                   source_article="Art. 1º", reviewed_by="yago", reviewed_at="2026-09-13")
+                   source_article="Art. 1º", reviewed_by="yago", reviewed_at="2026-09-13",
+                   review_mode="human_full")
 
 
 def test_round_trip_jsonl(tmp_path):
     item = GoldenItem(id="cpc-0001", question="Qual o prazo?", category="fato_pontual",
                       passages=[Passage(doc_id="cpc", start=0, end=20)],
-                      source_article="Art. 1º", reviewed_by="yago", reviewed_at="2026-09-13")
+                      source_article="Art. 1º", reviewed_by="yago", reviewed_at="2026-09-13",
+                      review_mode="human_full")
     path = tmp_path / "g.jsonl"
     save_golden([item], path)
     assert load_golden(path) == [item]
