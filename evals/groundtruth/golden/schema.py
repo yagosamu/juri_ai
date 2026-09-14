@@ -1,10 +1,20 @@
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 Category = Literal["fato_pontual", "conceito", "procedimento"]
-ReviewMode = Literal["human_full", "human_blind_calibration", "human_flagged", "human_unflagged", "judge_pass"]
+ReviewMode = Literal["human_full", "human_blind_calibration", "human_flagged", "human_unflagged", "judge_pass",
+                     "judge_consensus"]
+
+
+class LeakageSignals(BaseModel):
+    """Recorded, never used to exclude: the benchmark reports the full set and the no-leakage subset."""
+    model_config = ConfigDict(extra="forbid")
+
+    judges: dict[str, Literal["none", "some", "heavy"]]
+    max_shared_ngram: int
+    no_leakage: bool
 
 
 class Passage(BaseModel):
@@ -28,6 +38,7 @@ class GoldenItem(BaseModel):
     reviewed_by: str
     reviewed_at: str
     review_mode: ReviewMode
+    leakage: LeakageSignals | None = None
     notes: str = ""
 
     @model_validator(mode="after")
