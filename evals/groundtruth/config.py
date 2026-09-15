@@ -20,6 +20,9 @@ HUMAN_LABELS = GROUNDTRUTH_DIR / "golden" / "human_labels.jsonl"
 CALIBRATION_REPORT = RESULTS_DIR / "golden_calibration.md"
 CONSENSUS_REPORT = RESULTS_DIR / "golden_consensus.md"
 BASELINE = GROUNDTRUTH_DIR / "baseline.json"
+OUT_OF_SCOPE = GROUNDTRUTH_DIR / "generation" / "out_of_scope.jsonl"
+OUT_OF_SCOPE_CHECK = GROUNDTRUTH_DIR / "generation" / "out_of_scope_check.jsonl"
+OUT_OF_SCOPE_REPORT = RESULTS_DIR / "out_of_scope_check.md"
 
 
 def load_corpus() -> dict[str, str]:

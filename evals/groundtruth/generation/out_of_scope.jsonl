@@ -1,0 +1,10 @@
+{"id": "oos-01", "question": "Qual é a pena prevista para o crime de estelionato?", "category": "fora_de_escopo", "expected_source": "Código Penal"}
+{"id": "oos-02", "question": "Com quantos pontos na carteira de habilitação o motorista tem o direito de dirigir suspenso?", "category": "fora_de_escopo", "expected_source": "Código de Trânsito Brasileiro"}
+{"id": "oos-03", "question": "Até quando a pessoa física precisa entregar a declaração anual do Imposto de Renda?", "category": "fora_de_escopo", "expected_source": "legislação do Imposto de Renda"}
+{"id": "oos-04", "question": "Quem herda primeiro quando alguém morre sem deixar testamento?", "category": "fora_de_escopo", "expected_source": "Código Civil"}
+{"id": "oos-05", "question": "Qual é o prazo de validade do passaporte comum brasileiro?", "category": "fora_de_escopo", "expected_source": "regulamentação federal de documentos de viagem"}
+{"id": "oos-06", "question": "Qual é a idade mínima para se candidatar a presidente da República?", "category": "fora_de_escopo", "expected_source": "Constituição Federal"}
+{"id": "oos-07", "question": "Qual é o valor da multa para quem não vota nas eleições?", "category": "fora_de_escopo", "expected_source": "Código Eleitoral"}
+{"id": "oos-08", "question": "Qual é a pena para quem desmata área de preservação permanente?", "category": "fora_de_escopo", "expected_source": "Lei de Crimes Ambientais"}
+{"id": "oos-09", "question": "O condomínio pode proibir que moradores tenham animais de estimação?", "category": "fora_de_escopo", "expected_source": "Código Civil"}
+{"id": "oos-10", "question": "Quais documentos são necessários para registrar uma marca no INPI?", "category": "fora_de_escopo", "expected_source": "Lei de Propriedade Industrial"}
