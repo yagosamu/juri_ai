@@ -18,7 +18,7 @@ SEARCH_TYPE = "vector"
 DISTANCE = "cosine"
 
 # Knowledge.max_results: documents returned to the agent per search
-MAX_RESULTS = 10
+MAX_RESULTS = 3
 
 # None or "bge-reranker-v2-m3" (see evals/groundtruth/retriever.py)
 RERANKER = None
