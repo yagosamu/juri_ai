@@ -70,7 +70,7 @@ CONFIGS: dict[str, RetrievalConfig] = {c.name: c for c in [
     PRODUCTION,
     RetrievalConfig("chunk1500", 1500, 150, "vector", None),
     RetrievalConfig("chunk800", 800, 100, "vector", None),
-    # chunk size of the two below is set in Task 7 to the winner of the chunk comparison
+    # hybrid and rerank use the chunk winner of the Task 7 comparison, see results/notes.md
     RetrievalConfig("hybrid", 1500, 150, "hybrid", None),
     RetrievalConfig("rerank", 1500, 150, "vector", "bge-reranker-v2-m3"),
 ]}

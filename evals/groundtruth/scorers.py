@@ -1,8 +1,11 @@
 """Retrieval metrics over character spans. Binary relevance: a retrieved chunk is relevant to a
-golden passage when it covers at least HIT_THRESHOLD of the passage. Each golden passage is credited
-once, to the first chunk that hits it, so a passage split across several overlapping chunks does not
-count twice; that credit-once rule is per passage, not per chunk, so a single chunk that happens to
-cover two different, still-uncredited passages credits both of them, since both were genuinely found."""
+golden passage when it covers at least HIT_THRESHOLD of the passage, or when at least HIT_THRESHOLD
+of the chunk itself lies inside the passage (bidirectional hit rule, decided 2026-09-14: without the
+second condition a chunk shorter than half the passage can never be a hit, no matter how fully it sits
+inside it). Each golden passage is credited once, to the first chunk that hits it, so a passage split
+across several overlapping chunks does not count twice; that credit-once rule is per passage, not per
+chunk, so a single chunk that happens to cover two different, still-uncredited passages credits both
+of them, since both were genuinely found."""
 import math
 from collections import defaultdict
 from dataclasses import dataclass
@@ -30,8 +33,19 @@ def overlap_ratio(chunk: Span, passage: Span) -> float:
     return max(0, inter) / (passage.end - passage.start)
 
 
+def containment_ratio(chunk: Span, passage: Span) -> float:
+    """Fraction of the chunk that lies inside the passage: intersection divided by chunk length.
+    0.0 when the two spans are on different doc_ids."""
+    if chunk.doc_id != passage.doc_id:
+        return 0.0
+    inter = min(chunk.end, passage.end) - max(chunk.start, passage.start)
+    return max(0, inter) / (chunk.end - chunk.start)
+
+
 def is_hit(chunk: Span, passage: Span, threshold: float = HIT_THRESHOLD) -> bool:
-    return overlap_ratio(chunk, passage) >= threshold
+    """A chunk hits a passage when it covers at least `threshold` of the passage, or when at least
+    `threshold` of the chunk lies inside the passage."""
+    return overlap_ratio(chunk, passage) >= threshold or containment_ratio(chunk, passage) >= threshold
 
 
 def _credits_per_rank(retrieved: list[Span], passages: list[Span]) -> list[set[int]]:

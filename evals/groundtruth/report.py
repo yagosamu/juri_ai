@@ -45,9 +45,13 @@ def render_report(results: list[dict]) -> str:
         lines.append(f"| {r['config']['name']} | " + " | ".join(
             f"{bc[c]['recall@10']:.3f} (n={bc[c]['n']})" if c in bc else "-" for c in cats) + " |")
     questions = {g.id: g.question for g in load_golden(GOLDEN_SET)}
-    best = max(results, key=lambda r: r["summary"]["overall"]["recall@10"])
+    max_recall10 = max(r["summary"]["overall"]["recall@10"] for r in results)
+    tied_names = [r["config"]["name"] for r in results if r["summary"]["overall"]["recall@10"] == max_recall10]
+    best = next(r for r in results if r["config"]["name"] == tied_names[0])
     failing = [i for i in best["items"] if i["recall@10"] == 0.0]
-    lines += ["", f"queries with recall@10 = 0 under best config ({best['config']['name']}): {len(failing)}", ""]
+    tie_suffix = f", tied with {', '.join(tied_names[1:])}" if len(tied_names) > 1 else ""
+    lines += ["", f"queries with recall@10 = 0 under best recall@10 config "
+                   f"({best['config']['name']}{tie_suffix}): {len(failing)}", ""]
     lines += [f"- {i['id']} [{i['category']}] {questions.get(i['id'], '')}" for i in failing]
     return "\n".join(lines) + "\n"
 
