@@ -1,0 +1,31 @@
+name: groundtruth
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  retrieval-gate:
+    runs-on: ubuntu-latest
+    env:
+      DJANGO_SETTINGS_MODULE: core.settings
+      SECRET_KEY: ci-only
+      DATA_DIR: ${{ runner.temp }}
+      OPENAI_API_KEY: offline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install app dependencies without OCR stack
+        run: |
+          grep -v -E '^(docling|mpire)=' requirements.txt > /tmp/requirements-ci.txt
+          pip install -r /tmp/requirements-ci.txt -r evals/groundtruth/requirements.txt
+      - name: Retrieval eval tests and regression gate
+        run: python -m pytest evals/groundtruth/tests -q -m "not needs_api"
