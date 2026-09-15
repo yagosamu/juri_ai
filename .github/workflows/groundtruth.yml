@@ -15,7 +15,6 @@ jobs:
     env:
       DJANGO_SETTINGS_MODULE: core.settings
       SECRET_KEY: ci-only
-      DATA_DIR: ${{ runner.temp }}
       OPENAI_API_KEY: offline
     steps:
       - uses: actions/checkout@v4
@@ -28,4 +27,6 @@ jobs:
           grep -v -E '^(docling|mpire)=' requirements.txt > /tmp/requirements-ci.txt
           pip install -r /tmp/requirements-ci.txt -r evals/groundtruth/requirements.txt
       - name: Retrieval eval tests and regression gate
+        env:
+          DATA_DIR: ${{ runner.temp }}
         run: python -m pytest evals/groundtruth/tests -q -m "not needs_api"
