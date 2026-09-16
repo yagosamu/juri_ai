@@ -66,11 +66,25 @@ Saved calculations can be linked to lawsuits and exported, making financial revi
 | **JurisprudenciaAI** | LangChain + OpenAI | Structured risk analysis for legal documents |
 | **RedacaoAI** | Agno + OpenAI | AI-assisted drafting from legal templates and case context |
 
+## Retrieval evaluation (Groundtruth)
+
+Groundtruth is the retrieval and generation evaluation harness for the JuriAI RAG agent, with a CI regression gate.
+Over 4 public Brazilian statutes and 59 questions, the best configurations reach recall@10 of 0.966 against 0.915 for the current production settings.
+Results, design decisions and failure analysis: [evals/groundtruth/README.md](evals/groundtruth/README.md).
+
 ## Observability
 
 JuriAI ships with an opt-in LLM observability layer built on Langfuse. When enabled, every agent call produces a trace with token usage, cost, latency, and model, across both engines: LangChain and Agno (the latter instrumented through OpenInference and OpenTelemetry).
 
 Because the agents handle privileged legal data, prompt and completion content never leaves the application. A closed-allowlist masking hook runs at the OpenTelemetry export stage and redacts all client content (document text, names, CPFs, chat messages) while keeping operational metadata such as tokens, cost, latency, and model. Tracing is off by default and controlled by a single environment flag.
+
+![Langfuse trace list](screenshots/langfuse-traces.png)
+
+Real traces of JuriAI answers from the Groundtruth evaluation run, with prompt and completion content redacted by the masking hook.
+
+![Langfuse trace detail](screenshots/langfuse-trace-detail.png)
+
+Real trace detail of a JuriAI answer from the Groundtruth evaluation run, with prompt and completion content redacted by the masking hook.
 
 ## Integrations
 

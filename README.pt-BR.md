@@ -66,11 +66,25 @@ Os cálculos salvos podem ser vinculados aos processos e exportados, integrando 
 | **JurisprudenciaAI** | LangChain + OpenAI | Análise estruturada de risco em documentos jurídicos |
 | **RedacaoAI** | Agno + OpenAI | Redação assistida por IA a partir de templates e contexto do caso |
 
+## Avaliação de retrieval (Groundtruth)
+
+O Groundtruth é o harness de avaliação de retrieval e de geração do agente RAG do JuriAI, com um gate de regressão no CI.
+Sobre 4 leis brasileiras públicas e 59 perguntas, as melhores configurações chegam a recall@10 de 0.966, contra 0.915 da configuração atual de produção.
+Resultados, decisões de design e análise de falhas: [evals/groundtruth/README.pt-br.md](evals/groundtruth/README.pt-br.md).
+
 ## Observabilidade
 
 O JuriAI traz uma camada opcional de observabilidade de LLM construída sobre o Langfuse. Quando ativada, cada chamada de agente gera um trace com consumo de tokens, custo, latência e modelo, nos dois motores: LangChain e Agno (este instrumentado via OpenInference e OpenTelemetry).
 
 Como os agentes lidam com dados jurídicos privilegiados, o conteúdo de prompt e resposta nunca sai da aplicação. Um hook de masking por allowlist fechada roda na etapa de exportação do OpenTelemetry e redige todo o conteúdo do cliente (texto de documentos, nomes, CPFs, mensagens de chat), preservando apenas os metadados operacionais como tokens, custo, latência e modelo. O tracing fica desligado por padrão e é controlado por uma única variável de ambiente.
+
+![Lista de traces no Langfuse](screenshots/langfuse-traces.png)
+
+Traces reais de respostas do JuriAI da execução de avaliação do Groundtruth, com o conteúdo de prompt e resposta redigido pelo hook de masking.
+
+![Detalhe de trace no Langfuse](screenshots/langfuse-trace-detail.png)
+
+Detalhe de um trace real de resposta do JuriAI da execução de avaliação do Groundtruth, com o conteúdo de prompt e resposta redigido pelo hook de masking.
 
 ## Integrações
 
