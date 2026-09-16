@@ -1,4 +1,5 @@
-"""Inter-rater agreement between the human reviewer and the triage judge."""
+"""Inter-rater agreement between two label lists: percent agreement and Cohen's kappa, used to compare the
+two golden-set judges."""
 from collections import Counter
 
 
