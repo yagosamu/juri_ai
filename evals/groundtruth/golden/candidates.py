@@ -1,6 +1,7 @@
 """Sample statute articles and ask an LLM for one lawyer-style question per article.
 
-Output: golden/candidates.jsonl. Nothing here is a golden item until a human reviews it.
+Output: golden/candidates.jsonl. Nothing here is a golden item until the two-judge consensus admits it
+(golden/judges.py, then golden/consensus.py).
 Usage: .venv/Scripts/python.exe -m evals.groundtruth.golden.candidates [--round 1] [--force]
 """
 import argparse

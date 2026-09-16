@@ -274,7 +274,7 @@ Observações:
 - A flag `--offline` do indexador falha quando falta embedding no cache, em vez de chamar a API. `cache/chunks` não é versionado, então uma reconstrução a partir de um clone limpo chama a API de embeddings.
 - A config rerank baixa `BAAI/bge-reranker-v2-m3` do Hugging Face no primeiro uso.
 - `--only` recusa qualquer id que não seja, no momento, uma execução com falha.
-- `golden/candidates.jsonl` não é versionado, e triagem, juízes e consenso leem esse arquivo. Gerá-lo de novo chama o gpt-4.1-mini com temperature 0.7, então as perguntas vão diferir do conjunto publicado. `golden/triage.jsonl`, `golden/judgments.jsonl` e `golden/golden_set.jsonl` são versionados.
+- `golden/candidates.jsonl`, `golden/triage.jsonl`, `golden/judgments.jsonl` e `golden/golden_set.jsonl` são versionados, então triagem, juízes e consenso podem ser rodados de novo a partir de um clone, sobre os candidatos publicados. Gerar candidatos de novo chama o gpt-4.1-mini com temperature 0.7, então os novos candidatos seriam diferentes do conjunto publicado.
 
 ## Transparência
 

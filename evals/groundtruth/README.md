@@ -274,7 +274,7 @@ Notes:
 - The indexer's `--offline` flag fails on an embedding cache miss instead of calling the API. `cache/chunks` is not committed, so a rebuild from a clean clone calls the embeddings API.
 - The rerank config downloads `BAAI/bge-reranker-v2-m3` from Hugging Face on first use.
 - `--only` refuses any id that is not currently a failed run.
-- `golden/candidates.jsonl` is not committed, and triage, judges and consensus all read it. Regenerating it calls gpt-4.1-mini at temperature 0.7, so the questions will differ from the published set. `golden/triage.jsonl`, `golden/judgments.jsonl` and `golden/golden_set.jsonl` are committed.
+- `golden/candidates.jsonl`, `golden/triage.jsonl`, `golden/judgments.jsonl` and `golden/golden_set.jsonl` are committed, so triage, judges and consensus can be rerun from a clone against the published candidates. Regenerating candidates calls gpt-4.1-mini at temperature 0.7, so new candidates would differ from the published set.
 
 ## Disclosure
 
