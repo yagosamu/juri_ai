@@ -24,6 +24,15 @@ OUT_OF_SCOPE = GROUNDTRUTH_DIR / "generation" / "out_of_scope.jsonl"
 OUT_OF_SCOPE_CHECK = GROUNDTRUTH_DIR / "generation" / "out_of_scope_check.jsonl"
 OUT_OF_SCOPE_REPORT = RESULTS_DIR / "out_of_scope_check.md"
 
+# Task 9b: generation layer (agent answers scored separately from retrieval)
+GENERATION_DIR = GROUNDTRUTH_DIR / "generation"
+ANSWERS = GENERATION_DIR / "answers.jsonl"
+SCORES = GENERATION_DIR / "scores.json"
+GENERATION_REPORT = RESULTS_DIR / "generation.md"
+GENERATION_RUNTIME_DIR = GROUNDTRUTH_DIR / "runtime" / "generation"
+SAMPLE_SIZE = 30
+SAMPLE_SEED = 7
+
 
 def load_corpus() -> dict[str, str]:
     """Return {doc_id: normalized text} for every committed corpus document."""
