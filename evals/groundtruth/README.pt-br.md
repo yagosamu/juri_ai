@@ -72,6 +72,8 @@ Fonte: `results/report.md`.
 
 No conjunto inteiro, rerank tem o maior recall@1 (0.881), recall@5 (0.966), MRR (0.921) e nDCG@10 (0.933), e empata com hybrid em recall@10 (0.966). No subconjunto sem vazamento, chunk1500, chunk800, hybrid e rerank empatam em recall@10 (0.900), todos acima de production (0.750). O ganho do reranker custa latência: o p50 de busca sobe de 14 ms para 45356 ms (ver [O que não funcionou, e achados](#o-que-não-funcionou-e-achados)). Fonte: `results/notes.md`, seções 3 e 5.
 
+Ver `results/significance.md` para os intervalos de bootstrap e os testes pareados pré-registrados: os ganhos de recall@1 e MRR de chunk1500 sobre production são significativos após a correção de Holm (Holm p=0.0004 e 0.0010), mas o ganho de recall@10 não é (Holm p=1.0000); o ganho de recall@10 de hybrid sobre chunk1500 não é significativo (Holm p=1.0000); o ganho de MRR de rerank sobre chunk1500 é significativo (Holm p=0.0216), mas o ganho de recall@1 não é, após a correção de Holm (Holm p=0.0638).
+
 ### Geração
 
 O agente JuriAI real (gpt-4o, config de retrieval de produção) respondeu a uma amostra de 30 perguntas do golden set (seed 7) e a 10 perguntas fora de escopo. Faithfulness e answer relevancy são pontuadas pelo DeepEval com gpt-4.1-mini como modelo juiz.
@@ -110,6 +112,20 @@ Execuções com falha:
 Fonte: `results/generation.md`.
 
 Respostas que buscaram na base de conhecimento: 36 de 40. Custo medido da execução de geração: $1.8735 no total, sem as chamadas de atualização de memória em segundo plano do agno. Fonte: `results/generation.md`.
+
+## Recomendação
+
+**Recomenda chunk1500 dense como o padrão medido.** Contra production, chunk1500 eleva o recall@1 de 0.373 para 0.712 e o MRR de 0.594 para 0.811; `results/significance.md` acha as duas diferenças significativas após a correção de Holm (recall@1: b=23, c=3, Holm p=0.0004; diferença de MRR 0.216 [0.119, 0.314], Holm p=0.0010). O ganho de recall@10, de 0.915 para 0.932, não é significativo (b=3, c=2, Holm p=1.0000). chunk1500 custa um pouco mais que production: o p50 de busca sobe de 12 ms para 14 ms, o índice cresce de 285 para 1054 chunks, e a ingestão sobe de 434515 para 483330 tokens ($0.00869 para $0.00967). Fonte: `results/notes.md`, seções 2 e 4.
+
+**Hybrid** é uma opção quando recall@10 importa mais que o primeiro resultado. Contra chunk1500, `results/significance.md` acha o ganho de recall@10 no conjunto inteiro (0.932 para 0.966, b=2, c=0) não significativo após a correção de Holm (Holm p=1.0000), e nem a mudança de recall@1 nem a de MRR é significativa. No subconjunto sem vazamento, hybrid reduz recall@1 (0.650 para 0.500) e MRR (0.742 para 0.667) em relação a chunk1500, embora nenhuma das duas quedas seja significativa em n=20 (Holm p=1.0000 e 0.8888).
+
+**Rerank** tem os melhores números de ranking no conjunto inteiro (recall@1 0.881, MRR 0.921), e seu ganho de MRR sobre chunk1500 é significativo (diferença 0.110 [0.035, 0.192], Holm p=0.0216); seu ganho de recall@1 não é significativo após a correção de Holm (Holm p=0.0638). Não é candidato até que o recarregamento de modelo por chamada seja corrigido: o p50 de busca é 45356 ms, porque o agno 2.4.7 recarrega `BAAI/bge-reranker-v2-m3` do disco a cada chamada (ver [O que não funcionou, e achados](#o-que-não-funcionou-e-achados)).
+
+**Custo de adoção.** Mudar `CHUNK_SIZE` significa reconstruir o índice e o baseline versionados e reindexar todo documento armazenado. O `render.yaml` de production define `DATA_DIR=/tmp/juri-ai` (linhas 17 e 18), então o índice LanceDB vive em armazenamento efêmero hoje.
+
+**Ressalva de transferência.** A comparação rodou sobre 4 leis públicas, enquanto os documentos de production são petições e contratos passados por OCR. O ganho é medido só neste corpus.
+
+**Status.** Esta é uma recomendação medida, não uma mudança implantada.
 
 ## Como funciona
 
@@ -187,9 +203,12 @@ A camada de geração também usa 10 perguntas fora de escopo. `generation/out_o
 
 ## O que não funcionou, e achados
 
-- **2 perguntas têm recall@10 = 0 na melhor config** (hybrid, empatada com rerank). Fonte: `results/report.md`.
-  - `r1-cpc-016` [conceito] "Quais são as defesas que podem ser apresentadas nesse tipo de processo?" A pergunta não tem antecedente para "esse tipo de processo". Na execução de geração o agente pediu esclarecimento sem buscar, e `results/generation.md` conta isso como a única resposta sem retrieval.
-  - `r1-cpc-004` [fato_pontual] "Quando a desistência da ação passa a ter efeito legal?" A passagem do golden set é o Art. 200 do CPC, cujo parágrafo único diz que a desistência só produz efeitos após homologação judicial. Nenhum dos 10 chunks que hybrid retorna se sobrepõe a essa passagem; 4 deles contêm a palavra "desistência" em outros dispositivos, entre eles os Arts. 485 e 1.040 do CPC. A pergunta tem recall@10 = 0 nas 5 configs. Causa não estabelecida.
+- **5 perguntas têm recall@10 = 0 em production**; 3 delas são recuperadas por toda outra config, 2 não são recuperadas por nenhuma config. Fonte: `results/failures.md`.
+  - `r1-clt-041` [procedimento] "Como é calculado o pagamento mensal dos professores com base nas aulas semanais e nas faltas?" CLT Art. 320, passagem com 562 caracteres. Causa não estabelecida. Recuperada por chunk1500 (posição 1), chunk800 (posição 2), hybrid (posição 1) e rerank (posição 1).
+  - `r1-clt-044` [procedimento] "Os municípios podem criar regras que contrariem as normas e instruções federais sobre o funcionamento dessas atividades?" CLT Art. 69, passagem com 416 caracteres. Causa não estabelecida. Recuperada por chunk1500 (posição 4), chunk800 (posição 1), hybrid (posição 2) e rerank (posição 1).
+  - `r1-cpc-000` [procedimento] "Quais são os requisitos para que a eleição de foro tenha validade em um contrato?" CPC Art. 63, passagem com 1361 caracteres. Causa não estabelecida. Recuperada por chunk1500 (posição 1), chunk800 (posição 1), hybrid (posição 2) e rerank (posição 1).
+  - `r1-cpc-016` [conceito] "Quais são as defesas que podem ser apresentadas nesse tipo de processo?" A pergunta não tem antecedente para "esse tipo de processo". Na execução de geração o agente pediu esclarecimento sem buscar, e `results/generation.md` conta isso como a única resposta sem retrieval. Não recuperada: falha em production, chunk1500, chunk800, hybrid e rerank.
+  - `r1-cpc-004` [fato_pontual] "Quando a desistência da ação passa a ter efeito legal?" A passagem do golden set é o Art. 200 do CPC, cujo parágrafo único diz que a desistência só produz efeitos após homologação judicial. Nenhum dos 10 chunks que hybrid retorna se sobrepõe a essa passagem; 4 deles contêm a palavra "desistência" em outros dispositivos, entre eles os Arts. 485 e 1.040 do CPC. Não recuperada: falha em production, chunk1500, chunk800, hybrid e rerank.
 - **O filtro `cliente_id` roda depois do top-k.** O `LanceDb.search` do agno 2.4.7 busca os primeiros resultados e só depois os filtra em Python, então um cliente com poucos dados pode receber menos de k resultados. Este benchmark tem um único cliente e não mediu isso.
 - **A busca full-text do hybrid não tem stemming em português.** Ela roda sobre a coluna `payload` com o FTS nativo do LanceDB no agno (`use_tantivy=False`). No subconjunto sem vazamento, hybrid reduz recall@1 (0.500 vs 0.650) e MRR (0.667 vs 0.742) em relação ao chunk1500 denso. Fonte: `results/notes.md`, seções 5 e 6.
 - **O reranker recarrega o modelo a cada chamada.** O `SentenceTransformerReranker._rerank` do agno 2.4.7 constrói um novo `CrossEncoder` por chamada, então cada busca cronometrada do rerank inclui carregar `BAAI/bge-reranker-v2-m3` do disco. O p50 de busca é 45356 ms. Foi medido assim, sem patch. Fonte: `results/notes.md`, seção 7.
