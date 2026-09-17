@@ -34,6 +34,14 @@ def run_config(config: RetrievalConfig, golden: list[GoldenItem], corpus: dict[s
             "summary_short_copy": aggregate([row for row in items if row["short_copy"]])}
 
 
+def build_baseline(result: dict, config: RetrievalConfig, n_golden: int) -> dict:
+    """The payload --write-baseline writes to baseline.json: config name, golden set size, recall@10
+    and mrr from this run's summary.overall, and the index fingerprint that produced them."""
+    overall = result["summary"]["overall"]
+    return {"config": "production", "n_golden": n_golden, "recall@10": overall["recall@10"],
+            "mrr": overall["mrr"], "index_fingerprint": config.fingerprint()}
+
+
 def write_results(result: dict) -> Path:
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     path = RESULTS_DIR / f"{result['config']['name']}.json"
@@ -59,6 +67,4 @@ if __name__ == "__main__":
         path = write_results(result)
         print(name, json.dumps(result["summary"]["overall"]), "->", path)
         if args.write_baseline and name == "production":
-            BASELINE.write_text(json.dumps({"config": "production", "n_golden": len(golden),
-                                            "recall@10": result["summary"]["overall"]["recall@10"],
-                                            "index_fingerprint": cfg.fingerprint()}, indent=2), encoding="utf-8")
+            BASELINE.write_text(json.dumps(build_baseline(result, cfg, len(golden)), indent=2), encoding="utf-8")
