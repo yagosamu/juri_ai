@@ -1,0 +1,85 @@
+{
+  "seed": 20260917,
+  "order": [
+    {
+      "item": "item-01",
+      "candidate_id": "r1-cpc-012"
+    },
+    {
+      "item": "item-02",
+      "candidate_id": "r1-clt-043"
+    },
+    {
+      "item": "item-03",
+      "candidate_id": "r1-cpc-019"
+    },
+    {
+      "item": "item-04",
+      "candidate_id": "r1-lgpd-076"
+    },
+    {
+      "item": "item-05",
+      "candidate_id": "r1-cpc-027"
+    },
+    {
+      "item": "item-06",
+      "candidate_id": "r1-cdc-061"
+    },
+    {
+      "item": "item-07",
+      "candidate_id": "r1-cpc-006"
+    },
+    {
+      "item": "item-08",
+      "candidate_id": "r1-cdc-068"
+    },
+    {
+      "item": "item-09",
+      "candidate_id": "r1-lgpd-073"
+    },
+    {
+      "item": "item-10",
+      "candidate_id": "r1-cpc-009"
+    },
+    {
+      "item": "item-11",
+      "candidate_id": "r1-cpc-010"
+    },
+    {
+      "item": "item-12",
+      "candidate_id": "r1-cpc-029"
+    },
+    {
+      "item": "item-13",
+      "candidate_id": "r1-clt-039"
+    },
+    {
+      "item": "item-14",
+      "candidate_id": "r1-cdc-062"
+    },
+    {
+      "item": "item-15",
+      "candidate_id": "r1-cdc-055"
+    },
+    {
+      "item": "item-16",
+      "candidate_id": "r1-clt-051"
+    },
+    {
+      "item": "item-17",
+      "candidate_id": "r1-cpc-003"
+    },
+    {
+      "item": "item-18",
+      "candidate_id": "r1-cpc-004"
+    },
+    {
+      "item": "item-19",
+      "candidate_id": "r1-clt-035"
+    },
+    {
+      "item": "item-20",
+      "candidate_id": "r1-lgpd-077"
+    }
+  ]
+}
