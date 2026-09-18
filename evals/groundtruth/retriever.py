@@ -15,6 +15,14 @@ from agno.vectordb.search import SearchType
 from evals.groundtruth.config import INDEXES_DIR, RetrievalConfig
 from evals.groundtruth.indexer import TENANT, corpus_sha256, read_fingerprint_file, rebuild_command
 
+# agno 2.4.7's LanceDb.search asks LanceDB for `limit` rows and only then drops, in Python, the rows
+# whose cliente_id does not match the filter (lance_db.py:474-503). On a table shared by many
+# clients, a client whose chunks are a minority can get fewer than k rows, or none. Asking for 10
+# times as many rows before the filter lowers that risk without a schema change; it does not remove
+# it, so a shortfall is recorded on the retriever instead of hidden behind a retry loop. Measured in
+# results/multitenant.md.
+OVERFETCH_FACTOR = 10
+
 
 @dataclass(frozen=True)
 class RetrievedChunk:
@@ -104,10 +112,30 @@ class LanceDbRetriever:
         self.vector_db = LanceDb(uri=str(indexes_dir), table_name=config.index_name, embedder=embedder,
                                  search_type=SearchType(config.search_type), distance=Distance(config.distance),
                                  reranker=make_reranker(config.reranker), use_tantivy=False)
+        self.overfetch_factor = OVERFETCH_FACTOR
+        # The last search's shortfall report: rows asked of agno before the cliente_id filter, rows
+        # that survived it, and how many of the k requested were missing (0 when k survived).
+        self.last_requested_limit: Optional[int] = None
+        self.last_survivors: Optional[int] = None
+        self.last_shortfall: Optional[int] = None
 
     def search(self, query: str, k: int) -> list[RetrievedChunk]:
-        limit = self.config.rerank_candidates if self.config.reranker else k
+        # Over-fetch only where it cannot reorder the top k: plain vector search returns rows by
+        # distance, so the first k survivors of k * factor rows are the rows a pre-filter would give.
+        # agno reranks every row that survives the filter (lance_db.py:505-506), so the reranked path
+        # keeps its candidate count; hybrid search fuses two ranked lists cut at `limit`, so a longer
+        # cut changes the fused order (measured: all 59 golden top 10s changed, recall@10 0.966 to
+        # 0.949). Both keep their single-tenant numbers in results/report.md.
+        if self.config.reranker:
+            limit = self.config.rerank_candidates
+        elif self.config.search_type == SearchType.vector.value:
+            limit = k * self.overfetch_factor
+        else:
+            limit = k
         docs = self.vector_db.search(query, limit=limit, filters={"cliente_id": TENANT})
+        self.last_requested_limit = limit
+        self.last_survivors = len(docs)
+        self.last_shortfall = max(0, k - len(docs))
         out = []
         for doc in docs[:k]:
             # Both doc.name and meta_data["name"] carry the doc_id; the metadata entry is the one
