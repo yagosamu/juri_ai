@@ -72,6 +72,8 @@ Source: `results/report.md`.
 
 On the full set, rerank has the highest recall@1 (0.881), recall@5 (0.966), MRR (0.921) and nDCG@10 (0.933), and ties with hybrid on recall@10 (0.966). On the no-leakage subset, chunk1500, chunk800, hybrid and rerank tie on recall@10 (0.900), all above production (0.750). The reranker's gain costs latency: p50 search rises from 14 ms to 45356 ms (see [What did not work](#what-did-not-work-and-findings)). Source: `results/notes.md`, sections 3 and 5.
 
+See `results/significance.md` for the pre-registered bootstrap intervals and paired tests: chunk1500's recall@1 and MRR gains over production are significant after Holm correction (Holm p=0.0004 and 0.0010), but its recall@10 gain is not (Holm p=1.0000); hybrid's recall@10 gain over chunk1500 is not significant (Holm p=1.0000); rerank's MRR gain over chunk1500 is significant (Holm p=0.0216), but its recall@1 gain is not, after Holm correction (Holm p=0.0638).
+
 ### Generation
 
 The real JuriAI agent (gpt-4o, production retrieval config) answered a sample of 30 golden questions (seed 7) and 10 out-of-scope questions. Faithfulness and answer relevancy are scored by DeepEval with gpt-4.1-mini as the judge model.
@@ -110,6 +112,20 @@ Failed runs:
 Source: `results/generation.md`.
 
 Answers that searched the knowledge base: 36 of 40. Measured cost of the generation run: $1.8735 in total, excluding agno's background memory-update calls. Source: `results/generation.md`.
+
+## Recommendation
+
+**Recommend chunk1500 dense as the measured default.** Against production, chunk1500 raises recall@1 from 0.373 to 0.712 and MRR from 0.594 to 0.811; `results/significance.md` finds both gaps significant after Holm correction (recall@1: b=23, c=3, Holm p=0.0004; MRR difference 0.216 [0.119, 0.314], Holm p=0.0010). The recall@10 gain, 0.915 to 0.932, is not significant (b=3, c=2, Holm p=1.0000). chunk1500 costs a little more than production: p50 search rises from 12 ms to 14 ms, the index grows from 285 to 1054 chunks, and ingestion rises from 434515 to 483330 tokens ($0.00869 to $0.00967). Source: `results/notes.md`, sections 2 and 4.
+
+**Hybrid** is an option when recall@10 matters more than the first result. Against chunk1500, `results/significance.md` finds the full-set recall@10 gain (0.932 to 0.966, b=2, c=0) not significant after Holm correction (Holm p=1.0000), and neither the recall@1 nor the MRR change is significant either. On the no-leakage subset, hybrid lowers recall@1 (0.650 to 0.500) and MRR (0.742 to 0.667) against chunk1500, though neither drop is significant at n=20 (Holm p=1.0000 and 0.8888).
+
+**Rerank** has the best ranking numbers on the full set (recall@1 0.881, MRR 0.921), and its MRR gain over chunk1500 is significant (difference 0.110 [0.035, 0.192], Holm p=0.0216); its recall@1 gain is not significant after Holm correction (Holm p=0.0638). It is not a candidate until the per-call model reload is fixed: p50 search is 45356 ms, because agno 2.4.7 reloads `BAAI/bge-reranker-v2-m3` from disk on every call (see [What did not work](#what-did-not-work-and-findings)).
+
+**Adoption cost.** Changing `CHUNK_SIZE` means rebuilding the committed index and baseline and reindexing every stored document. Production's `render.yaml` sets `DATA_DIR=/tmp/juri-ai` (lines 17 and 18), so the LanceDB index lives on ephemeral storage today.
+
+**Transfer caveat.** The comparison ran on 4 public statutes, while production documents are petitions and contracts passed through OCR. The gain is measured on this corpus only.
+
+**Status.** This is a measured recommendation, not a deployed change.
 
 ## How it works
 
@@ -187,9 +203,12 @@ The generation layer also uses 10 out-of-scope questions. `generation/out_of_sco
 
 ## What did not work, and findings
 
-- **2 queries have recall@10 = 0 under the best config** (hybrid, tied with rerank). Source: `results/report.md`.
-  - `r1-cpc-016` [conceito] "Quais são as defesas que podem ser apresentadas nesse tipo de processo?" The question has no antecedent for "esse tipo de processo". In the generation run the agent asked for clarification without searching, which `results/generation.md` counts as the one no-retrieval answer.
-  - `r1-cpc-004` [fato_pontual] "Quando a desistência da ação passa a ter efeito legal?" The golden passage is CPC Art. 200, whose parágrafo único says the desistência takes effect only after judicial homologation. None of the 10 chunks hybrid returns overlaps that passage; 4 of them contain the word "desistência" from other provisions, including CPC Art. 485 and Art. 1.040. It has recall@10 = 0 under all 5 configs. Cause not established.
+- **5 questions have recall@10 = 0 under production**; 3 of them are recovered by every other config, 2 are not recovered by any config. Source: `results/failures.md`.
+  - `r1-clt-041` [procedimento] "Como é calculado o pagamento mensal dos professores com base nas aulas semanais e nas faltas?" CLT Art. 320, passage length 562 characters. Cause not established. Recovered by chunk1500 (rank 1), chunk800 (rank 2), hybrid (rank 1) and rerank (rank 1).
+  - `r1-clt-044` [procedimento] "Os municípios podem criar regras que contrariem as normas e instruções federais sobre o funcionamento dessas atividades?" CLT Art. 69, passage length 416 characters. Cause not established. Recovered by chunk1500 (rank 4), chunk800 (rank 1), hybrid (rank 2) and rerank (rank 1).
+  - `r1-cpc-000` [procedimento] "Quais são os requisitos para que a eleição de foro tenha validade em um contrato?" CPC Art. 63, passage length 1361 characters. Cause not established. Recovered by chunk1500 (rank 1), chunk800 (rank 1), hybrid (rank 2) and rerank (rank 1).
+  - `r1-cpc-016` [conceito] "Quais são as defesas que podem ser apresentadas nesse tipo de processo?" The question has no antecedent for "esse tipo de processo". In the generation run the agent asked for clarification without searching, which `results/generation.md` counts as the one no-retrieval answer. Not recovered: miss under production, chunk1500, chunk800, hybrid and rerank.
+  - `r1-cpc-004` [fato_pontual] "Quando a desistência da ação passa a ter efeito legal?" The golden passage is CPC Art. 200, whose parágrafo único says the desistência takes effect only after judicial homologation. None of the 10 chunks hybrid returns overlaps that passage; 4 of them contain the word "desistência" from other provisions, including CPC Art. 485 and Art. 1.040. Not recovered: miss under production, chunk1500, chunk800, hybrid and rerank.
 - **The `cliente_id` filter runs after top-k, and it shows.** agno 2.4.7's `LanceDb.search` asks LanceDB for `limit` rows and nothing else (`agno/vectordb/lancedb/lance_db.py:474-483`), then drops in Python the rows whose `meta_data` does not match the filter (`lance_db.py:486-503`); filter expressions are refused with a warning (`lance_db.py:467-469`). Measured on a two-tenant table built offline from the same corpus and production chunking (tenant 0 owns cdc and clt, 149 chunks; tenant 1 owns cpc and lgpd, 136 chunks; 285 in total), with `limit=10`:
   - Searched for the tenant that owns the question's document, 26 of 59 questions got fewer than 10 rows (12 of 28 for tenant 0, mean 8.54 rows; 14 of 31 for tenant 1, mean 9.19) and none got 0. recall@10 did not move: 0.929 and 0.903, the same as the single-tenant index on the same questions.
   - Searched for the tenant that does not own it, all 59 got fewer than 10 rows and 33 got 0 (17 of 31 for tenant 0, 16 of 28 for tenant 1), although each tenant holds more than 130 chunks.
@@ -206,16 +225,17 @@ The generation layer also uses 10 out-of-scope questions. `generation/out_of_sco
 
 ## CI regression gate
 
-The workflow [`.github/workflows/groundtruth.yml`](../../.github/workflows/groundtruth.yml) runs on every pull request, on pushes to main, and on manual dispatch. It installs the app dependencies without the OCR stack plus `evals/groundtruth/requirements.txt`, then runs `python -m pytest evals/groundtruth/tests -q -m "not needs_api"`, with no API key. Two tests in [`tests/test_gate.py`](tests/test_gate.py) form the gate:
+The workflow [`.github/workflows/groundtruth.yml`](../../.github/workflows/groundtruth.yml) runs on every pull request, on pushes to main, and on manual dispatch. It installs the app dependencies without the OCR stack plus `evals/groundtruth/requirements.txt`, then runs `python -m pytest evals/groundtruth/tests -q -m "not needs_api"`, with no API key. Three tests in [`tests/test_gate.py`](tests/test_gate.py) form the `retrieval-gate` job:
 
 - `test_production_index_matches_current_retrieval_config`: the committed index fingerprint must match the production config.
 - `test_production_recall_at_10_does_not_regress`: the production config runs over the golden set offline, and recall@10 must not drop more than 0.01 below [`baseline.json`](baseline.json) (0.9152542372881356). A stale query cache, a stale index or a changed golden set size also fails the test, with the local rebuild command in the message.
+- `test_production_mrr_does_not_regress`: the same offline run, shared with the recall@10 test, and mrr must not drop more than 0.02 below `baseline.json` (0.5944175410277106). The tolerance is wider than recall@10's because a single golden question moving from hit to miss shifts mrr by up to 1/59 (about 0.017); the gate exists to catch real regressions, not that noise. A baseline written before this key existed fails with a message naming the rebuild command, not a `KeyError`.
 
-**Demo.** [PR #12](https://github.com/yagosamu/juri_ai/pull/12) deliberately changed `MAX_RESULTS` from 10 to 3. The check failed with 2 failed and 175 passed tests: `test_production_recall_at_10_does_not_regress` with "recall@10 dropped from 0.915 to 0.780 (max drop 0.01)", and `test_production_config::test_constants_match_agno_defaults_documented_in_spec` with "assert 3 == 10". The PR was closed without merge.
+**Demo.** [PR #12](https://github.com/yagosamu/juri_ai/pull/12) deliberately changed `MAX_RESULTS` from 10 to 3. The check failed with 2 failed and 175 passed tests: `test_production_recall_at_10_does_not_regress` with "recall@10 dropped from 0.915 to 0.780 (max drop 0.01)", and `test_production_config::test_constants_match_agno_defaults_documented_in_spec` with "assert 3 == 10". The PR was closed without merge. The same change now also fails `test_production_mrr_does_not_regress` with "mrr dropped from 0.594 to 0.568 (max drop 0.02)".
 
 ![CI gate failing on demo PR #12](results/ci_gate_failing.png)
 
-**What the gate does not stop.** A PR that edits `baseline.json` together with the regression passes. So does a PR that changes the golden set and the baseline together. The gate checks only the production config's recall@10.
+**What the gate does not stop.** A second workflow, [`.github/workflows/groundtruth-baseline-label.yml`](../../.github/workflows/groundtruth-baseline-label.yml), runs the `baseline-change` job on every pull request and again whenever a label is added or removed, and fails when a protected path (`baseline.json`, `golden/golden_set.jsonl`, `indexes/**` or `cache/queries/**`) changed without the `baseline-change` label, naming the changed files and asking a maintainer to review the numbers before adding the label. So a pull request that edits `baseline.json` together with a regression, or changes the golden set and the baseline together, now fails unless a maintainer adds that label. In a single-maintainer repository this is a speed bump, not an authorization control: the same person proposing the change can also add the label, so it only guarantees a deliberate second look, not review by someone else. The gate still checks only the production config's recall@10 and mrr; recall@1, nDCG and the other configs are not gated.
 
 ## Observability
 
