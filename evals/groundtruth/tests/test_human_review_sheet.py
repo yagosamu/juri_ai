@@ -157,3 +157,45 @@ def test_module_source_never_mentions_forbidden_golden_files():
     source = inspect.getsource(hrs)
     for forbidden in ("judgments", "golden_set", "golden_consensus"):
         assert forbidden not in source
+
+
+@pytest.mark.parametrize("text, header, expected", [
+    ("Art. 1.016. O agravo de instrumento", "Art. 1", "Art. 1.016"),
+    ("Art. 1.052 Enquanto não for editada", "Art. 1", "Art. 1.052"),
+    ("Art. 5º Aquele que de qualquer forma", "Art. 5", "Art. 5º"),
+    ("Art. 457-A. Texto", "Art. 457", "Art. 457-A"),
+    ("texto sem cabeçalho de artigo", "Art. 12", "Art. 12"),
+])
+def test_article_ref_reads_the_article_number_from_the_span_text(text, header, expected):
+    assert hrs.article_ref(header, text) == expected
+
+
+def test_build_rows_uses_the_full_article_number_for_article_and_competitors():
+    corpus = {"cpc": "Art. 1.016. Caberá agravo de instrumento. Art. 1.017. A petição de agravo."}
+    candidates = [_candidate("r1-cpc-000", "cpc", "Art. 1", "pergunta?", 0, 41)]
+    triage = {"r1-cpc-000": _triage_row("r1-cpc-000", [_competitor("C1", "cpc", "Art. 1", 42, len(corpus["cpc"]))])}
+    (row,) = build_rows(["r1-cpc-000"], candidates, triage, corpus)
+    assert row["article_ref"] == "CPC Art. 1.016"
+    assert row["competitors"][0][1] == "CPC Art. 1.017"
+
+
+def test_instruction_text_has_no_em_or_en_dash():
+    texts = list(hrs.INTRO_PARAGRAPHS) + [t for pair in hrs.QUESTIONS for t in pair] + [hrs.COMMENT_NOTE, hrs.TITLE]
+    assert not any("—" in t or "–" in t for t in texts)
+
+
+def test_write_workbook_validates_answers_freezes_header_and_keeps_ids_out_of_properties(tmp_path):
+    ids, candidates, triage, corpus = _uniform_fixture(20)
+    path = tmp_path / "review.xlsx"
+    write_workbook(build_rows(ids, candidates, triage, corpus), path)
+    wb = openpyxl.load_workbook(path)
+    ws = wb["Revisão"]
+    assert ws.freeze_panes == "A2"
+    by_range = {str(dv.sqref): dv for dv in ws.data_validations.dataValidation}
+    assert set(by_range) == {"F2:F21", "H2:H21"}
+    assert by_range["F2:F21"].formula1 == '"sim,em parte,não"'
+    assert by_range["H2:H21"].formula1 == '"sim,não"'
+    assert all(dv.showErrorMessage and dv.error for dv in by_range.values())
+    props = wb.properties
+    for name in ("title", "subject", "creator", "description", "keywords"):
+        assert "r1-" not in str(getattr(props, name) or "")

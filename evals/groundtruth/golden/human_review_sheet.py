@@ -11,6 +11,7 @@ Usage: .venv/Scripts/python.exe -m evals.groundtruth.golden.human_review_sheet
 """
 import json
 import random
+import re
 from pathlib import Path
 
 from openpyxl import Workbook
@@ -36,8 +37,8 @@ INTRO_PARAGRAPHS = [
     "e, se quiser, os artigos parecidos que aparecem na mesma linha. Depois preencha as três "
     "colunas de resposta descritas mais abaixo.",
 
-    "Não existe resposta certa esperada aqui. Se a sua leitura discordar do que a planilha sugere, "
-    "essa discordância também é um resultado útil para nós — responda o que você realmente pensa, "
+    "Não existe resposta certa esperada aqui. Se você discordar da escolha do artigo, "
+    "essa discordância também é um resultado útil para nós. Responda o que você realmente pensa, "
     "sem tentar adivinhar o que \"deveria\" ser.",
 
     "A ordem das linhas foi embaralhada e não segue nenhuma ordem original. Isso é proposital: "
@@ -46,7 +47,7 @@ INTRO_PARAGRAPHS = [
 
     "Suas respostas serão publicadas apenas como números agregados de concordância (por exemplo, "
     "\"em X% das linhas o advogado concordou com Y\"). Você será citado como \"um advogado com "
-    "registro ativo na OAB\", a menos que prefira que o seu nome apareça — nesse caso, é só avisar.",
+    "registro ativo na OAB\", a menos que prefira que o seu nome apareça. Nesse caso, é só avisar.",
 
     "Cada linha leva, em média, de 3 a 4 minutos para revisar. São 20 linhas ao todo, o que dá "
     "pouco mais de uma hora de trabalho.",
@@ -69,12 +70,27 @@ QUESTIONS = [
 
     ("3. \"A pergunta está clara?\"",
      "Responda \"sim\" ou \"não\". Marque \"não\" quando a pergunta não puder ser entendida "
-     "sozinha — por exemplo, se ela se refere a \"esse tipo de processo\" sem dizer qual processo "
+     "sozinha, por exemplo, se ela se refere a \"esse tipo de processo\" sem dizer qual processo "
      "é esse."),
 ]
 
 COMMENT_NOTE = ("Há também uma coluna de comentário, livre e opcional, para qualquer observação "
                 "que não caiba nas três respostas acima.")
+
+
+ANSWER_ERROR = "Escolha uma das opções da lista."
+
+ARTICLE_NUMBER = re.compile(r"^\s*Art\.\s*(\d+(?:\.\d{3})*(?:-[A-Z])?[º°]?)")
+
+
+def article_ref(header: str, text: str) -> str:
+    """The article reference, read from the start of the span text when it has one.
+
+    The header field in candidates.jsonl and triage.jsonl stops at the thousands dot, so CPC
+    articles 1.000 and above all read "Art. 1"; the span text carries the full number.
+    """
+    match = ARTICLE_NUMBER.match(text)
+    return f"Art. {match.group(1)}" if match else header
 
 
 def _truncate(text: str, max_chars: int) -> str:
@@ -127,12 +143,12 @@ def build_rows(sample_ids: list[str], candidates: list[dict], triage: dict[str, 
                 _span_text(comp["doc_id"], comp["start"], comp["end"], corpus,
                           f"competitor {comp.get('label')!r} of {candidate_id!r}"),
                 COMPETITOR_MAX_CHARS)
-            competitors.append((comp["label"], f"{comp['doc_id'].upper()} {comp['header']}", text))
+            competitors.append((comp["label"], f"{comp['doc_id'].upper()} {article_ref(comp['header'], text)}", text))
         rows.append({
             "item": f"item-{i:02d}",
             "candidate_id": candidate_id,
             "question": cand["question"],
-            "article_ref": f"{cand['doc_id'].upper()} {cand['header']}",
+            "article_ref": f"{cand['doc_id'].upper()} {article_ref(cand['header'], article_text)}",
             "article_text": article_text,
             "competitors": competitors,
         })
@@ -187,10 +203,12 @@ def _write_review_sheet(ws, rows: list[dict]) -> None:
             cell.alignment = wrap
     last_row = ws.max_row
     if last_row >= 2:
-        answerable = DataValidation(type="list", formula1='"sim,em parte,não"', allow_blank=True)
+        answerable = DataValidation(type="list", formula1='"sim,em parte,não"', allow_blank=True,
+                                    showErrorMessage=True, error=ANSWER_ERROR)
         ws.add_data_validation(answerable)
         answerable.add(f"F2:F{last_row}")
-        clear = DataValidation(type="list", formula1='"sim,não"', allow_blank=True)
+        clear = DataValidation(type="list", formula1='"sim,não"', allow_blank=True,
+                               showErrorMessage=True, error=ANSWER_ERROR)
         ws.add_data_validation(clear)
         clear.add(f"H2:H{last_row}")
 
