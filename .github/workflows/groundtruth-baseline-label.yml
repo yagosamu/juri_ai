@@ -1,0 +1,48 @@
+name: groundtruth-baseline-label
+
+# A separate workflow from groundtruth.yml on purpose: this check must re-run when the label is
+# added or removed, and a job skipped by `if:` on those events would still report success for the
+# retrieval gate without running it. Here label events only ever run this job.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  baseline-change:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require the baseline-change label when a protected file changed
+        env:
+          HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'baseline-change') }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          # checkout does not guarantee a remote-tracking ref for the base branch on a pull request,
+          # so fetch it explicitly. The branch name goes through the environment, never inlined here.
+          git fetch --no-tags origin "+refs/heads/$BASE_REF:refs/remotes/origin/$BASE_REF"
+          CHANGED=$(git diff --name-only "origin/$BASE_REF...HEAD" -- \
+            evals/groundtruth/baseline.json \
+            evals/groundtruth/golden/golden_set.jsonl \
+            evals/groundtruth/indexes \
+            evals/groundtruth/cache/queries)
+          if [ -z "$CHANGED" ]; then
+            echo "No protected file changed. Nothing to do."
+            exit 0
+          fi
+          echo "Protected file(s) changed:"
+          echo "$CHANGED"
+          if [ "$HAS_LABEL" = "true" ]; then
+            echo "The baseline-change label is present. Proceeding."
+            exit 0
+          fi
+          echo ""
+          echo "These files feed the retrieval-gate job's recall@10 and mrr comparison. A pull request"
+          echo "that edits them together with a regression would otherwise pass unnoticed, so changing"
+          echo "them needs a maintainer to confirm the new numbers on purpose."
+          echo "Review the new numbers, then add the 'baseline-change' label to this pull request to re-run this check."
+          exit 1

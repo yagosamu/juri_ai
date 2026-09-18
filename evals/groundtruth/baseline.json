@@ -2,6 +2,7 @@
   "config": "production",
   "n_golden": 59,
   "recall@10": 0.9152542372881356,
+  "mrr": 0.5944175410277106,
   "index_fingerprint": {
     "chunk_size": 5000,
     "chunk_overlap": 0,
