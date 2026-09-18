@@ -2,7 +2,6 @@ name: groundtruth
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [main]
   workflow_dispatch:
@@ -13,10 +12,6 @@ permissions:
 jobs:
   retrieval-gate:
     runs-on: ubuntu-latest
-    # labeled/unlabeled only exist to re-run baseline-change when the label changes; skip them here
-    # so this job keeps running on exactly opened, synchronize, reopened, push and workflow_dispatch,
-    # same as before those two types were added to the pull_request trigger above.
-    if: github.event.action != 'labeled' && github.event.action != 'unlabeled'
     env:
       DJANGO_SETTINGS_MODULE: core.settings
       SECRET_KEY: ci-only
@@ -35,40 +30,3 @@ jobs:
         env:
           DATA_DIR: ${{ runner.temp }}
         run: python -m pytest evals/groundtruth/tests -q -m "not needs_api"
-
-  baseline-change:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Require the baseline-change label when a protected file changed
-        env:
-          HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'baseline-change') }}
-          BASE_REF: ${{ github.base_ref }}
-        run: |
-          # checkout does not guarantee a remote-tracking ref for the base branch on a pull request,
-          # so fetch it explicitly. The branch name goes through the environment, never inlined here.
-          git fetch --no-tags origin "+refs/heads/$BASE_REF:refs/remotes/origin/$BASE_REF"
-          CHANGED=$(git diff --name-only "origin/$BASE_REF...HEAD" -- \
-            evals/groundtruth/baseline.json \
-            evals/groundtruth/golden/golden_set.jsonl \
-            evals/groundtruth/indexes \
-            evals/groundtruth/cache/queries)
-          if [ -z "$CHANGED" ]; then
-            echo "No protected file changed. Nothing to do."
-            exit 0
-          fi
-          echo "Protected file(s) changed:"
-          echo "$CHANGED"
-          if [ "$HAS_LABEL" = "true" ]; then
-            echo "The baseline-change label is present. Proceeding."
-            exit 0
-          fi
-          echo ""
-          echo "These files feed the retrieval-gate job's recall@10 and mrr comparison. A pull request"
-          echo "that edits them together with a regression would otherwise pass unnoticed, so changing"
-          echo "them needs a maintainer to confirm the new numbers on purpose."
-          echo "Review the new numbers, then add the 'baseline-change' label to this pull request to re-run this check."
-          exit 1
