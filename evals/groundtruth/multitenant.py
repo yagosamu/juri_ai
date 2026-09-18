@@ -1,7 +1,8 @@
 # evals/groundtruth/multitenant.py
 """Task 18: build a two-tenant LanceDB index offline, and measure how agno's cliente_id post-filter
 (evals/groundtruth/retriever.py, agno's lance_db.py:474-503) behaves across tenants on the corpus we
-already have. No API call: every embedding comes from the committed caches with online=False.
+already have. No API call: chunk embeddings come from the local cache/chunks (gitignored) and query
+embeddings from the committed cache/queries, both with online=False.
 
 Split, fixed and stated here so the measurement is reproducible: tenant 0 owns cdc and clt, tenant 1
 owns cpc and lgpd. The table lives under evals/groundtruth/runtime/multitenant/lancedb, which is
@@ -225,7 +226,7 @@ def render_report(counts: dict[int, int], before_rows: list[dict], before_cross:
             lines.append(f"| {t} | {s['n']} | {s['mean_rows']:.2f} | {s['under_limit']} | {s['zero']} |")
     else:
         lines += [f"Before: the production call, limit={SEARCH_LIMIT} asked of agno, then the cliente_id "
-                  f"filter. After: the harness retriever's over-fetch, limit={SEARCH_LIMIT * (overfetch_factor or 0)} "
+                  f"filter. After: the harness retriever's over-fetch rule applied to this table, limit={SEARCH_LIMIT * (overfetch_factor or 0)} "
                   f"(OVERFETCH_FACTOR={overfetch_factor}) asked of agno, then the filter, keeping the first "
                   f"{SEARCH_LIMIT} survivors. Owning tenant only; the non-owning tenant is in the "
                   "cross-tenant check below.", "",

@@ -9,7 +9,7 @@
 
 ## Rows returned after the cliente_id filter
 
-Before: the production call, limit=10 asked of agno, then the cliente_id filter. After: the harness retriever's over-fetch, limit=100 (OVERFETCH_FACTOR=10) asked of agno, then the filter, keeping the first 10 survivors. Owning tenant only; the non-owning tenant is in the cross-tenant check below.
+Before: the production call, limit=10 asked of agno, then the cliente_id filter. After: the harness retriever's over-fetch rule applied to this table, limit=100 (OVERFETCH_FACTOR=10) asked of agno, then the filter, keeping the first 10 survivors. Owning tenant only; the non-owning tenant is in the cross-tenant check below.
 
 | tenant | questions | mean rows before | <10 before | 0 before | mean rows after | <10 after | 0 after |
 |---|---|---|---|---|---|---|---|
