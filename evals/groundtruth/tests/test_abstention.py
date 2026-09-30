@@ -274,6 +274,29 @@ def test_relabel_stored_abstention_raises_when_a_non_failed_row_has_no_stored_ve
         relabel_stored_abstention(oos_rows, stored_results=[])
 
 
+def _legacy_stored_abstention():
+    """An abstention item with no answer_sha256: every item of the 2026-09-16 pre-adoption file."""
+    judges = {JUDGE_MODEL: {"verdict": {"abstained": "no"}, "error": None,
+                            "usage": {"input_tokens": 1, "output_tokens": 1}},
+              ANTHROPIC_JUDGE_MODEL: {"verdict": {"abstained": "no"}, "error": None,
+                                      "usage": {"input_tokens": 1, "output_tokens": 1}}}
+    return [{"id": "oos-02", "question": "Pergunta?", "judges": judges, "label": "answered"}]
+
+
+def test_relabel_stored_abstention_refuses_a_hashless_item_under_require_hash():
+    oos_rows = [{"id": "oos-02", "question": "Pergunta?", "answer": "a2", "run_failed": False}]
+    with pytest.raises(ValueError) as exc:
+        relabel_stored_abstention(oos_rows, _legacy_stored_abstention(), require_hash=True)
+    assert "oos-02" in str(exc.value)
+    assert "--score-only" in str(exc.value)
+
+
+def test_relabel_stored_abstention_still_accepts_a_hashless_item_by_default():
+    oos_rows = [{"id": "oos-02", "question": "Pergunta?", "answer": "a2", "run_failed": False}]
+    out = relabel_stored_abstention(oos_rows, _legacy_stored_abstention())
+    assert out[0]["label"] == "answered"
+
+
 # --- Fix round 2: answer_sha256 tripwire --------------------------------------------
 
 def _judges_pair(abstained_a="no", abstained_b="no"):

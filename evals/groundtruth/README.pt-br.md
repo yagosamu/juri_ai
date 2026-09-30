@@ -300,7 +300,8 @@ O CI instala `requirements.txt` sem `docling` e `mpire`, mais `evals/groundtruth
 | Verificação das perguntas fora de escopo | `.venv/Scripts/python.exe -m evals.groundtruth.generation.out_of_scope_check` | sim, text-embedding-3-large, gpt-4.1 e claude-haiku-4-5 |
 | Geração: execução smoke, uma pergunta de cada tipo, gravada só em `runtime/generation` | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --smoke --limit-golden 1 --limit-oos 1` | sim |
 | Geração: execução completa | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation` | sim, gpt-4o, gpt-4.1-mini, gpt-4.1 e claude-haiku-4-5 |
-| Geração: refazer `results/generation.md` a partir das respostas e notas gravadas | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --report-only` | não |
+| Geração: redesenhar `results/generation.md` a partir dos veredictos que já estão em `generation/scores.json` | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --report-only` | não |
+| Geração: pontuar as respostas que já estão em `generation/answers.jsonl` e redesenhar o relatório | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --score-only` | sim, gpt-4.1-mini, gpt-4.1 e claude-haiku-4-5 |
 | Geração: refazer só as execuções com falha | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --only oos-01 oos-07 oos-08` | sim |
 
 Observações:
@@ -309,6 +310,7 @@ Observações:
 - A config rerank baixa `BAAI/bge-reranker-v2-m3` do Hugging Face no primeiro uso.
 - `--only` recusa qualquer id que não seja, no momento, uma execução com falha.
 - Uma execução de geração só preenche a tabela `documentos` de runtime quando ela está vazia, e depois exige exatamente a contagem de chunks que o `ia/retrieval_config.py` atual produz sobre o corpus (1054 com 1500/150, 285 com o 5000/0 anterior à adoção). Depois de mudar o chunking, apague `runtime/generation/lancedb/documentos.lance` antes, senão a execução para nessa contagem antes de gastar qualquer coisa.
+- O `--report-only` não faz chamada nenhuma, mas só redesenha veredictos que já estão em `generation/scores.json`. Ele não calcula nota nenhuma, e se recusa a rodar quando um veredicto gravado não tem `answer_sha256` para casar com as respostas em disco, então nunca publica os veredictos de uma execução como resultado de outra. Pontuar respostas que não têm veredicto gravado é o `--score-only`, que chama os três modelos juízes e custa dinheiro. Nenhum dos dois chama o agente, então nenhum dos dois muda uma resposta nem gasta tokens de agente.
 - `golden/candidates.jsonl`, `golden/triage.jsonl`, `golden/judgments.jsonl` e `golden/golden_set.jsonl` são versionados, então triagem, juízes e consenso podem ser rodados de novo a partir de um clone, sobre os candidatos publicados. Gerar candidatos de novo chama o gpt-4.1-mini com temperature 0.7, então os novos candidatos seriam diferentes do conjunto publicado.
 
 ## Transparência
@@ -317,4 +319,5 @@ Observações:
 - O golden set não tem revisão jurídica humana. Ele foi selecionado por consenso de dois juízes LLM, gpt-4.1 e claude-haiku-4-5.
 - O conjunto de 59 perguntas está abaixo da meta de design de 100.
 - A camada de geração usa uma amostra de 30 perguntas do golden set sorteada com seed 7, e os dois scorers dela são juízes LLM.
+- O harness de geração não faz pacing nenhum: o `generate_answers` chama o agente em sequência, sem pausa e sem backoff, então a própria execução entra na janela de tokens por minuto da conta. É por isso que turnos de cerca de 5500 tokens ainda batem num limite de 30,000 por minuto, e significa que a contagem de execuções com falha de qualquer run de geração é uma propriedade desse pacing e do tier da conta, não do chunking que está sendo medido. Nenhum pacing foi adicionado.
 - Os custos medidos estão em `results/notes.md` (ingestão) e `results/generation.md` (geração).

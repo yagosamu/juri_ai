@@ -481,11 +481,19 @@ def _fixture_answers():
     ]
 
 
+def _fixture_answer_hash(row_id):
+    """Task 20: run_report_only now passes require_hash=True, so the shared fixture has to carry the
+    answer_sha256 that a real run writes. Hashed from _fixture_answers so the two stay in step."""
+    from evals.groundtruth.generation.answers import answer_sha256
+    return answer_sha256(next(r["answer"] for r in _fixture_answers() if r["id"] == row_id))
+
+
 def _fixture_stored():
     return {
         "golden": [{"id": "g-01", "category": "conceito", "no_retrieval": False, "run_failed": False,
                    "faithfulness_score": 0.9, "faithfulness_reason": "ok", "faithfulness_cost": 0.001,
-                   "relevancy_score": 0.8, "relevancy_reason": "ok", "relevancy_cost": 0.001}],
+                   "relevancy_score": 0.8, "relevancy_reason": "ok", "relevancy_cost": 0.001,
+                   "answer_sha256": _fixture_answer_hash("g-01")}],
         "faithfulness_relevancy": {
             "by_category": {"conceito": {"faithfulness": {"mean": 0.9, "n": 1}, "relevancy": {"mean": 0.8, "n": 1}}},
             "overall": {"faithfulness": {"mean": 0.9, "n": 1}, "relevancy": {"mean": 0.8, "n": 1}},
@@ -495,12 +503,14 @@ def _fixture_stored():
                 "gpt-4.1": {"verdict": {"abstained": "no"}, "error": None,
                            "usage": {"input_tokens": 5, "output_tokens": 2}},
                 "claude-haiku-4-5": {"verdict": {"abstained": "no"}, "error": None,
-                                     "usage": {"input_tokens": 5, "output_tokens": 2}}}, "label": "answered"},
+                                     "usage": {"input_tokens": 5, "output_tokens": 2}}}, "label": "answered",
+             "answer_sha256": _fixture_answer_hash("oos-01")},
             {"id": "oos-02", "question": "qo2", "judges": {
                 "gpt-4.1": {"verdict": {"abstained": "no"}, "error": None,
                            "usage": {"input_tokens": 5, "output_tokens": 2}},
                 "claude-haiku-4-5": {"verdict": {"abstained": "no"}, "error": None,
-                                     "usage": {"input_tokens": 5, "output_tokens": 2}}}, "label": "answered"},
+                                     "usage": {"input_tokens": 5, "output_tokens": 2}}}, "label": "answered",
+             "answer_sha256": _fixture_answer_hash("oos-02")},
         ],
         "abstention_counts": {"abstained": 0, "answered": 2, "disagreement": 0, "unverified": 0},
         "usage_by_model": {"gpt-4o": {"input_tokens": 30, "output_tokens": 8},
@@ -670,6 +680,101 @@ def test_score_and_write_only_then_report_only_reflects_the_new_answer_and_cost(
     assert after["usage_by_model"]["gpt-4.1"] == {"input_tokens": 17, "output_tokens": 7}
     # The old (failed) attempt's spend was carried forward, not dropped, when its score item was replaced.
     assert before["usage_by_model"]["gpt-4.1"]["input_tokens"] < after["usage_by_model"]["gpt-4.1"]["input_tokens"]
+
+
+# --- Task 20 recovery: --score-only, and the require_hash guard on --report-only ------------------
+
+def test_build_arg_parser_reads_score_only():
+    assert build_arg_parser().parse_args([]).score_only is False
+    assert build_arg_parser().parse_args(["--score-only"]).score_only is True
+
+
+def test_run_report_only_refuses_a_hashless_scores_json_and_points_at_score_only(tmp_path, monkeypatch):
+    """The 2026-09-30 hazard, closed: the pre-adoption scores.json carries no answer_sha256 on any of
+    its 40 items, so --report-only would have rendered its verdicts against the new answers silently."""
+    stored = _fixture_stored()
+    for item in stored["golden"]:
+        item.pop("answer_sha256", None)
+    for item in stored["abstention"]:
+        item.pop("answer_sha256", None)
+    _write_fixtures(tmp_path, monkeypatch, stored=stored)
+
+    with pytest.raises(ValueError) as exc:
+        rg.run_report_only()
+    message = str(exc.value)
+    assert "answer_sha256" in message
+    assert "--score-only" in message
+    assert "g-01" in message
+
+
+def _fake_scored_golden(rows, model):
+    from evals.groundtruth.generation.answers import answer_sha256
+    return [{"id": r["id"], "category": r["category"], "run_failed": False, "no_retrieval": False,
+             "faithfulness_score": 0.5, "faithfulness_reason": "f", "faithfulness_cost": 0.001,
+             "faithfulness_error": None, "relevancy_score": 0.6, "relevancy_reason": "r",
+             "relevancy_cost": 0.001, "relevancy_error": None,
+             "answer_sha256": answer_sha256(r["answer"]), "prior_attempts": []} for r in rows]
+
+
+def _fake_abstention(rows, clients):
+    from evals.groundtruth.generation.answers import answer_sha256, is_failed_run
+    out = []
+    for r in rows:
+        judges = {} if is_failed_run(r) else {
+            "gpt-4.1": {"verdict": {"abstained": "yes"}, "error": None,
+                        "usage": {"input_tokens": 3, "output_tokens": 1}},
+            "claude-haiku-4-5": {"verdict": {"abstained": "yes"}, "error": None,
+                                 "usage": {"input_tokens": 3, "output_tokens": 1}}}
+        out.append({"id": r["id"], "question": r["question"], "judges": judges,
+                    "label": "run_failed" if is_failed_run(r) else "abstained",
+                    "answer_sha256": answer_sha256(r["answer"]), "prior_attempts": []})
+    return out
+
+
+def test_run_score_only_scores_the_rows_on_disk_and_never_touches_the_answers(tmp_path, monkeypatch):
+    answers_path, scores_path, report_path = _write_fixtures(tmp_path, monkeypatch)
+    answers_before = answers_path.read_bytes()
+
+    result = rg.run_score_only(score_golden_fn=_fake_scored_golden, abstain_fn=_fake_abstention,
+                               abstention_clients={})
+
+    # The paid answers are the one thing this must never rewrite.
+    assert answers_path.read_bytes() == answers_before
+    saved = json.loads(scores_path.read_text(encoding="utf-8"))
+    assert [g["id"] for g in saved["golden"]] == ["g-01"]
+    assert sorted(a["id"] for a in saved["abstention"]) == ["oos-01", "oos-02"]
+    assert result["abstention_counts"]["abstained"] == 1
+    assert result["abstention_counts"]["run_failed"] == 1
+    assert report_path.exists()
+
+
+def test_run_score_only_writes_a_fresh_payload_and_never_merges_the_stored_one(tmp_path, monkeypatch):
+    """Writing through score_and_write_only would carry the previous run's DeepEval cost and judge
+    usage into this run's cost table as prior_attempts. That would be a fabricated number in a
+    published file, so --score-only replaces the payload instead of merging into it."""
+    stored = _fixture_stored()
+    stored["golden"][0]["relevancy_cost"] = 99.0
+    stored["golden"].append({"id": "g-ghost", "category": "conceito", "no_retrieval": False,
+                             "run_failed": False, "faithfulness_score": 0.1, "relevancy_score": 0.1,
+                             "relevancy_cost": 42.0})
+    stored["abstention"].append({"id": "oos-ghost", "question": "q", "judges": {}, "label": "answered"})
+    _write_fixtures(tmp_path, monkeypatch, stored=stored)
+
+    rg.run_score_only(score_golden_fn=_fake_scored_golden, abstain_fn=_fake_abstention,
+                      abstention_clients={})
+
+    saved = json.loads(scores_path_of(tmp_path).read_text(encoding="utf-8"))
+    ids = [g["id"] for g in saved["golden"]] + [a["id"] for a in saved["abstention"]]
+    assert "g-ghost" not in ids
+    assert "oos-ghost" not in ids
+    assert all(not g.get("prior_attempts") for g in saved["golden"])
+    assert all(not a.get("prior_attempts") for a in saved["abstention"])
+    # 2 golden-metric costs of 0.001 each, and none of the 99.0 or 42.0 from the replaced payload.
+    assert saved["deepeval_cost_usd"] == pytest.approx(0.002)
+
+
+def scores_path_of(tmp_path):
+    return tmp_path / "scores.json"
 
 
 def test_run_report_only_raises_on_a_stale_scores_json_left_by_a_partial_only_rerun(tmp_path, monkeypatch):

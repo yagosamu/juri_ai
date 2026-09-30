@@ -56,8 +56,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--smoke", action="store_true",
                         help="write answers and scores only under evals/groundtruth/runtime/generation")
     parser.add_argument("--report-only", action="store_true",
-                        help="rebuild results/generation.md from generation/answers.jsonl and "
-                             "generation/scores.json only; makes no model, embedding or judge call")
+                        help="re-render results/generation.md from the verdicts already in "
+                             "generation/scores.json; makes no model, embedding or judge call, and "
+                             "refuses to run when those verdicts do not match generation/answers.jsonl")
+    parser.add_argument("--score-only", action="store_true",
+                        help="score the answers already in generation/answers.jsonl, then re-render "
+                             "the report; calls the judges and costs money, never calls the agent")
     parser.add_argument("--only", nargs="+", default=None, metavar="ID",
                         help="rerun only these ids; refuses any id that is not currently a failed run")
     return parser
@@ -317,10 +321,13 @@ def run_report_only() -> dict:
     golden_rows, oos_rows = split_by_kind(read_jsonl_rows(ANSWERS))
     stored = json.loads(SCORES.read_text(encoding="utf-8"))
 
-    scored_golden = reconcile_scored_golden(golden_rows, stored["golden"])
+    # require_hash (Task 20): this renders a committed report, so a stored item with no answer_sha256
+    # is refused rather than reused. Without it, the hashless pre-adoption scores.json rendered
+    # cleanly against the 2026-09-30 answers and looked like a real post-adoption measurement.
+    scored_golden = reconcile_scored_golden(golden_rows, stored["golden"], require_hash=True)
     agg = aggregate_faithfulness_relevancy(scored_golden)
 
-    abstention_results = relabel_stored_abstention(oos_rows, stored["abstention"])
+    abstention_results = relabel_stored_abstention(oos_rows, stored["abstention"], require_hash=True)
     counts = abstention_counts(abstention_results)
 
     all_rows = golden_rows + oos_rows
@@ -350,6 +357,53 @@ def run_report_only() -> dict:
     return {"faithfulness_relevancy": agg, "abstention_results": abstention_results, "abstention_counts": counts,
            "tool_use": tool_use, "failed_ids": [r["id"] for r in failed], "setup": setup,
            "usage_by_model": usage_by_model, "extra_costs": extra_costs}
+
+
+def run_score_only(score_golden_fn=score_golden_answers, abstain_fn=run_abstention,
+                   abstention_clients: dict | None = None, deepeval_model: str = DEEPEVAL_MODEL) -> dict:
+    """Task 20 recovery: score the answers already in generation/answers.jsonl, then re-render.
+
+    The 2026-09-30 run wrote all 40 answers and then died in DeepEval, so the gpt-4o spend was on disk
+    with nothing scored, and no existing path could score it: --report-only only re-renders stored
+    verdicts, and --only calls the agent again and refuses any id that is not a failed run. This calls
+    the judges on the rows as they are and never calls the agent, so a rerun cannot cost agent tokens
+    or change an answer.
+
+    It writes a fresh payload rather than going through score_and_write_only, which merges into the
+    payload already on disk: merge_scores carries a replaced item's own spend onto the replacement as
+    prior_attempts, so scoring against a previous run's scores.json would add that run's DeepEval cost
+    and judge usage to this run's cost table. That spend is real but it belongs to the other run, and
+    it is already recorded in that run's own report.
+
+    Touches neither Django, ia, nor LanceDB: there is no agent to build and no index to read, so the
+    runtime guard and the documentos count check do not apply.
+    """
+    all_rows = read_jsonl_rows(ANSWERS)
+    golden_rows, oos_rows = split_by_kind(all_rows)
+
+    scored_golden = score_golden_fn(golden_rows, model=deepeval_model) if golden_rows else []
+    agg = aggregate_faithfulness_relevancy(scored_golden)
+
+    if abstention_clients is None:
+        import anthropic
+        from openai import OpenAI
+        abstention_clients = {OPENAI_ABSTENTION_JUDGE: OpenAI(), ANTHROPIC_ABSTENTION_JUDGE: anthropic.Anthropic()}
+    abstention_results = abstain_fn(oos_rows, abstention_clients) if oos_rows else []
+    counts = abstention_counts(abstention_results)
+
+    # The same informational snapshot main() writes; run_report_only recomputes every rendered number
+    # from per-row data and reads none of these aggregates.
+    usage_by_model = {
+        AGENT_MODEL: usage_total(all_rows),
+        OPENAI_ABSTENTION_JUDGE: abstention_judge_usage(abstention_results, OPENAI_ABSTENTION_JUDGE),
+        ANTHROPIC_ABSTENTION_JUDGE: abstention_judge_usage(abstention_results, ANTHROPIC_ABSTENTION_JUDGE),
+    }
+    write_json_atomic({"golden": scored_golden, "faithfulness_relevancy": agg,
+                       "abstention": abstention_results, "abstention_counts": counts,
+                       "usage_by_model": usage_by_model,
+                       "deepeval_cost_usd": deepeval_cost_total(scored_golden)}, SCORES)
+
+    return run_report_only()
 
 
 def score_and_write_only(all_rows: list[dict], new_rows: list[dict], score_golden_fn=score_golden_answers,
@@ -415,6 +469,11 @@ def run_only(only_ids: list[str]) -> dict:
 def main(argv: list[str] | None = None) -> dict:
     args = build_arg_parser().parse_args(argv)
 
+    if args.score_only:
+        # Needs the judge keys, and nothing else: no Django, no agent, no index.
+        from dotenv import load_dotenv
+        load_dotenv(override=False)
+        return run_score_only()
     if args.report_only:
         return run_report_only()
     if args.only:

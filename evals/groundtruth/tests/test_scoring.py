@@ -131,6 +131,36 @@ def test_aggregate_does_not_count_a_no_retrieval_row_as_unscored():
     assert agg["unscored_reasons"] == {}
 
 
+def _legacy_stored_golden():
+    """A scores.json "golden" list with no answer_sha256, the shape of every item written before
+    fix round 2 and of the whole 2026-09-16 pre-adoption file."""
+    return [{"id": "g-01", "category": "conceito", "no_retrieval": False, "run_failed": False,
+             "faithfulness_score": 0.9, "relevancy_score": 0.8}]
+
+
+def test_reconcile_scored_golden_still_accepts_a_hashless_item_by_default():
+    rows = [{"id": "g-01", "question": "q1", "category": "conceito", "answer": "a1", "run_failed": False}]
+    out = reconcile_scored_golden(rows, _legacy_stored_golden())
+    assert out[0]["faithfulness_score"] == 0.9
+
+
+def test_reconcile_scored_golden_refuses_a_hashless_item_under_require_hash():
+    rows = [{"id": "g-01", "question": "q1", "category": "conceito", "answer": "a1", "run_failed": False}]
+    with pytest.raises(ValueError) as exc:
+        reconcile_scored_golden(rows, _legacy_stored_golden(), require_hash=True)
+    assert "g-01" in str(exc.value)
+    assert "--score-only" in str(exc.value)
+
+
+def test_reconcile_scored_golden_under_require_hash_accepts_a_matching_hash():
+    from evals.groundtruth.generation.answers import answer_sha256
+
+    rows = [{"id": "g-01", "question": "q1", "category": "conceito", "answer": "a1", "run_failed": False}]
+    stored = [{**_legacy_stored_golden()[0], "answer_sha256": answer_sha256("a1")}]
+    out = reconcile_scored_golden(rows, stored, require_hash=True)
+    assert out[0]["faithfulness_score"] == 0.9
+
+
 def test_score_golden_answers_uses_injected_fakes_and_never_imports_deepeval():
     FakeMetric.instances.clear()
     results = score_golden_answers(_rows(), faithfulness_cls=FakeMetric, relevancy_cls=FakeMetric,

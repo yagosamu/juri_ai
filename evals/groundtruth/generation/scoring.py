@@ -7,7 +7,7 @@ DeepEval installed. CI never installs requirements-local.txt, so this keeps test
 import os
 from collections import Counter, defaultdict
 
-from evals.groundtruth.generation.answers import answer_sha256, is_failed_run
+from evals.groundtruth.generation.answers import answer_sha256, assert_stored_hashes_present, is_failed_run
 
 # The 2026-09-30 run died after the answers were already paid for: DeepEval's faithfulness metric
 # raised openai.ContentFilterFinishReasonError from _a_generate_truths on one case, and the exception
@@ -116,7 +116,8 @@ def score_golden_answers(rows: list[dict], model: str = "gpt-4.1-mini", threshol
     return results
 
 
-def reconcile_scored_golden(golden_rows: list[dict], stored_scored: list[dict]) -> list[dict]:
+def reconcile_scored_golden(golden_rows: list[dict], stored_scored: list[dict],
+                            require_hash: bool = False) -> list[dict]:
     """Rebuilds golden score rows from an already-written scores.json ("golden" list) without calling
     DeepEval again: a row whose answer is a failed run is replaced with a run_failed result (its stored
     verdict, if any, is ignored); every other row's stored score is kept as-is, just tagged run_failed:
@@ -130,7 +131,14 @@ def reconcile_scored_golden(golden_rows: list[dict], stored_scored: list[dict]) 
     against its completed answer) next to a stale, still-failed answers.jsonl row, and that mismatch must
     be caught here rather than silently rendered. A stored item with no answer_sha256 is a legacy item
     (written before fix round 2) and is accepted as-is, on either a completed or a failed row.
+
+    require_hash (Task 20) removes that legacy tolerance: a stored item with no answer_sha256 raises
+    naming the ids, instead of being reused against answers it may never have been computed from.
+    --report-only passes True, because it publishes a committed report. Default False, so every other
+    caller behaves exactly as before.
     """
+    if require_hash:
+        assert_stored_hashes_present(golden_rows, stored_scored, "Stored DeepEval scores")
     stored_by_id = {s["id"]: s for s in stored_scored}
     out = []
     for row in golden_rows:

@@ -300,7 +300,8 @@ CI installs `requirements.txt` without `docling` and `mpire`, plus `evals/ground
 | Out-of-scope check | `.venv/Scripts/python.exe -m evals.groundtruth.generation.out_of_scope_check` | yes, text-embedding-3-large, gpt-4.1 and claude-haiku-4-5 |
 | Generation: smoke run, one question of each kind, written only under `runtime/generation` | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --smoke --limit-golden 1 --limit-oos 1` | yes |
 | Generation: full run | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation` | yes, gpt-4o, gpt-4.1-mini, gpt-4.1 and claude-haiku-4-5 |
-| Generation: rebuild `results/generation.md` from stored answers and scores | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --report-only` | no |
+| Generation: re-render `results/generation.md` from the verdicts already in `generation/scores.json` | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --report-only` | no |
+| Generation: score the answers already in `generation/answers.jsonl`, then re-render | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --score-only` | yes, gpt-4.1-mini, gpt-4.1 and claude-haiku-4-5 |
 | Generation: rerun failed runs only | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --only oos-01 oos-07 oos-08` | yes |
 
 Notes:
@@ -309,6 +310,7 @@ Notes:
 - The rerank config downloads `BAAI/bge-reranker-v2-m3` from Hugging Face on first use.
 - `--only` refuses any id that is not currently a failed run.
 - A generation run fills the runtime `documentos` table only when it is empty, then requires exactly the chunk count the current `ia/retrieval_config.py` produces over the corpus (1054 at 1500/150, 285 at the pre-adoption 5000/0). After a chunking change, delete `runtime/generation/lancedb/documentos.lance` first, or the run stops on that count before it spends anything.
+- `--report-only` makes no call, but it only re-renders verdicts that are already in `generation/scores.json`. It computes no score, and it refuses to run when a stored verdict carries no `answer_sha256` to match against the answers on disk, so it can never publish one run's verdicts as another run's result. Scoring answers that have no stored verdicts is `--score-only`, which calls the three judge models and costs money. Neither one calls the agent, so neither can change an answer or spend agent tokens.
 - `golden/candidates.jsonl`, `golden/triage.jsonl`, `golden/judgments.jsonl` and `golden/golden_set.jsonl` are committed, so triage, judges and consensus can be rerun from a clone against the published candidates. Regenerating candidates calls gpt-4.1-mini at temperature 0.7, so new candidates would differ from the published set.
 
 ## Disclosure
@@ -317,4 +319,5 @@ Notes:
 - The golden set has no human legal review. It was selected by consensus of two LLM judges, gpt-4.1 and claude-haiku-4-5.
 - The 59-question set is below the design target of 100.
 - The generation layer uses a sample of 30 golden questions drawn with seed 7, and both of its scorers are LLM judges.
+- The generation harness paces nothing: `generate_answers` calls the agent back to back with no delay and no backoff, so a run walks into the account's tokens-per-minute window on its own. That is why turns of about 5500 tokens still hit a 30,000 per minute limit, and it means the failed-run count of any generation run is a property of that pacing and of the account tier, not of the chunking being measured. No pacing was added.
 - Measured costs are listed in `results/notes.md` (ingestion) and `results/generation.md` (generation).

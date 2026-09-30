@@ -1,8 +1,10 @@
 import hashlib
 from types import SimpleNamespace
 
-from evals.groundtruth.generation.answers import (TPM_LIMIT, answer_sha256, build_answer_row,
-                                                  input_tokens_per_turn, is_failed_run)
+import pytest
+
+from evals.groundtruth.generation.answers import (TPM_LIMIT, answer_sha256, assert_stored_hashes_present,
+                                                  build_answer_row, input_tokens_per_turn, is_failed_run)
 
 
 def _usage_rows(*input_tokens):
@@ -161,6 +163,33 @@ def test_answer_sha256_handles_empty_string():
 
 def test_tpm_limit_is_the_tier_1_gpt_4o_limit_the_failed_runs_hit():
     assert TPM_LIMIT == 30000
+
+
+def test_assert_stored_hashes_present_accepts_items_that_all_carry_a_hash():
+    rows = [{"id": "g-01", "answer": "a1"}]
+    stored = [{"id": "g-01", "answer_sha256": answer_sha256("a1")}]
+    assert assert_stored_hashes_present(rows, stored, "Stored scores") is None
+
+
+def test_assert_stored_hashes_present_names_every_id_missing_a_hash():
+    """The 2026-09-30 hazard: the whole pre-adoption scores.json is hashless, so --report-only would
+    have reused all 40 of its verdicts against a different set of answers without a word."""
+    rows = [{"id": "g-01", "answer": "a1"}, {"id": "g-02", "answer": "a2"}, {"id": "g-03", "answer": "a3"}]
+    stored = [{"id": "g-01", "answer_sha256": answer_sha256("a1")}, {"id": "g-02"}, {"id": "g-03"}]
+    with pytest.raises(ValueError) as exc:
+        assert_stored_hashes_present(rows, stored, "Stored DeepEval scores")
+    message = str(exc.value)
+    assert "g-02" in message and "g-03" in message
+    assert "g-01" not in message
+    assert "answer_sha256" in message
+    assert "--score-only" in message
+
+
+def test_assert_stored_hashes_present_ignores_a_row_with_no_stored_item_at_all():
+    """A row with nothing stored is a different error, raised by the caller with its own message."""
+    rows = [{"id": "g-01", "answer": "a1"}, {"id": "g-99", "answer": "a99"}]
+    stored = [{"id": "g-01", "answer_sha256": answer_sha256("a1")}]
+    assert assert_stored_hashes_present(rows, stored, "Stored scores") is None
 
 
 def test_input_tokens_per_turn_summarizes_an_odd_number_of_rows():
