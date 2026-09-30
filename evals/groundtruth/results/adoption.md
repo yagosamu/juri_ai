@@ -97,9 +97,9 @@ to $0.00967 for the 4 statutes of this corpus.
 
 ## What this change does not measure
 
-The generation quality of the new chunking. `results/generation.md` scored the agent's answers under
-the old 5000/0 retrieval configuration; rerunning generation under 1500/150 is Task 20 and is not
-part of this record.
+The generation quality of the new chunking. `results/generation_pre_adoption.md` scored the agent's
+answers under the old 5000/0 retrieval configuration; rerunning generation under 1500/150 is Task 20
+and is not part of this record.
 
 ## Transfer caveat
 
