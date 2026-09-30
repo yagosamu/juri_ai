@@ -80,6 +80,9 @@ PRODUCTION = RetrievalConfig(
 )
 CONFIGS: dict[str, RetrievalConfig] = {c.name: c for c in [
     PRODUCTION,
+    # Since Task 19 production runs 1500/150, so production and chunk1500 have the same parameters
+    # and the same index_name: one table on disk, read under two names. chunk1500 stays because
+    # results/report.md, results/significance.md and results/failures.md refer to it by that name.
     RetrievalConfig("chunk1500", 1500, 150, "vector", None),
     RetrievalConfig("chunk800", 800, 100, "vector", None),
     # hybrid and rerank use the chunk winner of the Task 7 comparison, see results/notes.md

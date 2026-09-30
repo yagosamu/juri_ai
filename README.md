@@ -69,8 +69,8 @@ Saved calculations can be linked to lawsuits and exported, making financial revi
 ## Retrieval evaluation (Groundtruth)
 
 Groundtruth is the retrieval and generation evaluation harness for the JuriAI RAG agent, with a CI regression gate.
-Over 4 public Brazilian statutes and 59 questions, the best configurations reach recall@10 of 0.966 against 0.915 for the current production settings.
-Results, design decisions and failure analysis: [evals/groundtruth/README.md](evals/groundtruth/README.md).
+Over 4 public Brazilian statutes and 59 questions, it measured that 1500/150 chunking beats the 5000/0 the agent used to run, raising recall@1 from 0.373 to 0.712 and mrr from 0.594 to 0.811. That configuration is now what production runs, at recall@10 0.932 and mrr 0.811; the best configurations measured reach recall@10 of 0.966.
+Results, design decisions and failure analysis: [evals/groundtruth/README.md](evals/groundtruth/README.md). The adoption record: [evals/groundtruth/results/adoption.md](evals/groundtruth/results/adoption.md).
 
 ## Observability
 

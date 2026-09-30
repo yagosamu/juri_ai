@@ -35,7 +35,10 @@ TENANT_DOCS: dict[int, tuple[str, ...]] = {0: ("cdc", "clt"), 1: ("cpc", "lgpd")
 DOC_TENANT: dict[str, int] = {doc_id: tenant for tenant, docs in TENANT_DOCS.items() for doc_id in docs}
 
 MULTITENANT_RUNTIME_DIR = GROUNDTRUTH_DIR / "runtime" / "multitenant" / "lancedb"
-EXPECTED_CHUNKS = 285  # same total as the single-tenant production index (indexes/c5000_o0_*.json)
+# Same total as the single-tenant production index (indexes/c1500_o150_*.json). It was 285 while
+# production chunked at 5000/0; Task 19 adopted 1500/150, so the same corpus now yields 1054 chunks.
+# The measurement written to results/multitenant.md ran under the 5000/0 chunking and its 285 chunks.
+EXPECTED_CHUNKS = 1054
 MULTITENANT_REPORT = RESULTS_DIR / "multitenant.md"
 SEARCH_LIMIT = PRODUCTION.max_results  # 10, the same limit production's Knowledge.search asks for
 

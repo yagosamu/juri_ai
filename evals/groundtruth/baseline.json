@@ -1,11 +1,11 @@
 {
   "config": "production",
   "n_golden": 59,
-  "recall@10": 0.9152542372881356,
-  "mrr": 0.5944175410277106,
+  "recall@10": 0.9322033898305084,
+  "mrr": 0.8107344632768362,
   "index_fingerprint": {
-    "chunk_size": 5000,
-    "chunk_overlap": 0,
+    "chunk_size": 1500,
+    "chunk_overlap": 150,
     "embedder_id": "text-embedding-3-small",
     "embedder_dimensions": 1536
   }
