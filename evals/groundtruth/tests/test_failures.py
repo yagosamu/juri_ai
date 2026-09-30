@@ -1,5 +1,7 @@
 """Tests for evals/groundtruth/failures.py (Task 15, brief 2026-09-13/task-15-brief.md): deterministic
 evidence for the questions production misses at recall@10."""
+import json
+
 import pytest
 
 from evals.groundtruth import failures as failures_mod
@@ -9,6 +11,7 @@ from evals.groundtruth.failures import (build_failure_rows, build_failures_repor
                                         render_failures)
 from evals.groundtruth.golden.schema import load_golden
 from evals.groundtruth.scorers import Span
+from evals.groundtruth.tests.conftest import pre_adoption_mismatch
 
 
 # ---------------------------------------------------------------------------
@@ -179,6 +182,9 @@ def test_build_failures_report_matches_the_committed_report_byte_for_byte():
                if not (RESULTS_DIR / f"{name}.json").exists()]
     if missing or not GOLDEN_SET.exists() or not CANDIDATES.exists():
         pytest.skip(f"results/*.json not present (gitignored): missing {missing}")
+    stale = pre_adoption_mismatch(RESULTS_DIR)
+    if stale:
+        pytest.skip(stale)
 
     results_by_config = {name: failures_mod._load_json(RESULTS_DIR / f"{name}.json")
                           for name in failures_mod.CONFIG_ORDER}
@@ -189,3 +195,25 @@ def test_build_failures_report_matches_the_committed_report_byte_for_byte():
     committed = (RESULTS_DIR / "failures.md").read_text(encoding="utf-8")
 
     assert actual == committed
+
+
+def _write_production_json(results_dir, chunk_size, chunk_overlap):
+    (results_dir / "production.json").write_text(json.dumps(
+        {"config": {"name": "production", "chunk_size": chunk_size, "chunk_overlap": chunk_overlap}}),
+        encoding="utf-8")
+
+
+def test_pre_adoption_mismatch_passes_for_the_chunking_the_committed_reports_ran_under(tmp_path):
+    _write_production_json(tmp_path, 5000, 0)
+    assert pre_adoption_mismatch(tmp_path) is None
+
+
+def test_pre_adoption_mismatch_explains_a_post_adoption_results_file(tmp_path):
+    _write_production_json(tmp_path, 1500, 150)
+    reason = pre_adoption_mismatch(tmp_path)
+    assert "adoption.md" in reason
+    assert "1500" in reason
+
+
+def test_pre_adoption_mismatch_leaves_the_missing_file_case_to_the_caller(tmp_path):
+    assert pre_adoption_mismatch(tmp_path) is None

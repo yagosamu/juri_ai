@@ -9,6 +9,7 @@ import pytest
 from evals.groundtruth import significance as significance_mod
 from evals.groundtruth.config import GOLDEN_SET, RESULTS_DIR
 from evals.groundtruth.golden.schema import load_golden
+from evals.groundtruth.tests.conftest import pre_adoption_mismatch
 from evals.groundtruth.significance import (assert_golden_size, assert_no_leakage_size,
                                              assert_result_coverage, bootstrap_interval,
                                              build_significance_report, holm, mcnemar_exact,
@@ -484,6 +485,9 @@ def test_build_significance_report_matches_the_committed_report_byte_for_byte():
                if not (RESULTS_DIR / f"{name}.json").exists()]
     if missing or not GOLDEN_SET.exists():
         pytest.skip(f"results/*.json not present (gitignored): missing {missing}")
+    stale = pre_adoption_mismatch(RESULTS_DIR)
+    if stale:
+        pytest.skip(stale)
 
     results = significance_mod._load_results()
     golden = load_golden(GOLDEN_SET)
