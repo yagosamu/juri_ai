@@ -1,5 +1,16 @@
+import re
+
 from evals.groundtruth.config import CONFIGS, PRODUCTION
 from ia import retrieval_config as cfg
+
+# The phrase the abstention rubric (generation/abstention.py RUBRIC) looks for in an answer before it
+# will label the run "abstained". Kept as one constant so the test below fails if either side moves.
+RUBRIC_NO_BASIS_PHRASE = "não encontrou base nos documentos"
+
+
+def _flat(text: str) -> str:
+    """Instruction text with runs of whitespace collapsed, so a reflow cannot fail these assertions."""
+    return re.sub(r"\s+", " ", text).strip().lower()
 
 
 def test_constants_match_the_adopted_production_configuration():
@@ -39,6 +50,40 @@ def test_juriai_agent_uses_retrieval_config(django_ready):
     assert vector_db.embedder.dimensions == cfg.EMBEDDER_DIMENSIONS
     assert vector_db.reranker is None
     assert JuriAI.knowledge.max_results == cfg.MAX_RESULTS
+
+
+def test_the_abstention_rubric_still_looks_for_the_phrase_the_instruction_targets():
+    """Binds the two sides: if the rubric stops asking for "no basis in the documents", the
+    instruction written against it has to be rewritten too."""
+    from evals.groundtruth.generation.abstention import RUBRIC
+
+    assert RUBRIC_NO_BASIS_PHRASE in _flat(RUBRIC)
+
+
+def test_juriai_instructions_carry_the_abstention_rule(django_ready):
+    """Task 20 ruling 1: search first, then say plainly that the documents do not cover it instead of
+    answering from general knowledge. The wording has to satisfy generation/abstention.py's rubric."""
+    from ia.agents import JuriAI
+
+    text = _flat(JuriAI.INSTRUCTIONS)
+    assert "busque na base de conhecimento" in text
+    assert RUBRIC_NO_BASIS_PHRASE in text
+    assert "não responda com conhecimento geral" in text
+
+
+def test_the_abstention_rule_spares_datajud_and_keeps_the_unsure_guidance(django_ready):
+    from ia.agents import JuriAI
+
+    text = _flat(JuriAI.INSTRUCTIONS)
+    assert "datajud" in text
+    assert "se não tiver certeza sobre alguma informação, indique isso ao usuário" in text
+
+
+def test_build_agent_passes_the_instructions_to_the_agent(django_ready):
+    from ia.agents import JuriAI
+
+    agent = JuriAI.build_agent(knowledge_filters={"cliente_id": 0})
+    assert agent.instructions == JuriAI.INSTRUCTIONS
 
 
 def test_rag_documentos_reader_uses_retrieval_config(django_ready):
