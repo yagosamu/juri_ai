@@ -86,6 +86,17 @@ def render_report(setup: dict, agg: dict, abstention_results: list, abstention_c
     lines.append(f"No retrieval, excluded from the faithfulness mean: {agg['no_retrieval']}.")
     run_failed_golden = agg.get("run_failed", 0)
     lines.append(f"Run failed, excluded from both means: {run_failed_golden}.")
+    # Printed even when both counts are 0: a mean taken over fewer cases than the run produced must
+    # never reach a reader without the number of missing cases beside it. A legacy agg, from a
+    # scores.json written before these keys existed, has neither key and reads as 0.
+    unscored_faithfulness = agg.get("unscored_faithfulness", 0)
+    unscored_relevancy = agg.get("unscored_relevancy", 0)
+    lines.append(f"Not scored by the judge, excluded from that metric's mean: faithfulness "
+                 f"{unscored_faithfulness}, relevancy {unscored_relevancy}.")
+    reasons = agg.get("unscored_reasons") or {}
+    if reasons:
+        lines.append("Reason for each metric left unscored: "
+                     + ", ".join(f"{reason} {count}" for reason, count in sorted(reasons.items())) + ".")
     if run_failed_golden == 0:
         lines.append("No golden run failed, so faithfulness and relevancy are unchanged from the run that "
                      "produced these scores.")

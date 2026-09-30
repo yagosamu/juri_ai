@@ -166,6 +166,37 @@ def test_render_report_states_the_tier_1_tpm_limit_note_when_a_run_failed():
     assert "retrieval config named in Setup above" in text
 
 
+def test_render_report_states_the_unscored_counts_and_their_reason():
+    agg = _agg()
+    agg["unscored_faithfulness"] = 1
+    agg["unscored_relevancy"] = 0
+    agg["unscored_reasons"] = {"content_filter": 1}
+    text = render_report(_setup(), agg, _abstention_results(), _abstention_counts(), _tool_use(), _usage(),
+                         "src", ["l"])
+    section = text.split("## Faithfulness and relevancy")[1].split("## Abstention")[0]
+    assert "Not scored by the judge, excluded from that metric's mean: faithfulness 1, relevancy 0." in section
+    assert "content_filter 1" in section
+
+
+def test_render_report_states_zero_unscored_rather_than_staying_silent():
+    """A mean over fewer cases must never be published without the reader being told, so the line is
+    printed even when nothing was excluded."""
+    agg = _agg()
+    agg["unscored_faithfulness"] = 0
+    agg["unscored_relevancy"] = 0
+    agg["unscored_reasons"] = {}
+    text = render_report(_setup(), agg, _abstention_results(), _abstention_counts(), _tool_use(), _usage(),
+                         "src", ["l"])
+    assert "Not scored by the judge, excluded from that metric's mean: faithfulness 0, relevancy 0." in text
+
+
+def test_render_report_treats_an_agg_without_the_unscored_keys_as_zero():
+    """A legacy scores.json rendered by --report-only has no unscored keys at all."""
+    text = render_report(_setup(), _agg(), _abstention_results(), _abstention_counts(), _tool_use(), _usage(),
+                         "src", ["l"])
+    assert "Not scored by the judge, excluded from that metric's mean: faithfulness 0, relevancy 0." in text
+
+
 def test_render_report_states_faithfulness_unchanged_when_no_golden_run_failed():
     text = render_report(_setup(), _agg(), _abstention_results(), _abstention_counts(), _tool_use(), _usage(),
                          "src", ["l"])
