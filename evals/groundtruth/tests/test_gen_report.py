@@ -160,7 +160,10 @@ def test_render_report_states_the_tier_1_tpm_limit_note_when_a_run_failed():
     text = render_report(_setup(), _agg(), _abstention_results(), counts, _tool_use(), _usage(), "src", ["l"],
                          failed_rows=failed_rows)
     assert "30,000 tokens-per-minute" in text
-    assert "5000-character chunks" in text
+    # Task 20: the note no longer names a chunk size. It was pinned at "5000-character chunks", which
+    # became false once production adopted 1500/150; the Setup section states the chunking instead.
+    assert "5000-character chunks" not in text
+    assert "retrieval config named in Setup above" in text
 
 
 def test_render_report_states_faithfulness_unchanged_when_no_golden_run_failed():

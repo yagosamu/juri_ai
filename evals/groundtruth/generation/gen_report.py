@@ -9,10 +9,13 @@ from evals.groundtruth.generation.cost import model_cost, total_cost
 # Matches the OpenAI 429 TPM message: "... on tokens per min (TPM): Limit 30000, Requested 40571. ..."
 TPM_ERROR_PATTERN = re.compile(r"Limit\s+(\d+),\s+Requested\s+(\d+)")
 
+# Task 20: this used to name "5000-character chunks", which stopped being true when production adopted
+# 1500/150. The chunking is already stated in the Setup section of every report, so the note points there
+# rather than carrying a second copy that can go stale.
 TIER_1_TPM_NOTE = (
-    "A single agent turn with the production retrieval config (5000-character chunks, 10 results per "
-    "search) can send enough context to gpt-4o to exceed a Tier 1 OpenAI account's 30,000 tokens-per-minute "
-    "limit on its own.")
+    "A single agent turn with the retrieval config named in Setup above, at 10 results per search, can "
+    "send enough context to gpt-4o to exceed a Tier 1 OpenAI account's 30,000 tokens-per-minute limit on "
+    "its own.")
 
 # Confirmed in agno 2.4.7 source: with update_memory_on_run=True, each agent.run() starts a background
 # future (ThreadPoolExecutor "agno-bg", agent.py:758-760 and 1136) that calls

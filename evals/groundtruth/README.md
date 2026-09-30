@@ -308,6 +308,7 @@ Notes:
 - The indexer's `--offline` flag fails on an embedding cache miss instead of calling the API. `cache/chunks` is not committed, so a rebuild from a clean clone calls the embeddings API.
 - The rerank config downloads `BAAI/bge-reranker-v2-m3` from Hugging Face on first use.
 - `--only` refuses any id that is not currently a failed run.
+- A generation run fills the runtime `documentos` table only when it is empty, then requires exactly the chunk count the current `ia/retrieval_config.py` produces over the corpus (1054 at 1500/150, 285 at the pre-adoption 5000/0). After a chunking change, delete `runtime/generation/lancedb/documentos.lance` first, or the run stops on that count before it spends anything.
 - `golden/candidates.jsonl`, `golden/triage.jsonl`, `golden/judgments.jsonl` and `golden/golden_set.jsonl` are committed, so triage, judges and consensus can be rerun from a clone against the published candidates. Regenerating candidates calls gpt-4.1-mini at temperature 0.7, so new candidates would differ from the published set.
 
 ## Disclosure

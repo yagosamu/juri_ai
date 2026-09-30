@@ -18,6 +18,39 @@ from evals.groundtruth.generation.run_generation import (abstention_judge_usage,
                                                           usage_total, write_jsonl)
 
 
+# --- the run must describe and require the chunking production actually runs --------------------
+
+def test_documentos_expected_count_matches_the_corpus_under_the_adopted_chunking():
+    """Task 20: the runtime documentos table is rebuilt under whatever ia.retrieval_config says, so the
+    count the run demands has to be recomputed from the corpus, not left at the 5000/0 figure. Pure
+    chunking, no embedder and no API call."""
+    from agno.knowledge.chunking.fixed import FixedSizeChunking
+    from agno.knowledge.document.base import Document
+
+    from evals.groundtruth.config import load_corpus
+    from ia import retrieval_config as cfg
+
+    strategy = FixedSizeChunking(chunk_size=cfg.CHUNK_SIZE, overlap=cfg.CHUNK_OVERLAP)
+    expected = sum(len(strategy.chunk(Document(name=doc_id, content=text)))
+                   for doc_id, text in load_corpus().items())
+    assert rg.DOCUMENTOS_EXPECTED_COUNT == expected
+
+
+def test_retrieval_config_label_tracks_the_adopted_chunking():
+    from ia import retrieval_config as cfg
+
+    label = rg.retrieval_config_label()
+    assert f"{cfg.CHUNK_SIZE}/{cfg.CHUNK_OVERLAP}" in label
+    assert "ia/retrieval_config.py" in label
+
+
+def test_build_limitations_no_longer_claims_the_agent_is_not_asked_to_abstain():
+    """Ruling 1 added that instruction, so the old limitation line is now false."""
+    text = " ".join(build_limitations())
+    assert "do not ask it to abstain" not in text
+    assert "instructions ask it to say when the knowledge base does not cover the question" in text
+
+
 # --- CLI ----------------------------------------------------------------------
 
 def test_build_arg_parser_defaults_to_no_limits_and_no_smoke():

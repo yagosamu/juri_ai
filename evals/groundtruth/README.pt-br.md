@@ -308,6 +308,7 @@ Observações:
 - A flag `--offline` do indexador falha quando falta embedding no cache, em vez de chamar a API. `cache/chunks` não é versionado, então uma reconstrução a partir de um clone limpo chama a API de embeddings.
 - A config rerank baixa `BAAI/bge-reranker-v2-m3` do Hugging Face no primeiro uso.
 - `--only` recusa qualquer id que não seja, no momento, uma execução com falha.
+- Uma execução de geração só preenche a tabela `documentos` de runtime quando ela está vazia, e depois exige exatamente a contagem de chunks que o `ia/retrieval_config.py` atual produz sobre o corpus (1054 com 1500/150, 285 com o 5000/0 anterior à adoção). Depois de mudar o chunking, apague `runtime/generation/lancedb/documentos.lance` antes, senão a execução para nessa contagem antes de gastar qualquer coisa.
 - `golden/candidates.jsonl`, `golden/triage.jsonl`, `golden/judgments.jsonl` e `golden/golden_set.jsonl` são versionados, então triagem, juízes e consenso podem ser rodados de novo a partir de um clone, sobre os candidatos publicados. Gerar candidatos de novo chama o gpt-4.1-mini com temperature 0.7, então os novos candidatos seriam diferentes do conjunto publicado.
 
 ## Transparência

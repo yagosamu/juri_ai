@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 from evals.groundtruth.config import (ANSWERS, GENERATION_REPORT, GENERATION_RUNTIME_DIR, GOLDEN_SET, OUT_OF_SCOPE,
-                                      SAMPLE_SEED, SAMPLE_SIZE, SCORES, load_corpus)
+                                      PRODUCTION, SAMPLE_SEED, SAMPLE_SIZE, SCORES, load_corpus)
 from evals.groundtruth.generation.abstention import abstention_counts, relabel_stored_abstention, run_abstention
 from evals.groundtruth.generation.answers import build_answer_row, is_failed_run
 from evals.groundtruth.generation.cost import PRICE_SOURCE, model_cost, total_cost
@@ -34,8 +34,17 @@ DEEPEVAL_MODEL = "gpt-4.1-mini"
 OPENAI_ABSTENTION_JUDGE = "gpt-4.1"
 ANTHROPIC_ABSTENTION_JUDGE = "claude-haiku-4-5"
 ABSTENTION_JUDGES = [OPENAI_ABSTENTION_JUDGE, ANTHROPIC_ABSTENTION_JUDGE]
-RETRIEVAL_CONFIG_LABEL = "production (5000/0 dense, ia/retrieval_config.py)"
-DOCUMENTOS_EXPECTED_COUNT = 285
+# Task 20: both of these used to be frozen at the pre-adoption 5000/0 numbers ("production (5000/0
+# dense, ia/retrieval_config.py)" and 285 chunks). Task 19 adopted 1500/150, so a run left on the old
+# values would either refuse to start or, worse, report the wrong chunking next to the new answers.
+# DOCUMENTOS_EXPECTED_COUNT is the corpus chunked at 1500/150; a test recomputes it from the corpus
+# and ia.retrieval_config, so it cannot go stale again without failing.
+DOCUMENTOS_EXPECTED_COUNT = 1054
+
+
+def retrieval_config_label() -> str:
+    """The Setup line of results/generation.md, read from the adopted configuration rather than typed."""
+    return f"production ({PRODUCTION.chunk_size}/{PRODUCTION.chunk_overlap} dense, ia/retrieval_config.py)"
 TENANT = 0  # single public tenant; mirrors evals.groundtruth.indexer.TENANT and cliente_id metadata
 OUT_OF_SCOPE_CATEGORY = "fora_de_escopo"  # matches generation/out_of_scope_check.py's REQUIRED_KEYS check
 
@@ -133,8 +142,9 @@ def build_limitations() -> list[str]:
         "Both scorers are LLM judges: DeepEval faithfulness/relevancy and the two-judge abstention rubric.",
         "There is no human legal review of any score in this report.",
         "30 golden questions is a sample, drawn with random.Random(7).sample; it is not the full golden set.",
-        "The agent's instructions do not ask it to abstain on an out-of-scope question, only to say when it "
-        "is unsure; abstention is measured as production behaves, not as a requirement.",
+        "Since Task 20 the agent's instructions ask it to say when the knowledge base does not cover the "
+        "question instead of answering from general knowledge, so abstention is measured against an "
+        "instruction the agent was given, not as undirected production behaviour.",
         "gpt-4o output varies between runs, and nothing here was averaged over repeated runs.",
         MEMORY_UPDATE_COST_NOTE,
     ]
@@ -318,7 +328,7 @@ def run_report_only() -> dict:
     failed = failed_rows_of(all_rows)
 
     setup = {"agent_model": f"{AGENT_MODEL} (agno default, JuriAI.build_agent sets no model)",
-             "retrieval_config": RETRIEVAL_CONFIG_LABEL, "seed": SAMPLE_SEED,
+             "retrieval_config": retrieval_config_label(), "seed": SAMPLE_SEED,
              "sampled_golden_ids": [r["id"] for r in golden_rows], "sampled_oos_ids": [r["id"] for r in oos_rows],
              "deepeval_model": DEEPEVAL_MODEL, "deepeval_version": _deepeval_version(),
              "abstention_judges": ABSTENTION_JUDGES}
@@ -469,7 +479,7 @@ def main(argv: list[str] | None = None) -> dict:
     write_json_atomic(scores_payload, scores_path)
 
     setup = {"agent_model": f"{AGENT_MODEL} (agno default, JuriAI.build_agent sets no model)",
-             "retrieval_config": RETRIEVAL_CONFIG_LABEL, "seed": SAMPLE_SEED,
+             "retrieval_config": retrieval_config_label(), "seed": SAMPLE_SEED,
              "sampled_golden_ids": [i["id"] for i in golden_items], "sampled_oos_ids": [i["id"] for i in oos_items],
              "deepeval_model": DEEPEVAL_MODEL, "deepeval_version": _deepeval_version(),
              "abstention_judges": ABSTENTION_JUDGES}
