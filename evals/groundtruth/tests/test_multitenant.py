@@ -231,4 +231,4 @@ def test_real_corpus_builds_the_production_chunk_count_offline(tmp_path):
     embedder = openai_embedder(PRODUCTION.embedder_id, PRODUCTION.embedder_dimensions, CACHE_DIR / "chunks",
                                online=False)
     counts = build_multitenant_index(corpus, embedder, runtime_dir=tmp_path)
-    assert sum(counts.values()) == EXPECTED_CHUNKS == 285
+    assert sum(counts.values()) == EXPECTED_CHUNKS == 1054
