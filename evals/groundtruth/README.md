@@ -2,13 +2,15 @@
 
 **Portuguese version:** [README.pt-br.md](README.pt-br.md)
 
-Retrieval and generation evaluation for JuriAI's RAG over 4 public Brazilian statutes and 59 questions selected by two-model consensus. The best configurations reach recall@10 of 0.966 (hybrid search and reranker, tied) against 0.915 for the current production settings.
+Retrieval and generation evaluation for JuriAI's RAG over 4 public Brazilian statutes and 59 questions selected by two-model consensus. Production adopted the measured winner of that comparison, chunk1500, and now runs at recall@10 0.932 and mrr 0.811 (`results/adoption.md`). The best configurations measured reach recall@10 of 0.966 (hybrid search and reranker, tied).
 
 ## Results
 
 ### Retrieval
 
-Five configurations run over the same 59 golden questions. `production` is the configuration JuriAI runs today (`ia/retrieval_config.py`).
+Five configurations run over the same 59 golden questions.
+
+**`production` in every table and comparison below is the pre-adoption configuration, 5000/0.** These tables are the historical measurement that motivated the change and are kept as they were; since `results/adoption.md`, `ia/retrieval_config.py` runs the `chunk1500` parameters, 1500/150, so the live production numbers are the `chunk1500` row.
 
 | config | chunk size/overlap | search type | reranker | n_chunks |
 |---|---|---|---|---|
@@ -76,7 +78,7 @@ See `results/significance.md` for the pre-registered bootstrap intervals and pai
 
 ### Generation
 
-The real JuriAI agent (gpt-4o, production retrieval config) answered a sample of 30 golden questions (seed 7) and 10 out-of-scope questions. Faithfulness and answer relevancy are scored by DeepEval with gpt-4.1-mini as the judge model.
+The real JuriAI agent (gpt-4o, the pre-adoption 5000/0 retrieval config) answered a sample of 30 golden questions (seed 7) and 10 out-of-scope questions. Generation has not been rerun under the adopted 1500/150 chunking; that is Task 20. Faithfulness and answer relevancy are scored by DeepEval with gpt-4.1-mini as the judge model.
 
 | category | faithfulness mean | faithfulness n | relevancy mean | relevancy n |
 |---|---|---|---|---|
@@ -113,19 +115,19 @@ Source: `results/generation.md`.
 
 Answers that searched the knowledge base: 36 of 40. Measured cost of the generation run: $1.8735 in total, excluding agno's background memory-update calls. Source: `results/generation.md`.
 
-## Recommendation
+## Adopted change
 
-**Recommend chunk1500 dense as the measured default.** Against production, chunk1500 raises recall@1 from 0.373 to 0.712 and MRR from 0.594 to 0.811; `results/significance.md` finds both gaps significant after Holm correction (recall@1: b=23, c=3, Holm p=0.0004; MRR difference 0.216 [0.119, 0.314], Holm p=0.0010). The recall@10 gain, 0.915 to 0.932, is not significant (b=3, c=2, Holm p=1.0000). chunk1500 costs a little more than production: p50 search rises from 12 ms to 14 ms, the index grows from 285 to 1054 chunks, and ingestion rises from 434515 to 483330 tokens ($0.00869 to $0.00967). Source: `results/notes.md`, sections 2 and 4.
+**chunk1500 dense is what production runs now.** `ia/retrieval_config.py` sets `CHUNK_SIZE = 1500` and `CHUNK_OVERLAP = 150`; nothing else in that module changed. Against the pre-adoption 5000/0 configuration, chunk1500 raises recall@1 from 0.373 to 0.712 and MRR from 0.594 to 0.811; `results/significance.md` finds both gaps significant after Holm correction (recall@1: b=23, c=3, Holm p=0.0004; MRR difference 0.216 [0.119, 0.314], Holm p=0.0010). The recall@10 gain, 0.915 to 0.932, is not significant (b=3, c=2, Holm p=1.0000). It costs a little more: p50 search rises from 12 ms to 14 ms, the index grows from 285 to 1054 chunks, and ingestion rises from 434515 to 483330 tokens ($0.00869 to $0.00967). Full record, including the new baseline and what this change does not measure: `results/adoption.md`. Sources: `results/notes.md`, sections 2 and 4, and `results/significance.md`.
 
 **Hybrid** is an option when recall@10 matters more than the first result. Against chunk1500, `results/significance.md` finds the full-set recall@10 gain (0.932 to 0.966, b=2, c=0) not significant after Holm correction (Holm p=1.0000), and neither the recall@1 nor the MRR change is significant either. On the no-leakage subset, hybrid lowers recall@1 (0.650 to 0.500) and MRR (0.742 to 0.667) against chunk1500, though neither drop is significant at n=20 (Holm p=1.0000 and 0.8888).
 
 **Rerank** has the best ranking numbers on the full set (recall@1 0.881, MRR 0.921), and its MRR gain over chunk1500 is significant (difference 0.110 [0.035, 0.192], Holm p=0.0216); its recall@1 gain is not significant after Holm correction (Holm p=0.0638). It is not a candidate until the per-call model reload is fixed: p50 search is 45356 ms, because agno 2.4.7 reloads `BAAI/bge-reranker-v2-m3` from disk on every call (see [What did not work](#what-did-not-work-and-findings)).
 
-**Adoption cost.** Changing `CHUNK_SIZE` means rebuilding the committed index and baseline and reindexing every stored document. Production's `render.yaml` sets `DATA_DIR=/tmp/juri-ai` (lines 17 and 18), so the LanceDB index lives on ephemeral storage today.
+**Adoption cost, as paid.** The committed index and `baseline.json` were rebuilt offline from the local chunk embedding cache, with no API call. Stored documents are a different matter: no code path reindexes a `Documentos` row that is already in LanceDB (see [What did not work](#what-did-not-work-and-findings)). Production's `render.yaml` sets `DATA_DIR=/tmp/juri-ai` (lines 17 and 18), so the LanceDB index lives on ephemeral storage and does not survive a deploy or restart.
 
 **Transfer caveat.** The comparison ran on 4 public statutes, while production documents are petitions and contracts passed through OCR. The gain is measured on this corpus only.
 
-**Status.** This is a measured recommendation, not a deployed change.
+**What is not measured.** The generation quality of the new chunking. `results/generation.md` scored answers under the old 5000/0 configuration; rerunning generation under 1500/150 is Task 20.
 
 ## How it works
 
@@ -209,7 +211,7 @@ The generation layer also uses 10 out-of-scope questions. `generation/out_of_sco
   - `r1-cpc-000` [procedimento] "Quais são os requisitos para que a eleição de foro tenha validade em um contrato?" CPC Art. 63, passage length 1361 characters. Cause not established. Recovered by chunk1500 (rank 1), chunk800 (rank 1), hybrid (rank 2) and rerank (rank 1).
   - `r1-cpc-016` [conceito] "Quais são as defesas que podem ser apresentadas nesse tipo de processo?" The question has no antecedent for "esse tipo de processo". In the generation run the agent asked for clarification without searching, which `results/generation.md` counts as the one no-retrieval answer. Not recovered: miss under production, chunk1500, chunk800, hybrid and rerank.
   - `r1-cpc-004` [fato_pontual] "Quando a desistência da ação passa a ter efeito legal?" The golden passage is CPC Art. 200, whose parágrafo único says the desistência takes effect only after judicial homologation. None of the 10 chunks hybrid returns overlaps that passage; 4 of them contain the word "desistência" from other provisions, including CPC Art. 485 and Art. 1.040. Not recovered: miss under production, chunk1500, chunk800, hybrid and rerank.
-- **The `cliente_id` filter runs after top-k, and it shows.** agno 2.4.7's `LanceDb.search` asks LanceDB for `limit` rows and nothing else (`agno/vectordb/lancedb/lance_db.py:474-483`), then drops in Python the rows whose `meta_data` does not match the filter (`lance_db.py:486-503`); filter expressions are refused with a warning (`lance_db.py:467-469`). Measured on a two-tenant table built offline from the same corpus and production chunking (tenant 0 owns cdc and clt, 149 chunks; tenant 1 owns cpc and lgpd, 136 chunks; 285 in total), with `limit=10`:
+- **The `cliente_id` filter runs after top-k, and it shows.** agno 2.4.7's `LanceDb.search` asks LanceDB for `limit` rows and nothing else (`agno/vectordb/lancedb/lance_db.py:474-483`), then drops in Python the rows whose `meta_data` does not match the filter (`lance_db.py:486-503`); filter expressions are refused with a warning (`lance_db.py:467-469`). Measured on a two-tenant table built offline from the same corpus and the pre-adoption 5000/0 chunking (tenant 0 owns cdc and clt, 149 chunks; tenant 1 owns cpc and lgpd, 136 chunks; 285 in total), with `limit=10`. The same build under the adopted 1500/150 chunking produces 1054 chunks; `results/multitenant.md` was not rerun, because the filter behaviour it documents is a property of agno's search path, not of the chunk size:
   - Searched for the tenant that owns the question's document, 26 of 59 questions got fewer than 10 rows (12 of 28 for tenant 0, mean 8.54 rows; 14 of 31 for tenant 1, mean 9.19) and none got 0. recall@10 did not move: 0.929 and 0.903, the same as the single-tenant index on the same questions.
   - Searched for the tenant that does not own it, all 59 got fewer than 10 rows and 33 got 0 (17 of 31 for tenant 0, 16 of 28 for tenant 1), although each tenant holds more than 130 chunks.
   - Rows any search returned for the wrong tenant: 0. The filter has not leaked data between tenants in any of the 236 searches (59 questions, both tenants, with and without over-fetching).
@@ -219,7 +221,8 @@ The generation layer also uses 10 out-of-scope questions. `generation/out_of_sco
 - **Hybrid full-text search has no Portuguese stemming.** It runs over the `payload` column with agno's native LanceDB FTS (`use_tantivy=False`). On the no-leakage subset, hybrid lowers recall@1 (0.500 vs 0.650) and MRR (0.667 vs 0.742) against dense chunk1500. Source: `results/notes.md`, sections 5 and 6.
 - **The reranker reloads its model on every call.** agno 2.4.7's `SentenceTransformerReranker._rerank` constructs a new `CrossEncoder` per call, so every timed rerank search includes loading `BAAI/bge-reranker-v2-m3` from disk. p50 search is 45356 ms. It was measured as is, not patched. Source: `results/notes.md`, section 7.
 - **The agent abstained on 0 of 7 completed out-of-scope runs.** It answers from general knowledge, and its instructions do not ask it to abstain on an out-of-scope question. Source: `results/generation.md`.
-- **3 of 10 out-of-scope runs failed on rate limits.** A single agent turn with the production retrieval config (5000-character chunks, 10 results per search) requested 39229 to 40571 tokens, above a Tier 1 OpenAI account's 30,000 gpt-4o tokens-per-minute limit. Source: `results/generation.md`.
+- **3 of 10 out-of-scope runs failed on rate limits.** A single agent turn with the pre-adoption retrieval config (5000-character chunks, 10 results per search) requested 39229 to 40571 tokens, above a Tier 1 OpenAI account's 30,000 gpt-4o tokens-per-minute limit. The adopted 1500/150 chunking returns 10 shorter chunks per search, so the per-turn token count should fall, but that has not been measured; it is part of Task 20. Source: `results/generation.md`.
+- **Nothing reindexes a document that is already in LanceDB.** Known limitation, not fixed in this task. `usuarios/signals.py:7-16` queues the OCR and indexing chain only under `if created:`, and `ia/tasks.py:44-56` (`rag_documentos`) is the only writer into the `documentos` table, with `usuarios/signals.py:5` as its only caller. There is no management command, admin action or scheduled task that rebuilds it. So after the chunking change the table mixes 5000/0 rows written before the deploy with 1500/150 rows written after it. What limits the damage is that `render.yaml` lines 17 and 18 set `DATA_DIR=/tmp/juri-ai`, ephemeral storage on Render's free plan, so the table is emptied by every deploy, restart or idle spin-down and is refilled only by documents uploaded after that point. Source: `results/adoption.md`.
 - **The first CI runs failed before any job started.** The workflow used `${{ runner.temp }}` in job-level `env`, where GitHub does not allow the `runner` context ("Invalid workflow file: Unrecognized named-value: 'runner'"). PR #11 fixed it by moving `DATA_DIR` into the test step's env.
 - **pandas was an undeclared dependency.** A clean-venv CI simulation found that agno 2.4.7 `LanceDb` search calls `to_pandas()`, while pandas was installed only through docling, which the CI install excludes. `pandas==2.3.3` is now declared in `requirements.txt`.
 
@@ -227,11 +230,13 @@ The generation layer also uses 10 out-of-scope questions. `generation/out_of_sco
 
 The workflow [`.github/workflows/groundtruth.yml`](../../.github/workflows/groundtruth.yml) runs on every pull request, on pushes to main, and on manual dispatch. It installs the app dependencies without the OCR stack plus `evals/groundtruth/requirements.txt`, then runs `python -m pytest evals/groundtruth/tests -q -m "not needs_api"`, with no API key. Three tests in [`tests/test_gate.py`](tests/test_gate.py) form the `retrieval-gate` job:
 
-- `test_production_index_matches_current_retrieval_config`: the committed index fingerprint must match the production config.
-- `test_production_recall_at_10_does_not_regress`: the production config runs over the golden set offline, and recall@10 must not drop more than 0.01 below [`baseline.json`](baseline.json) (0.9152542372881356). A stale query cache, a stale index or a changed golden set size also fails the test, with the local rebuild command in the message.
-- `test_production_mrr_does_not_regress`: the same offline run, shared with the recall@10 test, and mrr must not drop more than 0.02 below `baseline.json` (0.5944175410277106). The tolerance is wider than recall@10's because a single golden question moving from hit to miss shifts mrr by up to 1/59 (about 0.017); the gate exists to catch real regressions, not that noise. A baseline written before this key existed fails with a message naming the rebuild command, not a `KeyError`.
+- `test_production_index_matches_current_retrieval_config`: the committed index fingerprint must match the production config, which is 1500/150 since `results/adoption.md`.
+- `test_production_recall_at_10_does_not_regress`: the production config runs over the golden set offline, and recall@10 must not drop more than 0.01 below [`baseline.json`](baseline.json) (0.9322033898305084). A stale query cache, a stale index or a changed golden set size also fails the test, with the local rebuild command in the message.
+- `test_production_mrr_does_not_regress`: the same offline run, shared with the recall@10 test, and mrr must not drop more than 0.02 below `baseline.json` (0.8107344632768362). The tolerance is wider than recall@10's because a single golden question moving from hit to miss shifts mrr by up to 1/59 (about 0.017); the gate exists to catch real regressions, not that noise. A baseline written before this key existed fails with a message naming the rebuild command, not a `KeyError`.
 
-**Demo.** [PR #12](https://github.com/yagosamu/juri_ai/pull/12) deliberately changed `MAX_RESULTS` from 10 to 3. The check failed with 2 failed and 175 passed tests: `test_production_recall_at_10_does_not_regress` with "recall@10 dropped from 0.915 to 0.780 (max drop 0.01)", and `test_production_config::test_constants_match_agno_defaults_documented_in_spec` with "assert 3 == 10". The PR was closed without merge. The same change now also fails `test_production_mrr_does_not_regress` with "mrr dropped from 0.594 to 0.568 (max drop 0.02)".
+The baseline was 0.9152542372881356 and 0.5944175410277106 under the 5000/0 chunking. The gate now holds production to the higher numbers.
+
+**Demo.** [PR #12](https://github.com/yagosamu/juri_ai/pull/12) deliberately changed `MAX_RESULTS` from 10 to 3. The check failed with 2 failed and 175 passed tests: `test_production_recall_at_10_does_not_regress` with "recall@10 dropped from 0.915 to 0.780 (max drop 0.01)", and `test_production_config::test_constants_match_agno_defaults_documented_in_spec` with "assert 3 == 10". The PR was closed without merge. The same change later also failed `test_production_mrr_does_not_regress` with "mrr dropped from 0.594 to 0.568 (max drop 0.02)". Those quoted numbers are the pre-adoption baseline the gate compared against at the time, and that second test has since been renamed `test_constants_match_the_adopted_production_configuration`.
 
 ![CI gate failing on demo PR #12](results/ci_gate_failing.png)
 
@@ -280,7 +285,7 @@ CI installs `requirements.txt` without `docling` and `mpire`, plus `evals/ground
 | Corpus: download from Planalto and normalize | `.venv/Scripts/python.exe -m evals.groundtruth.corpus.build_corpus` | no |
 | Corpus: normalize from `corpus/raw` without downloading | `.venv/Scripts/python.exe -m evals.groundtruth.corpus.build_corpus --from-raw` | no |
 | Index: production (committed; rebuild only after a config or corpus change) | `.venv/Scripts/python.exe -m evals.groundtruth.indexer --config production` | yes, embeddings |
-| Index: comparison configs (hybrid and rerank reuse the chunk1500 index) | `.venv/Scripts/python.exe -m evals.groundtruth.indexer --config chunk1500` and `--config chunk800` | yes, embeddings |
+| Index: comparison configs (production, chunk1500, hybrid and rerank all reuse one index) | `.venv/Scripts/python.exe -m evals.groundtruth.indexer --config chunk1500` and `--config chunk800` | yes, embeddings |
 | Retrieval run from the committed query cache | `.venv/Scripts/python.exe -m evals.groundtruth.run_retrieval --config production chunk1500 chunk800 hybrid rerank --offline` | no |
 | Retrieval run and new baseline | `.venv/Scripts/python.exe -m evals.groundtruth.run_retrieval --config production --write-baseline` | only on a query cache miss |
 | Report | `.venv/Scripts/python.exe -m evals.groundtruth.report` | no |
@@ -297,6 +302,7 @@ CI installs `requirements.txt` without `docling` and `mpire`, plus `evals/ground
 | Generation: rerun failed runs only | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --only oos-01 oos-07 oos-08` | yes |
 
 Notes:
+- Since the adoption, `production` and `chunk1500` have the same parameters and the same index name, `c1500_o150_text-embedding-3-small_d1536`, so `--config production` and `--config chunk1500` build and read the same table. The 5000/0 table stays committed because `results/report.md` and the multi-tenant work still refer to it.
 - The indexer's `--offline` flag fails on an embedding cache miss instead of calling the API. `cache/chunks` is not committed, so a rebuild from a clean clone calls the embeddings API.
 - The rerank config downloads `BAAI/bge-reranker-v2-m3` from Hugging Face on first use.
 - `--only` refuses any id that is not currently a failed run.

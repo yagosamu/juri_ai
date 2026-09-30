@@ -69,8 +69,8 @@ Os cálculos salvos podem ser vinculados aos processos e exportados, integrando 
 ## Avaliação de retrieval (Groundtruth)
 
 O Groundtruth é o harness de avaliação de retrieval e de geração do agente RAG do JuriAI, com um gate de regressão no CI.
-Sobre 4 leis brasileiras públicas e 59 perguntas, as melhores configurações chegam a recall@10 de 0.966, contra 0.915 da configuração atual de produção.
-Resultados, decisões de design e análise de falhas: [evals/groundtruth/README.pt-br.md](evals/groundtruth/README.pt-br.md).
+Sobre 4 leis brasileiras públicas e 59 perguntas, ele mediu que o chunking 1500/150 supera o 5000/0 que o agente rodava antes, elevando o recall@1 de 0.373 para 0.712 e o mrr de 0.594 para 0.811. Essa configuração é a que a produção roda agora, com recall@10 de 0.932 e mrr de 0.811; as melhores configurações medidas chegam a recall@10 de 0.966.
+Resultados, decisões de design e análise de falhas: [evals/groundtruth/README.pt-br.md](evals/groundtruth/README.pt-br.md). O registro da adoção: [evals/groundtruth/results/adoption.md](evals/groundtruth/results/adoption.md).
 
 ## Observabilidade
 
