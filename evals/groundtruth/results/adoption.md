@@ -101,6 +101,11 @@ The generation quality of the new chunking. `results/generation_pre_adoption.md`
 answers under the old 5000/0 retrieval configuration; rerunning generation under 1500/150 is Task 20
 and is not part of this record.
 
+Task 20 has since done that run: `results/generation_adoption.md` is the before and after, and
+`results/generation.md` is the current report. It reran generation at 1500/150 together with an
+abstention instruction added to `JuriAI.INSTRUCTIONS` in the same step, so it measures the two
+changes jointly and neither one alone.
+
 ## Transfer caveat
 
 The comparison ran on 4 public Brazilian statutes, while production documents are petitions and

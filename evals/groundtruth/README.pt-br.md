@@ -78,44 +78,34 @@ Ver `results/significance.md` para os intervalos de bootstrap e os testes paread
 
 ### Geração
 
-O agente JuriAI real (gpt-4o, a config de retrieval 5000/0 anterior à adoção) respondeu a uma amostra de 30 perguntas do golden set (seed 7) e a 10 perguntas fora de escopo. A geração não foi rodada de novo com o chunking 1500/150 adotado; isso é a Task 20. Faithfulness e answer relevancy são pontuadas pelo DeepEval com gpt-4.1-mini como modelo juiz.
+O agente JuriAI real (gpt-4o) respondeu a uma amostra de 30 perguntas do golden set (seed 7) e a 10 perguntas fora de escopo, com a config de retrieval 1500/150 adotada e com a instrução de abstenção da Task 20 no `JuriAI.INSTRUCTIONS`. Faithfulness e answer relevancy são pontuadas pelo DeepEval com gpt-4.1-mini como modelo juiz; a abstenção, pelo gpt-4.1 e pelo claude-haiku-4-5 juntos.
 
-Todo número desta seção é a medição anterior à adoção, preservada em `results/generation_pre_adoption.md` junto com as linhas e as notas de onde ela saiu, `generation/answers_pre_adoption.jsonl` e `generation/scores_pre_adoption.json`. Os arquivos vivos `results/generation.md`, `generation/answers.jsonl` e `generation/scores.json` são reescritos pela próxima execução de geração.
+**Agora o agente se abstém em 10 de 10 perguntas fora de escopo.** Antes, com 5000/0 e sem instrução de abstenção, ele se absteve em 0 das 7 que concluiu e respondeu todas com conhecimento geral. O chunking e a instrução mudaram no mesmo passo, então nenhum dos dois resultados pode ser atribuído a um deles sozinho.
+
+Antes e depois, lado a lado, com os tokens por turno e as contagens de métricas não pontuadas: `results/generation_adoption.md`. A medição anterior à adoção está preservada inteira em `results/generation_pre_adoption.md`, com `generation/answers_pre_adoption.jsonl` e `generation/scores_pre_adoption.json`.
 
 | category | faithfulness mean | faithfulness n | relevancy mean | relevancy n |
 |---|---|---|---|---|
-| conceito | 0.959 | 7 | 0.972 | 8 |
-| fato_pontual | 0.969 | 8 | 1.000 | 8 |
-| procedimento | 0.939 | 14 | 0.980 | 14 |
-| overall | 0.952 | 29 | 0.983 | 30 |
+| conceito | 0.960 | 7 | 0.969 | 8 |
+| fato_pontual | 0.907 | 8 | 0.954 | 8 |
+| procedimento | 0.946 | 13 | 0.983 | 14 |
+| overall | 0.938 | 28 | 0.971 | 30 |
 
-Sem retrieval, excluída da média de faithfulness: 1. Execução com falha, excluída das duas médias: 0.
+Sem retrieval, fora da média de faithfulness: 1. Execução com falha, fora das duas médias: 0. Não pontuada pelo juiz, fora da média de faithfulness: 1, porque um filtro de conteúdo recusou essa chamada de faithfulness. Contra os 0.952 (n=29) e 0.983 (n=30) anteriores à adoção, as duas médias caem um pouco; é uma passada de cada, sem repetição, então isso não é evidência de mudança de qualidade em nenhuma direção.
 
-Fonte: `results/generation_pre_adoption.md`.
-
-Abstenção nas perguntas fora de escopo, julgada por gpt-4.1 e claude-haiku-4-5:
-
-| rótulo | contagem |
+| label | contagem |
 |---|---|
-| abstained | 0 de 7 execuções concluídas |
-| answered | 7 de 7 execuções concluídas |
-| disagreement | 0 de 7 execuções concluídas |
-| unverified | 0 de 7 execuções concluídas |
-| run failed | 3 de 10 perguntas fora de escopo |
+| abstained | 10 de 10 execuções concluídas |
+| answered | 0 de 10 execuções concluídas |
+| disagreement | 0 de 10 execuções concluídas |
+| unverified | 0 de 10 execuções concluídas |
+| run failed | 0 de 10 perguntas fora de escopo |
 
-Fonte: `results/generation_pre_adoption.md`.
+**Nenhuma execução falhou, e nenhum turno chegou perto do limite de taxa.** Os tokens de entrada por turno caíram de uma média de 15004.2 e um máximo de 40912 para uma média de 5479.8 e um máximo de 6257, contra um limite Tier 1 de 30,000 tokens de gpt-4o por minuto. Antes, 2 turnos concluídos e os 3 com falha estavam no limite ou acima dele, então um único turno conseguia esgotar o orçamento do minuto sozinho; depois, nenhum consegue. Quatro linhas falharam por limite de taxa transitório na primeira passada desta execução e foram refeitas com `--only`, que recusa qualquer id que não seja, no momento, uma execução com falha, então a amostra foi restaurada e não reescolhida.
 
-Execuções com falha:
+**Uma pergunta dentro do escopo foi recusada**, a `r1-cdc-060`: o agente buscou, recuperou um contexto, e ainda assim disse que não encontrou nada na base de conhecimento. É 1 de 30, e as duas médias não detectam isso, porque o DeepEval deu 1.00 nessa recusa tanto em faithfulness quanto em relevancy. O raciocínio completo está em `results/generation_adoption.md`.
 
-| id | limit | requested |
-|---|---|---|
-| oos-01 | 30000 | 40540 |
-| oos-07 | 30000 | 40571 |
-| oos-08 | 30000 | 39229 |
-
-Fonte: `results/generation_pre_adoption.md`.
-
-Respostas que buscaram na base de conhecimento: 36 de 40. Custo medido da execução de geração: $1.8735 no total, sem as chamadas de atualização de memória em segundo plano do agno. Fonte: `results/generation_pre_adoption.md`.
+Respostas que buscaram na base de conhecimento: 39 de 40. Custo medido da execução de geração: $0.8319 no total, contra $1.8735 antes, sem as chamadas de atualização de memória em segundo plano do agno e sem as chamadas de DeepEval feitas na primeira passada, que quebrou. Fonte: `results/generation.md`.
 
 ## Mudança adotada
 
@@ -129,7 +119,7 @@ Respostas que buscaram na base de conhecimento: 36 de 40. Custo medido da execu�
 
 **Ressalva de transferência.** A comparação rodou sobre 4 leis públicas, enquanto os documentos de produção são petições e contratos passados por OCR. O ganho é medido só neste corpus.
 
-**O que não é medido.** A qualidade de geração do novo chunking. O `results/generation_pre_adoption.md` pontuou respostas com a configuração 5000/0 antiga; rodar a geração de novo com 1500/150 é a Task 20.
+**A geração com o novo chunking agora está medida.** A Task 20 rodou de novo com 1500/150, junto com uma instrução de abstenção adicionada ao agente no mesmo passo: o `results/generation_adoption.md` tem o antes e o depois, e o `results/generation.md` é o relatório atual. O que continua não medido é cada uma das duas mudanças isoladamente, já que elas andaram juntas.
 
 ## Como funciona
 
@@ -222,8 +212,8 @@ A camada de geração também usa 10 perguntas fora de escopo. `generation/out_o
   - O `Knowledge.insert` do agno captura um erro de embedding, registra no log e insere 0 chunks daquele documento (`agno/knowledge/knowledge.py:3899-3905`), então o build offline confere a quantidade de chunks de cada documento em vez de depender de uma exceção. Fonte: `results/multitenant.md`.
 - **A busca full-text do hybrid não tem stemming em português.** Ela roda sobre a coluna `payload` com o FTS nativo do LanceDB no agno (`use_tantivy=False`). No subconjunto sem vazamento, hybrid reduz recall@1 (0.500 vs 0.650) e MRR (0.667 vs 0.742) em relação ao chunk1500 denso. Fonte: `results/notes.md`, seções 5 e 6.
 - **O reranker recarrega o modelo a cada chamada.** O `SentenceTransformerReranker._rerank` do agno 2.4.7 constrói um novo `CrossEncoder` por chamada, então cada busca cronometrada do rerank inclui carregar `BAAI/bge-reranker-v2-m3` do disco. O p50 de busca é 45356 ms. Foi medido assim, sem patch. Fonte: `results/notes.md`, seção 7.
-- **O agente se absteve em 0 de 7 execuções fora de escopo concluídas.** Ele responde com conhecimento geral, e suas instruções não pedem abstenção em pergunta fora de escopo. Fonte: `results/generation_pre_adoption.md`.
-- **3 de 10 execuções fora de escopo falharam por limite de taxa.** Um único turno do agente com a config de retrieval anterior à adoção (chunks de 5000 caracteres, 10 resultados por busca) pediu de 39229 a 40571 tokens, acima do limite de 30,000 tokens por minuto de gpt-4o de uma conta OpenAI Tier 1. O chunking 1500/150 adotado devolve 10 chunks mais curtos por busca, então a contagem de tokens por turno deve cair, mas isso não foi medido; faz parte da Task 20. Fonte: `results/generation_pre_adoption.md`.
+- **O agente se absteve em 0 de 7 execuções fora de escopo concluídas**, com a config anterior à adoção e sem instrução de abstenção: ele respondeu todas com conhecimento geral. **Resolvido.** A Task 20 adicionou uma regra de abstenção ao `JuriAI.INSTRUCTIONS`, e a nova execução se abstém em 10 de 10. Fontes: `results/generation_pre_adoption.md` e `results/generation_adoption.md`.
+- **3 de 10 execuções fora de escopo falharam por limite de taxa.** Um único turno do agente com a config de retrieval anterior à adoção (chunks de 5000 caracteres, 10 resultados por busca) pediu de 39229 a 40571 tokens, acima do limite de 30,000 tokens por minuto de gpt-4o de uma conta OpenAI Tier 1. **Medido e resolvido:** com 1500/150 o maior turno tem 6257 tokens de entrada, então nenhum turno sozinho esgota o orçamento do minuto, e a nova execução teve 0 execuções com falha. O que sobra é uma propriedade do harness, não do chunking: nada faz pacing de uma execução, então turnos consecutivos ainda podem acumular dentro de um minuto, que foi como 4 linhas falharam na primeira passada dessa nova execução antes de serem refeitas. Fontes: `results/generation_pre_adoption.md` e `results/generation_adoption.md`.
 - **Nada reindexa um documento que já está no LanceDB.** Limitação conhecida, não corrigida nesta task. O `usuarios/signals.py:7-16` enfileira a chain de OCR e indexação só dentro do `if created:`, e o `ia/tasks.py:44-56` (`rag_documentos`) é o único que escreve na tabela `documentos`, tendo o `usuarios/signals.py:5` como único chamador. Não existe management command, ação de admin ou task agendada que reconstrua a tabela. Então, depois da mudança de chunking, a tabela mistura linhas 5000/0 escritas antes do deploy com linhas 1500/150 escritas depois. O que limita o estrago é que o `render.yaml`, nas linhas 17 e 18, define `DATA_DIR=/tmp/juri-ai`, armazenamento efêmero no plano free da Render, então a tabela é esvaziada a cada deploy, restart ou hibernação por inatividade, e só é preenchida de novo pelos documentos enviados depois disso. Fonte: `results/adoption.md`.
 - **As primeiras execuções do CI falharam antes de qualquer job começar.** O workflow usava `${{ runner.temp }}` no `env` do job, onde o GitHub não permite o contexto `runner` ("Invalid workflow file: Unrecognized named-value: 'runner'"). O PR #11 corrigiu isso movendo `DATA_DIR` para o env do step de teste.
 - **pandas era uma dependência não declarada.** Uma simulação do CI em venv limpo mostrou que a busca do `LanceDb` no agno 2.4.7 chama `to_pandas()`, enquanto o pandas só era instalado via docling, que a instalação do CI exclui. `pandas==2.3.3` agora está declarado em `requirements.txt`.

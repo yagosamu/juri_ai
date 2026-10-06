@@ -70,7 +70,10 @@ Os cálculos salvos podem ser vinculados aos processos e exportados, integrando 
 
 O Groundtruth é o harness de avaliação de retrieval e de geração do agente RAG do JuriAI, com um gate de regressão no CI.
 Sobre 4 leis brasileiras públicas e 59 perguntas, ele mediu que o chunking 1500/150 supera o 5000/0 que o agente rodava antes, elevando o recall@1 de 0.373 para 0.712 e o mrr de 0.594 para 0.811. Essa configuração é a que a produção roda agora, com recall@10 de 0.932 e mrr de 0.811; as melhores configurações medidas chegam a recall@10 de 0.966.
-Resultados, decisões de design e análise de falhas: [evals/groundtruth/README.pt-br.md](evals/groundtruth/README.pt-br.md). O registro da adoção: [evals/groundtruth/results/adoption.md](evals/groundtruth/results/adoption.md).
+
+Na geração, o agente foi rodado de novo com esse chunking junto com uma instrução de abstenção adicionada no mesmo passo. **Agora ele recusa 10 de 10 perguntas fora de escopo, enquanto antes respondia todas as que concluía com conhecimento geral.** Os tokens de entrada por turno caíram de uma média de 15004.2 para 5479.8 e nenhuma execução bateu no limite de taxa, contra 3 de 40 antes. O faithfulness é 0.938 (n=28) e o answer relevancy 0.971 (n=30), os dois um pouco abaixo dos 0.952 e 0.983 anteriores à adoção, numa passada única e sem repetição. Uma das 30 perguntas dentro do escopo foi recusada, e as duas médias pontuadas por juiz não detectam isso.
+
+Resultados, decisões de design e análise de falhas: [evals/groundtruth/README.pt-br.md](evals/groundtruth/README.pt-br.md). O registro da adoção: [evals/groundtruth/results/adoption.md](evals/groundtruth/results/adoption.md). A geração antes e depois: [evals/groundtruth/results/generation_adoption.md](evals/groundtruth/results/generation_adoption.md).
 
 ## Observabilidade
 
