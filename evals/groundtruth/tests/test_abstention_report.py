@@ -79,12 +79,14 @@ def test_the_report_says_what_the_metric_does_not_see(report):
 
 
 def test_the_report_says_the_stored_aggregate_in_scores_json_is_stale(report):
-    """A future reader must not cite scores.json's top-level abstention_counts, which disagrees with
-    the per-row labels this run was reported from."""
+    """The committed scores.json may not disagree with itself: a reader who cites its top-level
+    aggregates must land on the same numbers as its per-row lists. The rerun of the four rate-limited
+    rows left them stale once, which is why merge_scores recomputes them and the report says so."""
     stored = json.loads(SCORES.read_text(encoding="utf-8"))
-    assert stored["abstention_counts"]["abstained"] == 8
-    assert sum(1 for item in stored["abstention"] if item["label"] == "abstained") == 10
-    assert "stale and nothing reads it" in report
+    per_row = sum(1 for item in stored["abstention"] if item["label"] == "abstained")
+    assert stored["abstention_counts"]["abstained"] == per_row == 10
+    assert stored["abstention_counts"]["run_failed"] == 0
+    assert "Nothing reads them" in report
 
 
 def test_the_report_has_no_em_or_en_dash(report):

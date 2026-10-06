@@ -64,10 +64,13 @@ And the judges are the reference here, not the detector: the rubric in `generati
 remains the measurement of out-of-scope abstention, and the detector is a cheap offline guard beside
 it.
 
-One artifact note for a future reader. `scores.json` also carries a top-level `abstention_counts`
-snapshot that reads `8` abstained and `2` run_failed. It is stale and nothing reads it: both
-`run_report_only`, which rendered the committed `results/generation.md`, and this file compute from
-the per-row labels, which are 10 `abstained` and 0 failed runs.
+One artifact note for a future reader. `scores.json` carries top-level aggregate keys beside its
+per-row lists. Nothing reads them: both `run_report_only`, which rendered the committed
+`results/generation.md`, and this file compute from the per-row data. They were left stale by the
+rerun of the four rate-limited rows, reading 8 abstained and 2 run_failed while the per-row labels
+said 10 and 0, so `merge_scores` now recomputes every aggregate the payload carries, and the
+committed file was refreshed the same way. Re-rendering `results/generation.md` afterwards produced
+the identical file, which is the evidence that no published number came from those keys.
 
 ## r1-cdc-060, the refusal the published means reward
 

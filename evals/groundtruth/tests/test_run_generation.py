@@ -490,7 +490,7 @@ def _fixture_answer_hash(row_id):
 
 def _fixture_stored():
     return {
-        "golden": [{"id": "g-01", "category": "conceito", "no_retrieval": False, "run_failed": False,
+        "golden": [{"id": "g-01", "category": "conceito", "no_retrieval": False, "run_failed": False, "no_retrieval": False, "run_failed": False,
                    "faithfulness_score": 0.9, "faithfulness_reason": "ok", "faithfulness_cost": 0.001,
                    "relevancy_score": 0.8, "relevancy_reason": "ok", "relevancy_cost": 0.001,
                    "answer_sha256": _fixture_answer_hash("g-01")}],
@@ -796,3 +796,48 @@ def test_run_report_only_raises_on_a_stale_scores_json_left_by_a_partial_only_re
 
     with pytest.raises(ValueError):
         rg.run_report_only()
+
+
+def test_merge_scores_recomputes_the_aggregates_it_finds_in_the_stored_payload():
+    # Task 21 follow-up: generation/scores.json is committed now, so a human reads it. A merge that
+    # left abstention_counts at the pre-rerun value published "8 abstained" next to per-row labels
+    # saying 10. Every aggregate the payload carries is recomputed from the merged per-row lists.
+    stored = {"golden": [{"id": "g-01", "category": "conceito", "no_retrieval": False, "run_failed": False, "faithfulness_score": 0.5,
+                          "relevancy_score": 0.5, "faithfulness_cost": 0.01, "relevancy_cost": 0.01}],
+              "abstention": [{"id": "oos-01", "label": "run_failed", "judges": {}}],
+              "abstention_counts": {"abstained": 0, "answered": 0, "disagreement": 0,
+                                    "unverified": 0, "run_failed": 1},
+              "faithfulness_relevancy": {"overall": {"faithfulness": {"mean": 0.5, "n": 1}}},
+              "deepeval_cost_usd": 0.02}
+    new_abstention = [{"id": "oos-01", "label": "abstained", "judges": {}}]
+    new_golden = [{"id": "g-02", "category": "conceito", "no_retrieval": False, "run_failed": False, "faithfulness_score": 1.0,
+                   "relevancy_score": 1.0, "faithfulness_cost": 0.03, "relevancy_cost": 0.03}]
+
+    merged = merge_scores(stored, new_golden, new_abstention)
+
+    assert merged["abstention_counts"]["abstained"] == 1
+    assert merged["abstention_counts"]["run_failed"] == 0
+    assert merged["deepeval_cost_usd"] == pytest.approx(0.08)
+    assert merged["faithfulness_relevancy"] == rg.aggregate_faithfulness_relevancy(merged["golden"])
+
+
+def test_merge_scores_adds_no_aggregate_the_stored_payload_did_not_carry():
+    stored = {"golden": [], "abstention": []}
+    merged = merge_scores(stored, [], [])
+    assert set(merged) == {"golden", "abstention"}
+
+
+def test_merge_scores_refreshes_the_judge_usage_but_leaves_the_agent_entry_to_the_caller():
+    stored = {"golden": [], "abstention": [{"id": "oos-01", "label": "answered", "judges": {
+                  rg.OPENAI_ABSTENTION_JUDGE: {"usage": {"input_tokens": 10, "output_tokens": 2}}}}],
+              "usage_by_model": {rg.AGENT_MODEL: {"input_tokens": 999, "output_tokens": 9},
+                                 rg.OPENAI_ABSTENTION_JUDGE: {"input_tokens": 10, "output_tokens": 2}}}
+    new_abstention = [{"id": "oos-01", "label": "abstained", "judges": {
+        rg.OPENAI_ABSTENTION_JUDGE: {"usage": {"input_tokens": 40, "output_tokens": 8}}}}]
+
+    merged = merge_scores(stored, [], new_abstention)
+
+    # 40 for the rerun plus the 10 the replaced attempt carries as prior_attempts: recomputing the
+    # judge usage must not drop spend that merge_scores deliberately keeps.
+    assert merged["usage_by_model"][rg.OPENAI_ABSTENTION_JUDGE]["input_tokens"] == 50
+    assert merged["usage_by_model"][rg.AGENT_MODEL] == {"input_tokens": 999, "output_tokens": 9}

@@ -254,7 +254,37 @@ def merge_scores(stored: dict, new_golden_scores: list[dict], new_abstention_res
             if prior:
                 a = {**a, "prior_attempts": prior}
         abstention_by_id[a["id"]] = a
-    return {**stored, "golden": list(golden_by_id.values()), "abstention": list(abstention_by_id.values())}
+    golden, abstention = list(golden_by_id.values()), list(abstention_by_id.values())
+    merged = {**stored, "golden": golden, "abstention": abstention}
+    return {**merged, **recomputed_aggregates(merged)}
+
+
+def recomputed_aggregates(payload: dict) -> dict:
+    """The aggregate keys payload already carries, recomputed from its own per-row lists.
+
+    generation/scores.json is committed since Task 21, so a person reads it, and a merge that kept the
+    pre-rerun aggregates published abstention_counts of 8 abstained and 2 run_failed beside per-row
+    labels saying 10 and 0. Nothing in the code reads these back, the report recomputes every rendered
+    number from per-row data, but a published file may not disagree with itself.
+
+    Only keys already present are returned, and only the judge entries of usage_by_model: the agent
+    entry comes from the answer rows, which this function does not see, so its caller refreshes it.
+    """
+    golden, abstention = payload.get("golden", []), payload.get("abstention", [])
+    out: dict = {}
+    if "abstention_counts" in payload:
+        out["abstention_counts"] = abstention_counts(abstention)
+    if "faithfulness_relevancy" in payload:
+        out["faithfulness_relevancy"] = aggregate_faithfulness_relevancy(golden)
+    if "deepeval_cost_usd" in payload:
+        out["deepeval_cost_usd"] = deepeval_cost_total(golden)
+    if "usage_by_model" in payload:
+        usage = dict(payload["usage_by_model"])
+        for judge in (OPENAI_ABSTENTION_JUDGE, ANTHROPIC_ABSTENTION_JUDGE):
+            if judge in usage:
+                usage[judge] = abstention_judge_usage(abstention, judge)
+        out["usage_by_model"] = usage
+    return out
 
 
 def _atomic_write_text(path: Path, text: str) -> None:
@@ -428,6 +458,9 @@ def score_and_write_only(all_rows: list[dict], new_rows: list[dict], score_golde
     updated_rows = replace_rows(all_rows, new_rows)
     stored = json.loads(SCORES.read_text(encoding="utf-8")) if SCORES.exists() else {"golden": [], "abstention": []}
     merged = merge_scores(stored, new_golden_scores, new_abstention_results)
+    if "usage_by_model" in merged and AGENT_MODEL in merged["usage_by_model"]:
+        # merge_scores only sees the score lists; the agent's usage comes from the answer rows.
+        merged["usage_by_model"] = {**merged["usage_by_model"], AGENT_MODEL: usage_total(updated_rows)}
 
     write_json_atomic(merged, SCORES)
     write_jsonl(updated_rows, ANSWERS)

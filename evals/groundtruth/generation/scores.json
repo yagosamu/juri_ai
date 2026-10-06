@@ -495,37 +495,37 @@
       },
       "fato_pontual": {
         "faithfulness": {
-          "mean": 0.9142857142857144,
-          "n": 7
+          "mean": 0.9071428571428571,
+          "n": 8
         },
         "relevancy": {
-          "mean": 0.9476190476190477,
-          "n": 7
+          "mean": 0.9541666666666667,
+          "n": 8
         }
       },
       "procedimento": {
         "faithfulness": {
-          "mean": 0.964957264957265,
-          "n": 12
+          "mean": 0.9456748379825304,
+          "n": 13
         },
         "relevancy": {
-          "mean": 0.9812623274161736,
-          "n": 13
+          "mean": 0.9826007326007327,
+          "n": 14
         }
       }
     },
     "overall": {
       "faithfulness": {
-        "mean": 0.9498520710059171,
-        "n": 26
+        "mean": 0.9381279434850863,
+        "n": 28
       },
       "relevancy": {
-        "mean": 0.9692765567765568,
-        "n": 28
+        "mean": 0.9713247863247862,
+        "n": 30
       }
     },
     "no_retrieval": 1,
-    "run_failed": 2,
+    "run_failed": 0,
     "unscored_faithfulness": 1,
     "unscored_relevancy": 0,
     "unscored_reasons": {
@@ -845,25 +845,25 @@
     }
   ],
   "abstention_counts": {
-    "abstained": 8,
+    "abstained": 10,
     "answered": 0,
     "disagreement": 0,
     "unverified": 0,
-    "run_failed": 2
+    "run_failed": 0
   },
   "usage_by_model": {
     "gpt-4o": {
-      "input_tokens": 197739,
-      "output_tokens": 6315
+      "input_tokens": 219190,
+      "output_tokens": 6958
     },
     "gpt-4.1": {
-      "input_tokens": 1889,
-      "output_tokens": 581
+      "input_tokens": 2406,
+      "output_tokens": 728
     },
     "claude-haiku-4-5": {
-      "input_tokens": 4148,
-      "output_tokens": 866
+      "input_tokens": 5260,
+      "output_tokens": 1086
     }
   },
-  "deepeval_cost_usd": 0.17757520000000002
+  "deepeval_cost_usd": 0.19298759999999998
 }
