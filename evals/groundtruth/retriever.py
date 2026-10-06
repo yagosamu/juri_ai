@@ -55,9 +55,12 @@ def make_reranker(name: Optional[str]) -> Optional[Reranker]:
     if name is None:
         return None
     if name == "bge-reranker-v2-m3":
-        from agno.knowledge.reranker.sentence_transformer import SentenceTransformerReranker
+        # The harness subclass, not agno's: agno rebuilds the 2 GB cross-encoder inside every
+        # _rerank call. Imported here rather than at module level because it pulls in
+        # sentence-transformers and torch, which the configs without a reranker should not pay for.
+        from evals.groundtruth.reranker import CachedSentenceTransformerReranker
 
-        return SentenceTransformerReranker(model="BAAI/bge-reranker-v2-m3")
+        return CachedSentenceTransformerReranker(model="BAAI/bge-reranker-v2-m3")
     raise ValueError(f"unknown reranker {name}")
 
 
