@@ -1,7 +1,15 @@
 import hashlib
 from types import SimpleNamespace
 
-from evals.groundtruth.generation.answers import answer_sha256, build_answer_row, is_failed_run
+import pytest
+
+from evals.groundtruth.generation.answers import (TPM_LIMIT, answer_sha256, assert_stored_hashes_present,
+                                                  build_answer_row, input_tokens_per_turn, is_failed_run)
+
+
+def _usage_rows(*input_tokens):
+    return [{"id": f"x-{i}", "usage": {"input_tokens": n, "output_tokens": 0}}
+            for i, n in enumerate(input_tokens)]
 
 
 def _tool(name, result):
@@ -151,3 +159,86 @@ def test_answer_sha256_differs_for_different_text():
 
 def test_answer_sha256_handles_empty_string():
     assert answer_sha256("") == hashlib.sha256(b"").hexdigest()
+
+
+def test_tpm_limit_is_the_tier_1_gpt_4o_limit_the_failed_runs_hit():
+    assert TPM_LIMIT == 30000
+
+
+def test_assert_stored_hashes_present_accepts_items_that_all_carry_a_hash():
+    rows = [{"id": "g-01", "answer": "a1"}]
+    stored = [{"id": "g-01", "answer_sha256": answer_sha256("a1")}]
+    assert assert_stored_hashes_present(rows, stored, "Stored scores") is None
+
+
+def test_assert_stored_hashes_present_names_every_id_missing_a_hash():
+    """The 2026-09-30 hazard: the whole pre-adoption scores.json is hashless, so --report-only would
+    have reused all 40 of its verdicts against a different set of answers without a word."""
+    rows = [{"id": "g-01", "answer": "a1"}, {"id": "g-02", "answer": "a2"}, {"id": "g-03", "answer": "a3"}]
+    stored = [{"id": "g-01", "answer_sha256": answer_sha256("a1")}, {"id": "g-02"}, {"id": "g-03"}]
+    with pytest.raises(ValueError) as exc:
+        assert_stored_hashes_present(rows, stored, "Stored DeepEval scores")
+    message = str(exc.value)
+    assert "g-02" in message and "g-03" in message
+    assert "g-01" not in message
+    assert "answer_sha256" in message
+    assert "--score-only" in message
+
+
+def test_assert_stored_hashes_present_ignores_a_row_with_no_stored_item_at_all():
+    """A row with nothing stored is a different error, raised by the caller with its own message."""
+    rows = [{"id": "g-01", "answer": "a1"}, {"id": "g-99", "answer": "a99"}]
+    stored = [{"id": "g-01", "answer_sha256": answer_sha256("a1")}]
+    assert assert_stored_hashes_present(rows, stored, "Stored scores") is None
+
+
+def test_input_tokens_per_turn_summarizes_an_odd_number_of_rows():
+    summary = input_tokens_per_turn(_usage_rows(100, 300, 200))
+    assert summary["count"] == 3
+    assert summary["mean"] == 200.0
+    assert summary["median"] == 200
+    assert summary["max"] == 300
+    assert summary["over_tpm_limit"] == 0
+    assert summary["tpm_limit"] == TPM_LIMIT
+
+
+def test_input_tokens_per_turn_takes_the_midpoint_for_an_even_number_of_rows():
+    summary = input_tokens_per_turn(_usage_rows(100, 200, 300, 500))
+    assert summary["count"] == 4
+    assert summary["mean"] == 275.0
+    assert summary["median"] == 250.0
+    assert summary["max"] == 500
+
+
+def test_input_tokens_per_turn_counts_only_rows_strictly_over_the_limit():
+    summary = input_tokens_per_turn(_usage_rows(29999, 30000, 30001, 40571))
+    assert summary["over_tpm_limit"] == 2
+
+
+def test_input_tokens_per_turn_on_no_rows_reports_nothing_rather_than_zero():
+    summary = input_tokens_per_turn([])
+    assert summary == {"count": 0, "mean": None, "median": None, "max": None,
+                       "over_tpm_limit": 0, "tpm_limit": TPM_LIMIT}
+
+
+def test_input_tokens_per_turn_treats_a_row_without_usage_as_zero_tokens():
+    """A failed run records no tokens of its own; it still counts as one turn."""
+    summary = input_tokens_per_turn([{"id": "oos-01"}, *_usage_rows(400)])
+    assert summary["count"] == 2
+    assert summary["mean"] == 200.0
+    assert summary["max"] == 400
+
+
+def test_input_tokens_per_turn_reads_the_real_pre_adoption_rows():
+    """The measurement the tokens-per-turn view exists for: the 3 failed out-of-scope runs asked for
+    more than the Tier 1 limit, but a failed row records 0 input tokens of its own, so the summary over
+    completed rows is what the comparison in results/generation_adoption.md reports."""
+    from evals.groundtruth.config import GENERATION_DIR
+    from evals.groundtruth.golden.jsonl_io import read_jsonl_rows
+
+    path = GENERATION_DIR / "answers_pre_adoption.jsonl"
+    rows = read_jsonl_rows(path)
+    completed = [r for r in rows if not is_failed_run(r)]
+    summary = input_tokens_per_turn(completed)
+    assert summary["count"] == len(completed)
+    assert summary["max"] >= summary["median"]

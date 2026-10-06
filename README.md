@@ -70,7 +70,10 @@ Saved calculations can be linked to lawsuits and exported, making financial revi
 
 Groundtruth is the retrieval and generation evaluation harness for the JuriAI RAG agent, with a CI regression gate.
 Over 4 public Brazilian statutes and 59 questions, it measured that 1500/150 chunking beats the 5000/0 the agent used to run, raising recall@1 from 0.373 to 0.712 and mrr from 0.594 to 0.811. That configuration is now what production runs, at recall@10 0.932 and mrr 0.811; the best configurations measured reach recall@10 of 0.966.
-Results, design decisions and failure analysis: [evals/groundtruth/README.md](evals/groundtruth/README.md). The adoption record: [evals/groundtruth/results/adoption.md](evals/groundtruth/results/adoption.md).
+
+On the generation side, the agent was then rerun under that chunking together with an abstention instruction added in the same step. **It now declines 10 of 10 out-of-scope questions, where before it answered every one it completed from general knowledge.** Input tokens per turn fell from a mean of 15004.2 to 5479.8 and no run hit the rate limit, against 3 of 40 before. Faithfulness is 0.938 (n=28) and answer relevancy 0.971 (n=30), both slightly below the pre-adoption 0.952 and 0.983 on a single pass with no repeats. One in-scope question of the 30 was refused, and the two judge-scored means do not detect that.
+
+Results, design decisions and failure analysis: [evals/groundtruth/README.md](evals/groundtruth/README.md). The adoption record: [evals/groundtruth/results/adoption.md](evals/groundtruth/results/adoption.md). Generation before and after: [evals/groundtruth/results/generation_adoption.md](evals/groundtruth/results/generation_adoption.md).
 
 ## Observability
 

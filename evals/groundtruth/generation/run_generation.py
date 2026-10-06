@@ -15,9 +15,9 @@ import sys
 from pathlib import Path
 
 from evals.groundtruth.config import (ANSWERS, GENERATION_REPORT, GENERATION_RUNTIME_DIR, GOLDEN_SET, OUT_OF_SCOPE,
-                                      SAMPLE_SEED, SAMPLE_SIZE, SCORES, load_corpus)
+                                      PRODUCTION, SAMPLE_SEED, SAMPLE_SIZE, SCORES, load_corpus)
 from evals.groundtruth.generation.abstention import abstention_counts, relabel_stored_abstention, run_abstention
-from evals.groundtruth.generation.answers import build_answer_row, is_failed_run
+from evals.groundtruth.generation.answers import build_answer_row, input_tokens_per_turn, is_failed_run
 from evals.groundtruth.generation.cost import PRICE_SOURCE, model_cost, total_cost
 from evals.groundtruth.generation.documentos_table import ensure_documentos_table
 from evals.groundtruth.generation.gen_report import MEMORY_UPDATE_COST_NOTE, render_report
@@ -34,8 +34,17 @@ DEEPEVAL_MODEL = "gpt-4.1-mini"
 OPENAI_ABSTENTION_JUDGE = "gpt-4.1"
 ANTHROPIC_ABSTENTION_JUDGE = "claude-haiku-4-5"
 ABSTENTION_JUDGES = [OPENAI_ABSTENTION_JUDGE, ANTHROPIC_ABSTENTION_JUDGE]
-RETRIEVAL_CONFIG_LABEL = "production (5000/0 dense, ia/retrieval_config.py)"
-DOCUMENTOS_EXPECTED_COUNT = 285
+# Task 20: both of these used to be frozen at the pre-adoption 5000/0 numbers ("production (5000/0
+# dense, ia/retrieval_config.py)" and 285 chunks). Task 19 adopted 1500/150, so a run left on the old
+# values would either refuse to start or, worse, report the wrong chunking next to the new answers.
+# DOCUMENTOS_EXPECTED_COUNT is the corpus chunked at 1500/150; a test recomputes it from the corpus
+# and ia.retrieval_config, so it cannot go stale again without failing.
+DOCUMENTOS_EXPECTED_COUNT = 1054
+
+
+def retrieval_config_label() -> str:
+    """The Setup line of results/generation.md, read from the adopted configuration rather than typed."""
+    return f"production ({PRODUCTION.chunk_size}/{PRODUCTION.chunk_overlap} dense, ia/retrieval_config.py)"
 TENANT = 0  # single public tenant; mirrors evals.groundtruth.indexer.TENANT and cliente_id metadata
 OUT_OF_SCOPE_CATEGORY = "fora_de_escopo"  # matches generation/out_of_scope_check.py's REQUIRED_KEYS check
 
@@ -47,8 +56,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--smoke", action="store_true",
                         help="write answers and scores only under evals/groundtruth/runtime/generation")
     parser.add_argument("--report-only", action="store_true",
-                        help="rebuild results/generation.md from generation/answers.jsonl and "
-                             "generation/scores.json only; makes no model, embedding or judge call")
+                        help="re-render results/generation.md from the verdicts already in "
+                             "generation/scores.json; makes no model, embedding or judge call, and "
+                             "refuses to run when those verdicts do not match generation/answers.jsonl")
+    parser.add_argument("--score-only", action="store_true",
+                        help="score the answers already in generation/answers.jsonl, then re-render "
+                             "the report; calls the judges and costs money, never calls the agent")
     parser.add_argument("--only", nargs="+", default=None, metavar="ID",
                         help="rerun only these ids; refuses any id that is not currently a failed run")
     return parser
@@ -133,8 +146,9 @@ def build_limitations() -> list[str]:
         "Both scorers are LLM judges: DeepEval faithfulness/relevancy and the two-judge abstention rubric.",
         "There is no human legal review of any score in this report.",
         "30 golden questions is a sample, drawn with random.Random(7).sample; it is not the full golden set.",
-        "The agent's instructions do not ask it to abstain on an out-of-scope question, only to say when it "
-        "is unsure; abstention is measured as production behaves, not as a requirement.",
+        "Since Task 20 the agent's instructions ask it to say when the knowledge base does not cover the "
+        "question instead of answering from general knowledge, so abstention is measured against an "
+        "instruction the agent was given, not as undirected production behaviour.",
         "gpt-4o output varies between runs, and nothing here was averaged over repeated runs.",
         MEMORY_UPDATE_COST_NOTE,
     ]
@@ -307,10 +321,13 @@ def run_report_only() -> dict:
     golden_rows, oos_rows = split_by_kind(read_jsonl_rows(ANSWERS))
     stored = json.loads(SCORES.read_text(encoding="utf-8"))
 
-    scored_golden = reconcile_scored_golden(golden_rows, stored["golden"])
+    # require_hash (Task 20): this renders a committed report, so a stored item with no answer_sha256
+    # is refused rather than reused. Without it, the hashless pre-adoption scores.json rendered
+    # cleanly against the 2026-09-30 answers and looked like a real post-adoption measurement.
+    scored_golden = reconcile_scored_golden(golden_rows, stored["golden"], require_hash=True)
     agg = aggregate_faithfulness_relevancy(scored_golden)
 
-    abstention_results = relabel_stored_abstention(oos_rows, stored["abstention"])
+    abstention_results = relabel_stored_abstention(oos_rows, stored["abstention"], require_hash=True)
     counts = abstention_counts(abstention_results)
 
     all_rows = golden_rows + oos_rows
@@ -318,7 +335,7 @@ def run_report_only() -> dict:
     failed = failed_rows_of(all_rows)
 
     setup = {"agent_model": f"{AGENT_MODEL} (agno default, JuriAI.build_agent sets no model)",
-             "retrieval_config": RETRIEVAL_CONFIG_LABEL, "seed": SAMPLE_SEED,
+             "retrieval_config": retrieval_config_label(), "seed": SAMPLE_SEED,
              "sampled_golden_ids": [r["id"] for r in golden_rows], "sampled_oos_ids": [r["id"] for r in oos_rows],
              "deepeval_model": DEEPEVAL_MODEL, "deepeval_version": _deepeval_version(),
              "abstention_judges": ABSTENTION_JUDGES}
@@ -332,14 +349,67 @@ def run_report_only() -> dict:
     }
     extra_costs = {DEEPEVAL_MODEL: deepeval_cost_total(scored_golden)}
 
+    # Tokens per turn over the completed rows (ruling 3): a failed run records 0 input tokens of its
+    # own, so including it would pull the mean down and hide the real per-turn cost.
+    tokens_per_turn = input_tokens_per_turn([r for r in all_rows if not is_failed_run(r)])
+
     report_text = render_report(setup, agg, abstention_results, counts, tool_use, usage_by_model, PRICE_SOURCE,
-                                limitations, extra_costs=extra_costs, failed_rows=failed)
+                                limitations, extra_costs=extra_costs, failed_rows=failed,
+                                tokens_per_turn=tokens_per_turn)
     GENERATION_REPORT.parent.mkdir(parents=True, exist_ok=True)
     GENERATION_REPORT.write_text(report_text, encoding="utf-8")
 
     return {"faithfulness_relevancy": agg, "abstention_results": abstention_results, "abstention_counts": counts,
            "tool_use": tool_use, "failed_ids": [r["id"] for r in failed], "setup": setup,
-           "usage_by_model": usage_by_model, "extra_costs": extra_costs}
+           "usage_by_model": usage_by_model, "extra_costs": extra_costs,
+           "tokens_per_turn": tokens_per_turn}
+
+
+def run_score_only(score_golden_fn=score_golden_answers, abstain_fn=run_abstention,
+                   abstention_clients: dict | None = None, deepeval_model: str = DEEPEVAL_MODEL) -> dict:
+    """Task 20 recovery: score the answers already in generation/answers.jsonl, then re-render.
+
+    The 2026-09-30 run wrote all 40 answers and then died in DeepEval, so the gpt-4o spend was on disk
+    with nothing scored, and no existing path could score it: --report-only only re-renders stored
+    verdicts, and --only calls the agent again and refuses any id that is not a failed run. This calls
+    the judges on the rows as they are and never calls the agent, so a rerun cannot cost agent tokens
+    or change an answer.
+
+    It writes a fresh payload rather than going through score_and_write_only, which merges into the
+    payload already on disk: merge_scores carries a replaced item's own spend onto the replacement as
+    prior_attempts, so scoring against a previous run's scores.json would add that run's DeepEval cost
+    and judge usage to this run's cost table. That spend is real but it belongs to the other run, and
+    it is already recorded in that run's own report.
+
+    Touches neither Django, ia, nor LanceDB: there is no agent to build and no index to read, so the
+    runtime guard and the documentos count check do not apply.
+    """
+    all_rows = read_jsonl_rows(ANSWERS)
+    golden_rows, oos_rows = split_by_kind(all_rows)
+
+    scored_golden = score_golden_fn(golden_rows, model=deepeval_model) if golden_rows else []
+    agg = aggregate_faithfulness_relevancy(scored_golden)
+
+    if abstention_clients is None:
+        import anthropic
+        from openai import OpenAI
+        abstention_clients = {OPENAI_ABSTENTION_JUDGE: OpenAI(), ANTHROPIC_ABSTENTION_JUDGE: anthropic.Anthropic()}
+    abstention_results = abstain_fn(oos_rows, abstention_clients) if oos_rows else []
+    counts = abstention_counts(abstention_results)
+
+    # The same informational snapshot main() writes; run_report_only recomputes every rendered number
+    # from per-row data and reads none of these aggregates.
+    usage_by_model = {
+        AGENT_MODEL: usage_total(all_rows),
+        OPENAI_ABSTENTION_JUDGE: abstention_judge_usage(abstention_results, OPENAI_ABSTENTION_JUDGE),
+        ANTHROPIC_ABSTENTION_JUDGE: abstention_judge_usage(abstention_results, ANTHROPIC_ABSTENTION_JUDGE),
+    }
+    write_json_atomic({"golden": scored_golden, "faithfulness_relevancy": agg,
+                       "abstention": abstention_results, "abstention_counts": counts,
+                       "usage_by_model": usage_by_model,
+                       "deepeval_cost_usd": deepeval_cost_total(scored_golden)}, SCORES)
+
+    return run_report_only()
 
 
 def score_and_write_only(all_rows: list[dict], new_rows: list[dict], score_golden_fn=score_golden_answers,
@@ -405,6 +475,11 @@ def run_only(only_ids: list[str]) -> dict:
 def main(argv: list[str] | None = None) -> dict:
     args = build_arg_parser().parse_args(argv)
 
+    if args.score_only:
+        # Needs the judge keys, and nothing else: no Django, no agent, no index.
+        from dotenv import load_dotenv
+        load_dotenv(override=False)
+        return run_score_only()
     if args.report_only:
         return run_report_only()
     if args.only:
@@ -469,7 +544,7 @@ def main(argv: list[str] | None = None) -> dict:
     write_json_atomic(scores_payload, scores_path)
 
     setup = {"agent_model": f"{AGENT_MODEL} (agno default, JuriAI.build_agent sets no model)",
-             "retrieval_config": RETRIEVAL_CONFIG_LABEL, "seed": SAMPLE_SEED,
+             "retrieval_config": retrieval_config_label(), "seed": SAMPLE_SEED,
              "sampled_golden_ids": [i["id"] for i in golden_items], "sampled_oos_ids": [i["id"] for i in oos_items],
              "deepeval_model": DEEPEVAL_MODEL, "deepeval_version": _deepeval_version(),
              "abstention_judges": ABSTENTION_JUDGES}
@@ -478,7 +553,9 @@ def main(argv: list[str] | None = None) -> dict:
 
     if not args.smoke:
         report_text = render_report(setup, agg, abstention_results, counts, tool_use, usage_by_model, PRICE_SOURCE,
-                                    limitations, extra_costs=extra_costs, failed_rows=failed)
+                                    limitations, extra_costs=extra_costs, failed_rows=failed,
+                                    tokens_per_turn=input_tokens_per_turn(
+                                        [r for r in all_rows if not is_failed_run(r)]))
         GENERATION_REPORT.parent.mkdir(parents=True, exist_ok=True)
         GENERATION_REPORT.write_text(report_text, encoding="utf-8")
 

@@ -78,42 +78,34 @@ Ver `results/significance.md` para os intervalos de bootstrap e os testes paread
 
 ### Geração
 
-O agente JuriAI real (gpt-4o, a config de retrieval 5000/0 anterior à adoção) respondeu a uma amostra de 30 perguntas do golden set (seed 7) e a 10 perguntas fora de escopo. A geração não foi rodada de novo com o chunking 1500/150 adotado; isso é a Task 20. Faithfulness e answer relevancy são pontuadas pelo DeepEval com gpt-4.1-mini como modelo juiz.
+O agente JuriAI real (gpt-4o) respondeu a uma amostra de 30 perguntas do golden set (seed 7) e a 10 perguntas fora de escopo, com a config de retrieval 1500/150 adotada e com a instrução de abstenção da Task 20 no `JuriAI.INSTRUCTIONS`. Faithfulness e answer relevancy são pontuadas pelo DeepEval com gpt-4.1-mini como modelo juiz; a abstenção, pelo gpt-4.1 e pelo claude-haiku-4-5 juntos.
+
+**Agora o agente se abstém em 10 de 10 perguntas fora de escopo.** Antes, com 5000/0 e sem instrução de abstenção, ele se absteve em 0 das 7 que concluiu e respondeu todas com conhecimento geral. O chunking e a instrução mudaram no mesmo passo, então nenhum dos dois resultados pode ser atribuído a um deles sozinho.
+
+Antes e depois, lado a lado, com os tokens por turno e as contagens de métricas não pontuadas: `results/generation_adoption.md`. A medição anterior à adoção está preservada inteira em `results/generation_pre_adoption.md`, com `generation/answers_pre_adoption.jsonl` e `generation/scores_pre_adoption.json`.
 
 | category | faithfulness mean | faithfulness n | relevancy mean | relevancy n |
 |---|---|---|---|---|
-| conceito | 0.959 | 7 | 0.972 | 8 |
-| fato_pontual | 0.969 | 8 | 1.000 | 8 |
-| procedimento | 0.939 | 14 | 0.980 | 14 |
-| overall | 0.952 | 29 | 0.983 | 30 |
+| conceito | 0.960 | 7 | 0.969 | 8 |
+| fato_pontual | 0.907 | 8 | 0.954 | 8 |
+| procedimento | 0.946 | 13 | 0.983 | 14 |
+| overall | 0.938 | 28 | 0.971 | 30 |
 
-Sem retrieval, excluída da média de faithfulness: 1. Execução com falha, excluída das duas médias: 0.
+Sem retrieval, fora da média de faithfulness: 1. Execução com falha, fora das duas médias: 0. Não pontuada pelo juiz, fora da média de faithfulness: 1, porque um filtro de conteúdo recusou essa chamada de faithfulness. Contra os 0.952 (n=29) e 0.983 (n=30) anteriores à adoção, as duas médias caem um pouco; é uma passada de cada, sem repetição, então isso não é evidência de mudança de qualidade em nenhuma direção.
 
-Fonte: `results/generation.md`.
-
-Abstenção nas perguntas fora de escopo, julgada por gpt-4.1 e claude-haiku-4-5:
-
-| rótulo | contagem |
+| label | contagem |
 |---|---|
-| abstained | 0 de 7 execuções concluídas |
-| answered | 7 de 7 execuções concluídas |
-| disagreement | 0 de 7 execuções concluídas |
-| unverified | 0 de 7 execuções concluídas |
-| run failed | 3 de 10 perguntas fora de escopo |
+| abstained | 10 de 10 execuções concluídas |
+| answered | 0 de 10 execuções concluídas |
+| disagreement | 0 de 10 execuções concluídas |
+| unverified | 0 de 10 execuções concluídas |
+| run failed | 0 de 10 perguntas fora de escopo |
 
-Fonte: `results/generation.md`.
+**Nenhuma execução falhou, e nenhum turno chegou perto do limite de taxa.** Os tokens de entrada por turno caíram de uma média de 15004.2 e um máximo de 40912 para uma média de 5479.8 e um máximo de 6257, contra um limite Tier 1 de 30,000 tokens de gpt-4o por minuto. Antes, 2 turnos concluídos e os 3 com falha estavam no limite ou acima dele, então um único turno conseguia esgotar o orçamento do minuto sozinho; depois, nenhum consegue. Quatro linhas falharam por limite de taxa transitório na primeira passada desta execução e foram refeitas com `--only`, que recusa qualquer id que não seja, no momento, uma execução com falha, então a amostra foi restaurada e não reescolhida.
 
-Execuções com falha:
+**Uma pergunta dentro do escopo foi recusada**, a `r1-cdc-060`: o agente buscou, recuperou um contexto, e ainda assim disse que não encontrou nada na base de conhecimento. É 1 de 30, e as duas médias não detectam isso, porque o DeepEval deu 1.00 nessa recusa tanto em faithfulness quanto em relevancy. O raciocínio completo está em `results/generation_adoption.md`.
 
-| id | limit | requested |
-|---|---|---|
-| oos-01 | 30000 | 40540 |
-| oos-07 | 30000 | 40571 |
-| oos-08 | 30000 | 39229 |
-
-Fonte: `results/generation.md`.
-
-Respostas que buscaram na base de conhecimento: 36 de 40. Custo medido da execução de geração: $1.8735 no total, sem as chamadas de atualização de memória em segundo plano do agno. Fonte: `results/generation.md`.
+Respostas que buscaram na base de conhecimento: 39 de 40. Custo medido da execução de geração: $0.8319 no total, contra $1.8735 antes, sem as chamadas de atualização de memória em segundo plano do agno e sem as chamadas de DeepEval feitas na primeira passada, que quebrou. Fonte: `results/generation.md`.
 
 ## Mudança adotada
 
@@ -127,7 +119,7 @@ Respostas que buscaram na base de conhecimento: 36 de 40. Custo medido da execu�
 
 **Ressalva de transferência.** A comparação rodou sobre 4 leis públicas, enquanto os documentos de produção são petições e contratos passados por OCR. O ganho é medido só neste corpus.
 
-**O que não é medido.** A qualidade de geração do novo chunking. O `results/generation.md` pontuou respostas com a configuração 5000/0 antiga; rodar a geração de novo com 1500/150 é a Task 20.
+**A geração com o novo chunking agora está medida.** A Task 20 rodou de novo com 1500/150, junto com uma instrução de abstenção adicionada ao agente no mesmo passo: o `results/generation_adoption.md` tem o antes e o depois, e o `results/generation.md` é o relatório atual. O que continua não medido é cada uma das duas mudanças isoladamente, já que elas andaram juntas.
 
 ## Como funciona
 
@@ -209,7 +201,7 @@ A camada de geração também usa 10 perguntas fora de escopo. `generation/out_o
   - `r1-clt-041` [procedimento] "Como é calculado o pagamento mensal dos professores com base nas aulas semanais e nas faltas?" CLT Art. 320, passagem com 562 caracteres. Causa não estabelecida. Recuperada por chunk1500 (posição 1), chunk800 (posição 2), hybrid (posição 1) e rerank (posição 1).
   - `r1-clt-044` [procedimento] "Os municípios podem criar regras que contrariem as normas e instruções federais sobre o funcionamento dessas atividades?" CLT Art. 69, passagem com 416 caracteres. Causa não estabelecida. Recuperada por chunk1500 (posição 4), chunk800 (posição 1), hybrid (posição 2) e rerank (posição 1).
   - `r1-cpc-000` [procedimento] "Quais são os requisitos para que a eleição de foro tenha validade em um contrato?" CPC Art. 63, passagem com 1361 caracteres. Causa não estabelecida. Recuperada por chunk1500 (posição 1), chunk800 (posição 1), hybrid (posição 2) e rerank (posição 1).
-  - `r1-cpc-016` [conceito] "Quais são as defesas que podem ser apresentadas nesse tipo de processo?" A pergunta não tem antecedente para "esse tipo de processo". Na execução de geração o agente pediu esclarecimento sem buscar, e `results/generation.md` conta isso como a única resposta sem retrieval. Não recuperada: falha em production, chunk1500, chunk800, hybrid e rerank.
+  - `r1-cpc-016` [conceito] "Quais são as defesas que podem ser apresentadas nesse tipo de processo?" A pergunta não tem antecedente para "esse tipo de processo". Na execução de geração o agente pediu esclarecimento sem buscar, e `results/generation_pre_adoption.md` conta isso como a única resposta sem retrieval. Não recuperada: falha em production, chunk1500, chunk800, hybrid e rerank.
   - `r1-cpc-004` [fato_pontual] "Quando a desistência da ação passa a ter efeito legal?" A passagem do golden set é o Art. 200 do CPC, cujo parágrafo único diz que a desistência só produz efeitos após homologação judicial. Nenhum dos 10 chunks que hybrid retorna se sobrepõe a essa passagem; 4 deles contêm a palavra "desistência" em outros dispositivos, entre eles os Arts. 485 e 1.040 do CPC. Não recuperada: falha em production, chunk1500, chunk800, hybrid e rerank.
 - **O filtro `cliente_id` roda depois do top-k, e isso aparece.** O `LanceDb.search` do agno 2.4.7 pede ao LanceDB `limit` linhas e nada mais (`agno/vectordb/lancedb/lance_db.py:474-483`), e depois descarta em Python as linhas cujo `meta_data` não bate com o filtro (`lance_db.py:486-503`); expressões de filtro são recusadas com um aviso (`lance_db.py:467-469`). Medido numa tabela com dois clientes construída offline a partir do mesmo corpus e do chunking 5000/0 anterior à adoção (o cliente 0 tem cdc e clt, 149 chunks; o cliente 1 tem cpc e lgpd, 136 chunks; 285 no total), com `limit=10`. A mesma construção com o chunking 1500/150 adotado produz 1054 chunks; o `results/multitenant.md` não foi rodado de novo, porque o comportamento de filtro que ele documenta é uma propriedade do caminho de busca do agno, não do tamanho do chunk:
   - Buscando pelo cliente dono do documento da pergunta, 26 de 59 perguntas receberam menos de 10 linhas (12 de 28 no cliente 0, média de 8.54 linhas; 14 de 31 no cliente 1, média de 9.19) e nenhuma recebeu 0. O recall@10 não mudou: 0.929 e 0.903, o mesmo do índice de um único cliente nas mesmas perguntas.
@@ -220,8 +212,8 @@ A camada de geração também usa 10 perguntas fora de escopo. `generation/out_o
   - O `Knowledge.insert` do agno captura um erro de embedding, registra no log e insere 0 chunks daquele documento (`agno/knowledge/knowledge.py:3899-3905`), então o build offline confere a quantidade de chunks de cada documento em vez de depender de uma exceção. Fonte: `results/multitenant.md`.
 - **A busca full-text do hybrid não tem stemming em português.** Ela roda sobre a coluna `payload` com o FTS nativo do LanceDB no agno (`use_tantivy=False`). No subconjunto sem vazamento, hybrid reduz recall@1 (0.500 vs 0.650) e MRR (0.667 vs 0.742) em relação ao chunk1500 denso. Fonte: `results/notes.md`, seções 5 e 6.
 - **O reranker recarrega o modelo a cada chamada.** O `SentenceTransformerReranker._rerank` do agno 2.4.7 constrói um novo `CrossEncoder` por chamada, então cada busca cronometrada do rerank inclui carregar `BAAI/bge-reranker-v2-m3` do disco. O p50 de busca é 45356 ms. Foi medido assim, sem patch. Fonte: `results/notes.md`, seção 7.
-- **O agente se absteve em 0 de 7 execuções fora de escopo concluídas.** Ele responde com conhecimento geral, e suas instruções não pedem abstenção em pergunta fora de escopo. Fonte: `results/generation.md`.
-- **3 de 10 execuções fora de escopo falharam por limite de taxa.** Um único turno do agente com a config de retrieval anterior à adoção (chunks de 5000 caracteres, 10 resultados por busca) pediu de 39229 a 40571 tokens, acima do limite de 30,000 tokens por minuto de gpt-4o de uma conta OpenAI Tier 1. O chunking 1500/150 adotado devolve 10 chunks mais curtos por busca, então a contagem de tokens por turno deve cair, mas isso não foi medido; faz parte da Task 20. Fonte: `results/generation.md`.
+- **O agente se absteve em 0 de 7 execuções fora de escopo concluídas**, com a config anterior à adoção e sem instrução de abstenção: ele respondeu todas com conhecimento geral. **Resolvido.** A Task 20 adicionou uma regra de abstenção ao `JuriAI.INSTRUCTIONS`, e a nova execução se abstém em 10 de 10. Fontes: `results/generation_pre_adoption.md` e `results/generation_adoption.md`.
+- **3 de 10 execuções fora de escopo falharam por limite de taxa.** Um único turno do agente com a config de retrieval anterior à adoção (chunks de 5000 caracteres, 10 resultados por busca) pediu de 39229 a 40571 tokens, acima do limite de 30,000 tokens por minuto de gpt-4o de uma conta OpenAI Tier 1. **Medido e resolvido:** com 1500/150 o maior turno tem 6257 tokens de entrada, então nenhum turno sozinho esgota o orçamento do minuto, e a nova execução teve 0 execuções com falha. O que sobra é uma propriedade do harness, não do chunking: nada faz pacing de uma execução, então turnos consecutivos ainda podem acumular dentro de um minuto, que foi como 4 linhas falharam na primeira passada dessa nova execução antes de serem refeitas. Fontes: `results/generation_pre_adoption.md` e `results/generation_adoption.md`.
 - **Nada reindexa um documento que já está no LanceDB.** Limitação conhecida, não corrigida nesta task. O `usuarios/signals.py:7-16` enfileira a chain de OCR e indexação só dentro do `if created:`, e o `ia/tasks.py:44-56` (`rag_documentos`) é o único que escreve na tabela `documentos`, tendo o `usuarios/signals.py:5` como único chamador. Não existe management command, ação de admin ou task agendada que reconstrua a tabela. Então, depois da mudança de chunking, a tabela mistura linhas 5000/0 escritas antes do deploy com linhas 1500/150 escritas depois. O que limita o estrago é que o `render.yaml`, nas linhas 17 e 18, define `DATA_DIR=/tmp/juri-ai`, armazenamento efêmero no plano free da Render, então a tabela é esvaziada a cada deploy, restart ou hibernação por inatividade, e só é preenchida de novo pelos documentos enviados depois disso. Fonte: `results/adoption.md`.
 - **As primeiras execuções do CI falharam antes de qualquer job começar.** O workflow usava `${{ runner.temp }}` no `env` do job, onde o GitHub não permite o contexto `runner` ("Invalid workflow file: Unrecognized named-value: 'runner'"). O PR #11 corrigiu isso movendo `DATA_DIR` para o env do step de teste.
 - **pandas era uma dependência não declarada.** Uma simulação do CI em venv limpo mostrou que a busca do `LanceDb` no agno 2.4.7 chama `to_pandas()`, enquanto o pandas só era instalado via docling, que a instalação do CI exclui. `pandas==2.3.3` agora está declarado em `requirements.txt`.
@@ -254,7 +246,7 @@ O tracing de produção (`ia/observability.py`, chamado por `ensure_agno_tracing
 
 - Cada execução do agente apareceu como um trace `Assistente_Jurídico_Virtual.run` com um span de agente, uma chamada pequena ao gpt-4o que decide buscar (cerca de 470 tokens de entrada), o span da ferramenta `search_knowledge_base`, e uma chamada de resposta ao gpt-4o com o contexto recuperado (11,825 a 14,833 tokens de entrada).
 - A latência foi de 8.55 a 9.14 s por execução. O custo calculado pelo Langfuse foi de $0.0343 a $0.0393 por execução.
-- As chamadas de atualização de memória em segundo plano do agno apareceram como traces `OpenAIChat.invoke` separados, com cerca de 900 tokens de entrada, custando de $0.0031 a $0.0047 cada. O Langfuse mostra essas chamadas, que o `run.metrics` não mede, por isso o custo medido em `results/generation.md` não as inclui.
+- As chamadas de atualização de memória em segundo plano do agno apareceram como traces `OpenAIChat.invoke` separados, com cerca de 900 tokens de entrada, custando de $0.0031 a $0.0047 cada. O Langfuse mostra essas chamadas, que o `run.metrics` não mede, por isso o custo medido em `results/generation_pre_adoption.md` não as inclui.
 - Toda entrada e saída de trace e de observação mostra `[REDACTED]`, efeito do hook de masking por allowlist fechada.
 
 ## Como reproduzir
@@ -298,7 +290,8 @@ O CI instala `requirements.txt` sem `docling` e `mpire`, mais `evals/groundtruth
 | Verificação das perguntas fora de escopo | `.venv/Scripts/python.exe -m evals.groundtruth.generation.out_of_scope_check` | sim, text-embedding-3-large, gpt-4.1 e claude-haiku-4-5 |
 | Geração: execução smoke, uma pergunta de cada tipo, gravada só em `runtime/generation` | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --smoke --limit-golden 1 --limit-oos 1` | sim |
 | Geração: execução completa | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation` | sim, gpt-4o, gpt-4.1-mini, gpt-4.1 e claude-haiku-4-5 |
-| Geração: refazer `results/generation.md` a partir das respostas e notas gravadas | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --report-only` | não |
+| Geração: redesenhar `results/generation.md` a partir dos veredictos que já estão em `generation/scores.json` | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --report-only` | não |
+| Geração: pontuar as respostas que já estão em `generation/answers.jsonl` e redesenhar o relatório | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --score-only` | sim, gpt-4.1-mini, gpt-4.1 e claude-haiku-4-5 |
 | Geração: refazer só as execuções com falha | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --only oos-01 oos-07 oos-08` | sim |
 
 Observações:
@@ -306,6 +299,8 @@ Observações:
 - A flag `--offline` do indexador falha quando falta embedding no cache, em vez de chamar a API. `cache/chunks` não é versionado, então uma reconstrução a partir de um clone limpo chama a API de embeddings.
 - A config rerank baixa `BAAI/bge-reranker-v2-m3` do Hugging Face no primeiro uso.
 - `--only` recusa qualquer id que não seja, no momento, uma execução com falha.
+- Uma execução de geração só preenche a tabela `documentos` de runtime quando ela está vazia, e depois exige exatamente a contagem de chunks que o `ia/retrieval_config.py` atual produz sobre o corpus (1054 com 1500/150, 285 com o 5000/0 anterior à adoção). Depois de mudar o chunking, apague `runtime/generation/lancedb/documentos.lance` antes, senão a execução para nessa contagem antes de gastar qualquer coisa.
+- O `--report-only` não faz chamada nenhuma, mas só redesenha veredictos que já estão em `generation/scores.json`. Ele não calcula nota nenhuma, e se recusa a rodar quando um veredicto gravado não tem `answer_sha256` para casar com as respostas em disco, então nunca publica os veredictos de uma execução como resultado de outra. Pontuar respostas que não têm veredicto gravado é o `--score-only`, que chama os três modelos juízes e custa dinheiro. Nenhum dos dois chama o agente, então nenhum dos dois muda uma resposta nem gasta tokens de agente.
 - `golden/candidates.jsonl`, `golden/triage.jsonl`, `golden/judgments.jsonl` e `golden/golden_set.jsonl` são versionados, então triagem, juízes e consenso podem ser rodados de novo a partir de um clone, sobre os candidatos publicados. Gerar candidatos de novo chama o gpt-4.1-mini com temperature 0.7, então os novos candidatos seriam diferentes do conjunto publicado.
 
 ## Transparência
@@ -314,4 +309,5 @@ Observações:
 - O golden set não tem revisão jurídica humana. Ele foi selecionado por consenso de dois juízes LLM, gpt-4.1 e claude-haiku-4-5.
 - O conjunto de 59 perguntas está abaixo da meta de design de 100.
 - A camada de geração usa uma amostra de 30 perguntas do golden set sorteada com seed 7, e os dois scorers dela são juízes LLM.
+- O harness de geração não faz pacing nenhum: o `generate_answers` chama o agente em sequência, sem pausa e sem backoff, então a própria execução entra na janela de tokens por minuto da conta. É por isso que turnos de cerca de 5500 tokens ainda batem num limite de 30,000 por minuto, e significa que a contagem de execuções com falha de qualquer run de geração é uma propriedade desse pacing e do tier da conta, não do chunking que está sendo medido. Nenhum pacing foi adicionado.
 - Os custos medidos estão em `results/notes.md` (ingestão) e `results/generation.md` (geração).

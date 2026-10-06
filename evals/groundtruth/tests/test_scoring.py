@@ -1,7 +1,7 @@
 import pytest
 
-from evals.groundtruth.generation.scoring import (aggregate_faithfulness_relevancy, reconcile_scored_golden,
-                                                   score_golden_answers)
+from evals.groundtruth.generation.scoring import (CONTENT_FILTER_REASON, aggregate_faithfulness_relevancy,
+                                                   reconcile_scored_golden, score_golden_answers)
 
 
 class FakeTestCase:
@@ -39,6 +39,126 @@ def _rows():
         {"id": "g-03", "question": "q3", "category": "fato_pontual", "answer": "a3", "contexts": ["ctx3"],
          "searched": True, "run_failed": False},
     ]
+
+
+class FakeContentFilterError(Exception):
+    """Stands in for openai.ContentFilterFinishReasonError, which crashed the 2026-09-30 run."""
+
+
+class FilteringMetric(FakeMetric):
+    """Rejects exactly one answer, the way the content filter rejected one faithfulness call."""
+
+    def measure(self, test_case):
+        if test_case.actual_output == "a3":
+            raise FakeContentFilterError("request was rejected by the content filter")
+        super().measure(test_case)
+
+
+def test_a_content_filter_rejection_records_the_metric_unscored_instead_of_losing_the_run():
+    """The 2026-09-30 crash: DeepEval faithfulness raised openai.ContentFilterFinishReasonError and the
+    whole run died after the answers were already paid for. One rejected judge call must cost one
+    metric on one row, not the run."""
+    FakeMetric.instances.clear()
+    results = score_golden_answers(_rows(), faithfulness_cls=FilteringMetric, relevancy_cls=FakeMetric,
+                                   test_case_cls=FakeTestCase,
+                                   content_filter_errors=(FakeContentFilterError,))
+    assert len(results) == 3
+    filtered = [r for r in results if r["id"] == "g-03"][0]
+    assert filtered["faithfulness_score"] is None
+    assert filtered["faithfulness_error"] == CONTENT_FILTER_REASON
+    assert filtered["faithfulness_cost"] is None
+    # The agent answered and it did search; the judge is the only thing that failed.
+    assert filtered["run_failed"] is False
+    assert filtered["no_retrieval"] is False
+    assert filtered["relevancy_score"] is not None
+    assert filtered["relevancy_error"] is None
+
+
+def test_a_successfully_scored_row_records_no_error_for_either_metric():
+    FakeMetric.instances.clear()
+    results = score_golden_answers(_rows(), faithfulness_cls=FakeMetric, relevancy_cls=FakeMetric,
+                                   test_case_cls=FakeTestCase)
+    assert all(r["faithfulness_error"] is None and r["relevancy_error"] is None for r in results)
+
+
+def test_a_judge_failure_that_is_not_the_content_filter_still_propagates():
+    """Narrow on purpose: a bad key, a network fault or a DeepEval bug must not be silently recorded
+    as an unscored row, which would quietly shrink every mean."""
+    class Boom(Exception):
+        pass
+
+    class BoomMetric(FakeMetric):
+        def measure(self, test_case):
+            raise Boom("connection reset")
+
+    with pytest.raises(Boom):
+        score_golden_answers(_rows(), faithfulness_cls=BoomMetric, relevancy_cls=FakeMetric,
+                             test_case_cls=FakeTestCase, content_filter_errors=(FakeContentFilterError,))
+
+
+def _scored(id_, faithfulness, relevancy, faithfulness_error=None, relevancy_error=None):
+    return {"id": id_, "category": "conceito", "run_failed": False, "no_retrieval": False,
+            "faithfulness_score": faithfulness, "relevancy_score": relevancy,
+            "faithfulness_error": faithfulness_error, "relevancy_error": relevancy_error}
+
+
+def test_aggregate_excludes_an_unscored_metric_from_that_mean_and_counts_it():
+    agg = aggregate_faithfulness_relevancy([
+        _scored("a", 1.0, 1.0),
+        _scored("b", None, 0.5, faithfulness_error=CONTENT_FILTER_REASON),
+    ])
+    assert agg["overall"]["faithfulness"] == {"mean": 1.0, "n": 1}
+    assert agg["overall"]["relevancy"] == {"mean": 0.75, "n": 2}
+    assert agg["unscored_faithfulness"] == 1
+    assert agg["unscored_relevancy"] == 0
+    assert agg["unscored_reasons"] == {CONTENT_FILTER_REASON: 1}
+
+
+def test_aggregate_reports_zero_unscored_when_every_metric_was_scored():
+    agg = aggregate_faithfulness_relevancy([_scored("a", 1.0, 1.0), _scored("b", 0.5, 0.5)])
+    assert agg["unscored_faithfulness"] == 0
+    assert agg["unscored_relevancy"] == 0
+    assert agg["unscored_reasons"] == {}
+
+
+def test_aggregate_does_not_count_a_no_retrieval_row_as_unscored():
+    """no_retrieval already has its own count; the two reasons must not be conflated."""
+    row = _scored("a", None, 1.0)
+    row["no_retrieval"] = True
+    agg = aggregate_faithfulness_relevancy([row])
+    assert agg["no_retrieval"] == 1
+    assert agg["unscored_faithfulness"] == 0
+    assert agg["unscored_reasons"] == {}
+
+
+def _legacy_stored_golden():
+    """A scores.json "golden" list with no answer_sha256, the shape of every item written before
+    fix round 2 and of the whole 2026-09-16 pre-adoption file."""
+    return [{"id": "g-01", "category": "conceito", "no_retrieval": False, "run_failed": False,
+             "faithfulness_score": 0.9, "relevancy_score": 0.8}]
+
+
+def test_reconcile_scored_golden_still_accepts_a_hashless_item_by_default():
+    rows = [{"id": "g-01", "question": "q1", "category": "conceito", "answer": "a1", "run_failed": False}]
+    out = reconcile_scored_golden(rows, _legacy_stored_golden())
+    assert out[0]["faithfulness_score"] == 0.9
+
+
+def test_reconcile_scored_golden_refuses_a_hashless_item_under_require_hash():
+    rows = [{"id": "g-01", "question": "q1", "category": "conceito", "answer": "a1", "run_failed": False}]
+    with pytest.raises(ValueError) as exc:
+        reconcile_scored_golden(rows, _legacy_stored_golden(), require_hash=True)
+    assert "g-01" in str(exc.value)
+    assert "--score-only" in str(exc.value)
+
+
+def test_reconcile_scored_golden_under_require_hash_accepts_a_matching_hash():
+    from evals.groundtruth.generation.answers import answer_sha256
+
+    rows = [{"id": "g-01", "question": "q1", "category": "conceito", "answer": "a1", "run_failed": False}]
+    stored = [{**_legacy_stored_golden()[0], "answer_sha256": answer_sha256("a1")}]
+    out = reconcile_scored_golden(rows, stored, require_hash=True)
+    assert out[0]["faithfulness_score"] == 0.9
 
 
 def test_score_golden_answers_uses_injected_fakes_and_never_imports_deepeval():

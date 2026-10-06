@@ -10,7 +10,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
-from evals.groundtruth.generation.answers import answer_sha256, is_failed_run
+from evals.groundtruth.generation.answers import answer_sha256, assert_stored_hashes_present, is_failed_run
 from evals.groundtruth.golden.judges import ANTHROPIC_JUDGE_MODEL, ANTHROPIC_MAX_TOKENS
 from evals.groundtruth.golden.triage import JUDGE_MODEL, MAX_JUDGE_ATTEMPTS, JudgeError, _response_content
 
@@ -140,7 +140,8 @@ def run_abstention(rows: list[dict], clients: dict) -> list[dict]:
     return results
 
 
-def relabel_stored_abstention(oos_rows: list[dict], stored_results: list[dict]) -> list[dict]:
+def relabel_stored_abstention(oos_rows: list[dict], stored_results: list[dict],
+                              require_hash: bool = False) -> list[dict]:
     """Rebuilds abstention rows from an already-written scores.json ("abstention" list) without calling
     a judge again: a row whose answer is a failed run is relabelled run_failed and its stored verdict
     (if any) is ignored for the label; every other row keeps its stored judges verdicts, relabelled by
@@ -161,7 +162,14 @@ def relabel_stored_abstention(oos_rows: list[dict], stored_results: list[dict]) 
     (hashed against its completed answer) next to a stale, still-failed answers.jsonl row, and that
     mismatch must be caught here rather than silently rendered. A stored item with no answer_sha256 is a
     legacy item (written before fix round 2) and is accepted as-is, on either a completed or a failed row.
+
+    require_hash (Task 20) removes that legacy tolerance: a stored item with no answer_sha256 raises
+    naming the ids, rather than being reused against answers it may never have been judged on. On
+    2026-09-30 that hole would have relabelled verdicts given on a rate-limit error string as findings
+    about real answers. --report-only passes True; default False keeps every other caller unchanged.
     """
+    if require_hash:
+        assert_stored_hashes_present(oos_rows, stored_results, "Stored abstention verdicts")
     stored_by_id = {r["id"]: r for r in stored_results}
     out = []
     for row in oos_rows:

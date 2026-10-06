@@ -78,42 +78,34 @@ See `results/significance.md` for the pre-registered bootstrap intervals and pai
 
 ### Generation
 
-The real JuriAI agent (gpt-4o, the pre-adoption 5000/0 retrieval config) answered a sample of 30 golden questions (seed 7) and 10 out-of-scope questions. Generation has not been rerun under the adopted 1500/150 chunking; that is Task 20. Faithfulness and answer relevancy are scored by DeepEval with gpt-4.1-mini as the judge model.
+The real JuriAI agent (gpt-4o) answered a sample of 30 golden questions (seed 7) and 10 out-of-scope questions, under the adopted 1500/150 retrieval config and with the Task 20 abstention instruction in `JuriAI.INSTRUCTIONS`. Faithfulness and answer relevancy are scored by DeepEval with gpt-4.1-mini as the judge model; abstention by gpt-4.1 and claude-haiku-4-5 together.
+
+**The agent now abstains on 10 of 10 out-of-scope questions.** Before, under 5000/0 and with no abstention instruction, it abstained on 0 of the 7 it completed and answered them from general knowledge. The chunking and the instruction changed in the same step, so neither result is attributable to one of them alone.
+
+Before and after, side by side, with the tokens-per-turn and unscored counts: `results/generation_adoption.md`. The pre-adoption measurement is preserved whole in `results/generation_pre_adoption.md`, with `generation/answers_pre_adoption.jsonl` and `generation/scores_pre_adoption.json`.
 
 | category | faithfulness mean | faithfulness n | relevancy mean | relevancy n |
 |---|---|---|---|---|
-| conceito | 0.959 | 7 | 0.972 | 8 |
-| fato_pontual | 0.969 | 8 | 1.000 | 8 |
-| procedimento | 0.939 | 14 | 0.980 | 14 |
-| overall | 0.952 | 29 | 0.983 | 30 |
+| conceito | 0.960 | 7 | 0.969 | 8 |
+| fato_pontual | 0.907 | 8 | 0.954 | 8 |
+| procedimento | 0.946 | 13 | 0.983 | 14 |
+| overall | 0.938 | 28 | 0.971 | 30 |
 
-No retrieval, excluded from the faithfulness mean: 1. Run failed, excluded from both means: 0.
-
-Source: `results/generation.md`.
-
-Abstention on the out-of-scope questions, judged by gpt-4.1 and claude-haiku-4-5:
+No retrieval, excluded from the faithfulness mean: 1. Run failed, excluded from both means: 0. Not scored by the judge, excluded from the faithfulness mean: 1, because a content filter refused that one faithfulness call. Against the pre-adoption 0.952 (n=29) and 0.983 (n=30), both means move down slightly; one pass each with no repeats, so that is not evidence of a change in quality either way.
 
 | label | count |
 |---|---|
-| abstained | 0 of 7 completed runs |
-| answered | 7 of 7 completed runs |
-| disagreement | 0 of 7 completed runs |
-| unverified | 0 of 7 completed runs |
-| run failed | 3 of 10 out-of-scope questions |
+| abstained | 10 of 10 completed runs |
+| answered | 0 of 10 completed runs |
+| disagreement | 0 of 10 completed runs |
+| unverified | 0 of 10 completed runs |
+| run failed | 0 of 10 out-of-scope questions |
 
-Source: `results/generation.md`.
+**No run failed, and no turn came close to the rate limit.** Input tokens per turn fell from a mean of 15004.2 and a maximum of 40912 to a mean of 5479.8 and a maximum of 6257, against a Tier 1 limit of 30,000 gpt-4o tokens per minute. Before, 2 completed turns and all 3 failed ones were at or above that limit, so one turn could exhaust the per-minute budget by itself; after, none can. Four rows did fail on transient rate limits in the first pass of this run and were rerun with `--only`, which refuses any id that is not currently a failed run, so the sample was restored rather than reselected.
 
-Failed runs:
+**One in-scope question was refused**, `r1-cdc-060`: the agent searched, retrieved a context, and still said it found nothing in the knowledge base. That is 1 of 30, and the two means cannot detect it, because DeepEval scored that refusal 1.00 on both faithfulness and relevancy. Full reasoning in `results/generation_adoption.md`.
 
-| id | limit | requested |
-|---|---|---|
-| oos-01 | 30000 | 40540 |
-| oos-07 | 30000 | 40571 |
-| oos-08 | 30000 | 39229 |
-
-Source: `results/generation.md`.
-
-Answers that searched the knowledge base: 36 of 40. Measured cost of the generation run: $1.8735 in total, excluding agno's background memory-update calls. Source: `results/generation.md`.
+Answers that searched the knowledge base: 39 of 40. Measured cost of the generation run: $0.8319 in total, down from $1.8735, excluding agno's background memory-update calls and the DeepEval calls made during the crashed first pass. Source: `results/generation.md`.
 
 ## Adopted change
 
@@ -127,7 +119,7 @@ Answers that searched the knowledge base: 36 of 40. Measured cost of the generat
 
 **Transfer caveat.** The comparison ran on 4 public statutes, while production documents are petitions and contracts passed through OCR. The gain is measured on this corpus only.
 
-**What is not measured.** The generation quality of the new chunking. `results/generation.md` scored answers under the old 5000/0 configuration; rerunning generation under 1500/150 is Task 20.
+**Generation under the new chunking is now measured.** Task 20 reran it at 1500/150, together with an abstention instruction added to the agent in the same step: `results/generation_adoption.md` has the before and after, and `results/generation.md` is the current report. What is still not measured is either change on its own, since the two moved together.
 
 ## How it works
 
@@ -209,7 +201,7 @@ The generation layer also uses 10 out-of-scope questions. `generation/out_of_sco
   - `r1-clt-041` [procedimento] "Como é calculado o pagamento mensal dos professores com base nas aulas semanais e nas faltas?" CLT Art. 320, passage length 562 characters. Cause not established. Recovered by chunk1500 (rank 1), chunk800 (rank 2), hybrid (rank 1) and rerank (rank 1).
   - `r1-clt-044` [procedimento] "Os municípios podem criar regras que contrariem as normas e instruções federais sobre o funcionamento dessas atividades?" CLT Art. 69, passage length 416 characters. Cause not established. Recovered by chunk1500 (rank 4), chunk800 (rank 1), hybrid (rank 2) and rerank (rank 1).
   - `r1-cpc-000` [procedimento] "Quais são os requisitos para que a eleição de foro tenha validade em um contrato?" CPC Art. 63, passage length 1361 characters. Cause not established. Recovered by chunk1500 (rank 1), chunk800 (rank 1), hybrid (rank 2) and rerank (rank 1).
-  - `r1-cpc-016` [conceito] "Quais são as defesas que podem ser apresentadas nesse tipo de processo?" The question has no antecedent for "esse tipo de processo". In the generation run the agent asked for clarification without searching, which `results/generation.md` counts as the one no-retrieval answer. Not recovered: miss under production, chunk1500, chunk800, hybrid and rerank.
+  - `r1-cpc-016` [conceito] "Quais são as defesas que podem ser apresentadas nesse tipo de processo?" The question has no antecedent for "esse tipo de processo". In the generation run the agent asked for clarification without searching, which `results/generation_pre_adoption.md` counts as the one no-retrieval answer. Not recovered: miss under production, chunk1500, chunk800, hybrid and rerank.
   - `r1-cpc-004` [fato_pontual] "Quando a desistência da ação passa a ter efeito legal?" The golden passage is CPC Art. 200, whose parágrafo único says the desistência takes effect only after judicial homologation. None of the 10 chunks hybrid returns overlaps that passage; 4 of them contain the word "desistência" from other provisions, including CPC Art. 485 and Art. 1.040. Not recovered: miss under production, chunk1500, chunk800, hybrid and rerank.
 - **The `cliente_id` filter runs after top-k, and it shows.** agno 2.4.7's `LanceDb.search` asks LanceDB for `limit` rows and nothing else (`agno/vectordb/lancedb/lance_db.py:474-483`), then drops in Python the rows whose `meta_data` does not match the filter (`lance_db.py:486-503`); filter expressions are refused with a warning (`lance_db.py:467-469`). Measured on a two-tenant table built offline from the same corpus and the pre-adoption 5000/0 chunking (tenant 0 owns cdc and clt, 149 chunks; tenant 1 owns cpc and lgpd, 136 chunks; 285 in total), with `limit=10`. The same build under the adopted 1500/150 chunking produces 1054 chunks; `results/multitenant.md` was not rerun, because the filter behaviour it documents is a property of agno's search path, not of the chunk size:
   - Searched for the tenant that owns the question's document, 26 of 59 questions got fewer than 10 rows (12 of 28 for tenant 0, mean 8.54 rows; 14 of 31 for tenant 1, mean 9.19) and none got 0. recall@10 did not move: 0.929 and 0.903, the same as the single-tenant index on the same questions.
@@ -220,8 +212,8 @@ The generation layer also uses 10 out-of-scope questions. `generation/out_of_sco
   - agno's `Knowledge.insert` catches an embedding error, logs it and inserts 0 chunks for that document (`agno/knowledge/knowledge.py:3899-3905`), so the offline build checks each document's chunk count instead of relying on an exception. Source: `results/multitenant.md`.
 - **Hybrid full-text search has no Portuguese stemming.** It runs over the `payload` column with agno's native LanceDB FTS (`use_tantivy=False`). On the no-leakage subset, hybrid lowers recall@1 (0.500 vs 0.650) and MRR (0.667 vs 0.742) against dense chunk1500. Source: `results/notes.md`, sections 5 and 6.
 - **The reranker reloads its model on every call.** agno 2.4.7's `SentenceTransformerReranker._rerank` constructs a new `CrossEncoder` per call, so every timed rerank search includes loading `BAAI/bge-reranker-v2-m3` from disk. p50 search is 45356 ms. It was measured as is, not patched. Source: `results/notes.md`, section 7.
-- **The agent abstained on 0 of 7 completed out-of-scope runs.** It answers from general knowledge, and its instructions do not ask it to abstain on an out-of-scope question. Source: `results/generation.md`.
-- **3 of 10 out-of-scope runs failed on rate limits.** A single agent turn with the pre-adoption retrieval config (5000-character chunks, 10 results per search) requested 39229 to 40571 tokens, above a Tier 1 OpenAI account's 30,000 gpt-4o tokens-per-minute limit. The adopted 1500/150 chunking returns 10 shorter chunks per search, so the per-turn token count should fall, but that has not been measured; it is part of Task 20. Source: `results/generation.md`.
+- **The agent abstained on 0 of 7 completed out-of-scope runs**, under the pre-adoption config and with no abstention instruction: it answered all of them from general knowledge. **Fixed.** Task 20 added an abstention rule to `JuriAI.INSTRUCTIONS`, and the rerun abstains on 10 of 10. Sources: `results/generation_pre_adoption.md` and `results/generation_adoption.md`.
+- **3 of 10 out-of-scope runs failed on rate limits.** A single agent turn with the pre-adoption retrieval config (5000-character chunks, 10 results per search) requested 39229 to 40571 tokens, above a Tier 1 OpenAI account's 30,000 gpt-4o tokens-per-minute limit. **Measured and gone:** at 1500/150 the largest turn is 6257 input tokens, so no single turn can exhaust the per-minute budget, and the rerun had 0 failed runs. What remains is a harness property, not a chunking one: nothing paces a run, so consecutive turns can still accumulate inside one minute, which is how 4 rows failed on the first pass of that rerun before being retried. Sources: `results/generation_pre_adoption.md` and `results/generation_adoption.md`.
 - **Nothing reindexes a document that is already in LanceDB.** Known limitation, not fixed in this task. `usuarios/signals.py:7-16` queues the OCR and indexing chain only under `if created:`, and `ia/tasks.py:44-56` (`rag_documentos`) is the only writer into the `documentos` table, with `usuarios/signals.py:5` as its only caller. There is no management command, admin action or scheduled task that rebuilds it. So after the chunking change the table mixes 5000/0 rows written before the deploy with 1500/150 rows written after it. What limits the damage is that `render.yaml` lines 17 and 18 set `DATA_DIR=/tmp/juri-ai`, ephemeral storage on Render's free plan, so the table is emptied by every deploy, restart or idle spin-down and is refilled only by documents uploaded after that point. Source: `results/adoption.md`.
 - **The first CI runs failed before any job started.** The workflow used `${{ runner.temp }}` in job-level `env`, where GitHub does not allow the `runner` context ("Invalid workflow file: Unrecognized named-value: 'runner'"). PR #11 fixed it by moving `DATA_DIR` into the test step's env.
 - **pandas was an undeclared dependency.** A clean-venv CI simulation found that agno 2.4.7 `LanceDb` search calls `to_pandas()`, while pandas was installed only through docling, which the CI install excludes. `pandas==2.3.3` is now declared in `requirements.txt`.
@@ -254,7 +246,7 @@ Production tracing (`ia/observability.py`, called by `ensure_agno_tracing()` in 
 
 - Each agent run appeared as an `Assistente_Jurídico_Virtual.run` trace with an agent span, a small gpt-4o call deciding to search (about 470 input tokens), the `search_knowledge_base` tool span, and a gpt-4o answer call with the retrieved context (11,825 to 14,833 input tokens).
 - Latency was 8.55 to 9.14 s per run. Langfuse-computed cost was $0.0343 to $0.0393 per run.
-- agno's background memory-update calls appeared as separate `OpenAIChat.invoke` traces of about 900 input tokens, costing $0.0031 to $0.0047 each. Langfuse shows these calls, which `run.metrics` does not meter, so the measured cost in `results/generation.md` excludes them.
+- agno's background memory-update calls appeared as separate `OpenAIChat.invoke` traces of about 900 input tokens, costing $0.0031 to $0.0047 each. Langfuse shows these calls, which `run.metrics` does not meter, so the measured cost in `results/generation_pre_adoption.md` excludes them.
 - Every trace and observation input and output shows `[REDACTED]` from the closed-allowlist masking hook.
 
 ## Reproduce
@@ -298,7 +290,8 @@ CI installs `requirements.txt` without `docling` and `mpire`, plus `evals/ground
 | Out-of-scope check | `.venv/Scripts/python.exe -m evals.groundtruth.generation.out_of_scope_check` | yes, text-embedding-3-large, gpt-4.1 and claude-haiku-4-5 |
 | Generation: smoke run, one question of each kind, written only under `runtime/generation` | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --smoke --limit-golden 1 --limit-oos 1` | yes |
 | Generation: full run | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation` | yes, gpt-4o, gpt-4.1-mini, gpt-4.1 and claude-haiku-4-5 |
-| Generation: rebuild `results/generation.md` from stored answers and scores | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --report-only` | no |
+| Generation: re-render `results/generation.md` from the verdicts already in `generation/scores.json` | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --report-only` | no |
+| Generation: score the answers already in `generation/answers.jsonl`, then re-render | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --score-only` | yes, gpt-4.1-mini, gpt-4.1 and claude-haiku-4-5 |
 | Generation: rerun failed runs only | `.venv/Scripts/python.exe -m evals.groundtruth.generation.run_generation --only oos-01 oos-07 oos-08` | yes |
 
 Notes:
@@ -306,6 +299,8 @@ Notes:
 - The indexer's `--offline` flag fails on an embedding cache miss instead of calling the API. `cache/chunks` is not committed, so a rebuild from a clean clone calls the embeddings API.
 - The rerank config downloads `BAAI/bge-reranker-v2-m3` from Hugging Face on first use.
 - `--only` refuses any id that is not currently a failed run.
+- A generation run fills the runtime `documentos` table only when it is empty, then requires exactly the chunk count the current `ia/retrieval_config.py` produces over the corpus (1054 at 1500/150, 285 at the pre-adoption 5000/0). After a chunking change, delete `runtime/generation/lancedb/documentos.lance` first, or the run stops on that count before it spends anything.
+- `--report-only` makes no call, but it only re-renders verdicts that are already in `generation/scores.json`. It computes no score, and it refuses to run when a stored verdict carries no `answer_sha256` to match against the answers on disk, so it can never publish one run's verdicts as another run's result. Scoring answers that have no stored verdicts is `--score-only`, which calls the three judge models and costs money. Neither one calls the agent, so neither can change an answer or spend agent tokens.
 - `golden/candidates.jsonl`, `golden/triage.jsonl`, `golden/judgments.jsonl` and `golden/golden_set.jsonl` are committed, so triage, judges and consensus can be rerun from a clone against the published candidates. Regenerating candidates calls gpt-4.1-mini at temperature 0.7, so new candidates would differ from the published set.
 
 ## Disclosure
@@ -314,4 +309,5 @@ Notes:
 - The golden set has no human legal review. It was selected by consensus of two LLM judges, gpt-4.1 and claude-haiku-4-5.
 - The 59-question set is below the design target of 100.
 - The generation layer uses a sample of 30 golden questions drawn with seed 7, and both of its scorers are LLM judges.
+- The generation harness paces nothing: `generate_answers` calls the agent back to back with no delay and no backoff, so a run walks into the account's tokens-per-minute window on its own. That is why turns of about 5500 tokens still hit a 30,000 per minute limit, and it means the failed-run count of any generation run is a property of that pacing and of the account tier, not of the chunking being measured. No pacing was added.
 - Measured costs are listed in `results/notes.md` (ingestion) and `results/generation.md` (generation).
