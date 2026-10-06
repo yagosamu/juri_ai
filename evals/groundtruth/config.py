@@ -30,6 +30,10 @@ ANSWERS = GENERATION_DIR / "answers.jsonl"
 SCORES = GENERATION_DIR / "scores.json"
 GENERATION_REPORT = RESULTS_DIR / "generation.md"
 GENERATION_RUNTIME_DIR = GROUNDTRUTH_DIR / "runtime" / "generation"
+# Task 21: the abstention gate's own baseline, kept beside the answers it is taken from rather than
+# in baseline.json, which belongs to the retrieval gate and has its own tested payload schema.
+ABSTENTION_BASELINE = GENERATION_DIR / "abstention_baseline.json"
+ABSTENTION_REPORT = RESULTS_DIR / "abstention.md"
 SAMPLE_SIZE = 30
 SAMPLE_SEED = 7
 

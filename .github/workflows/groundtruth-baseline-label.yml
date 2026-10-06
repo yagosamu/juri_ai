@@ -29,7 +29,9 @@ jobs:
             evals/groundtruth/baseline.json \
             evals/groundtruth/golden/golden_set.jsonl \
             evals/groundtruth/indexes \
-            evals/groundtruth/cache/queries)
+            evals/groundtruth/cache/queries \
+            evals/groundtruth/generation/answers.jsonl \
+            evals/groundtruth/generation/abstention_baseline.json)
           if [ -z "$CHANGED" ]; then
             echo "No protected file changed. Nothing to do."
             exit 0
@@ -41,8 +43,10 @@ jobs:
             exit 0
           fi
           echo ""
-          echo "These files feed the retrieval-gate job's recall@10 and mrr comparison. A pull request"
-          echo "that edits them together with a regression would otherwise pass unnoticed, so changing"
-          echo "them needs a maintainer to confirm the new numbers on purpose."
+          echo "These files feed the retrieval gate's recall@10 and mrr comparison and the abstention"
+          echo "gate's two counts. A pull request that edits them together with a regression would"
+          echo "otherwise pass unnoticed, so changing them needs a maintainer to confirm the new numbers"
+          echo "on purpose. Re-recording the generation run changes generation/answers.jsonl, which both"
+          echo "abstention counts are measured from, so that counts as a baseline change too."
           echo "Review the new numbers, then add the 'baseline-change' label to this pull request to re-run this check."
           exit 1
