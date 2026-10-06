@@ -1,0 +1,11 @@
+{
+  "run": "generation 2026-10-06, recorded in evals/groundtruth/results/generation.md",
+  "source": "evals/groundtruth/generation/answers.jsonl",
+  "detector": "evals/groundtruth/generation/refusal.py",
+  "report": "evals/groundtruth/results/abstention.md",
+  "golden_sample": "seed 7, 30 of the 59 golden questions",
+  "n_golden": 30,
+  "n_out_of_scope": 10,
+  "out_of_scope_refusals": 10,
+  "golden_refusals": 1
+}

@@ -1,0 +1,869 @@
+{
+  "golden": [
+    {
+      "id": "r1-clt-045",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses who can file a labor complaint on behalf of a minor under 18, with no irrelevant information included.",
+      "relevancy_cost": 0.0008236000000000001,
+      "relevancy_error": null,
+      "faithfulness_score": null,
+      "faithfulness_reason": null,
+      "faithfulness_cost": null,
+      "faithfulness_error": "content_filter",
+      "answer_sha256": "d68808d0e3d201ddc01ff9ee6364553d8bbb3f5d2fc08650da7994b2916573d7",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-clt-031",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the employees' obligations regarding workplace safety and occupational health without including any irrelevant information.",
+      "relevancy_cost": 0.00097,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.004312,
+      "faithfulness_error": null,
+      "answer_sha256": "6ee02440e69adfa02c5d752098caffc67dad92c7e51b0e4f1ead86779faab2c1",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-clt-051",
+      "category": "conceito",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response directly addresses the question about how the vacation period for an employee is defined, with no irrelevant information included.",
+      "relevancy_cost": 0.0015736,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.005004000000000001,
+      "faithfulness_error": null,
+      "answer_sha256": "bfbfb0eedae4b6b1e26cadbd0e965a5c9e770b2ac05b6bdacbd850eef1924e01",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cpc-015",
+      "category": "conceito",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 0.75,
+      "relevancy_reason": "The score is 0.75 because the response addresses the main objectives of international legal cooperation as requested, but it includes irrelevant details about legal frameworks, principles, and administrative aspects that were not asked for, preventing a higher score.",
+      "relevancy_cost": 0.0020308,
+      "relevancy_error": null,
+      "faithfulness_score": 0.9166666666666666,
+      "faithfulness_reason": "The score is 0.92 because the actual output incorrectly emphasizes 'intimação' as a main objective, whereas the retrieval context lists broader objectives like citation, notification, and enforcement without explicitly mentioning 'intimação'.",
+      "faithfulness_cost": 0.0051080000000000006,
+      "faithfulness_error": null,
+      "answer_sha256": "d7fe44c9e93f5f8588a799612090a2816230858d230f47f3c5d206a418a6054c",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cdc-062",
+      "category": "conceito",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question about when a collective action judgment has res judicata effect for all, including non-participants, without any irrelevant information.",
+      "relevancy_cost": 0.0017464,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.006509600000000001,
+      "faithfulness_error": null,
+      "answer_sha256": "10a2ef2a7f247695cab34f9f35a6e636258b07051d72bf0953ab8e6d95bf550f",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cdc-063",
+      "category": "fato_pontual",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response directly addresses the question without any irrelevant information, providing a clear and focused answer.",
+      "relevancy_cost": 0.0009012000000000001,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.006250400000000001,
+      "faithfulness_error": null,
+      "answer_sha256": "d9e9e9b6a2db5ba7a5ea1c7bef671e66606e1ace0a33cae586fd71ddf0c6b73e",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-lgpd-071",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses how to obtain consent for processing children's personal data without including any irrelevant information.",
+      "relevancy_cost": 0.0016060000000000002,
+      "relevancy_error": null,
+      "faithfulness_score": 0.7142857142857143,
+      "faithfulness_reason": "The score is 0.71 because the actual output incorrectly limits the obligation to provide public information to only when treating children's data, whereas the context states this applies generally. Additionally, while the output includes detailed user characteristics for providing information, the context does not explicitly list all these characteristics together, leading to partial but not full support.",
+      "faithfulness_cost": 0.0048372,
+      "faithfulness_error": null,
+      "answer_sha256": "3720e05f86dd533e9009665a202aeb82959ad8caf86346e22e9941400a7ce83f",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cpc-008",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question without any irrelevant information, providing a clear and focused explanation.",
+      "relevancy_cost": 0.001262,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.0058976,
+      "faithfulness_error": null,
+      "answer_sha256": "cc17502c5f72c51344318ec53e0360b1f082b4c44d0335ce7e1a44f90aac07c5",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cdc-067",
+      "category": "conceito",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question about institutional purposes for protecting diffuse or collective interests without including any irrelevant information.",
+      "relevancy_cost": 0.0016616,
+      "relevancy_error": null,
+      "faithfulness_score": 0.8,
+      "faithfulness_reason": "The score is 0.80 because the actual output incorrectly limits collective defense to only diffuse interests or rights, omitting collective and individual homogeneous interests, and it conflates the Public Ministry with associations, whereas the context distinguishes them as separate entities.",
+      "faithfulness_cost": 0.0053228,
+      "faithfulness_error": null,
+      "answer_sha256": "cc70641ce46a80c5d6982abd96c80c78513985b3a6c78de16bc8fcc5e288685a",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-clt-048",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question about the maximum permitted duration for underground work shifts and the conditions required for extension, with no irrelevant information included.",
+      "relevancy_cost": 0.001474,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.0050332,
+      "faithfulness_error": null,
+      "answer_sha256": "c522630e18bfd088b4cfeb919e2c6646b4986d48c1bb4407146fc750337a7b3b",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cpc-011",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 0.9230769230769231,
+      "relevancy_reason": "The score is 0.92 because the response mostly addresses the actions requiring judicial authorization and hearing interested parties, but it includes an irrelevant statement about amicable partitions where the inventariante can act without such authorization, which slightly lowers the relevancy.",
+      "relevancy_cost": 0.0019108000000000003,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.0058184000000000005,
+      "faithfulness_error": null,
+      "answer_sha256": "d6756b5812f92ed4ff60aaf9fc5ae9c73e302253c88629c9ba05aff989d170ae",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-lgpd-073",
+      "category": "conceito",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question about the information data subjects should receive regarding their personal data processing, with no irrelevant statements present.",
+      "relevancy_cost": 0.0013644,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.0052032,
+      "faithfulness_error": null,
+      "answer_sha256": "735a64f2714c4813b57cc073eab5d1c9a0c9a3c44510dd850f70148ab9ccadac",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cpc-004",
+      "category": "fato_pontual",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 0.8333333333333334,
+      "relevancy_reason": "The score is 0.83 because the response mostly addresses when the legal effect of withdrawal occurs, but includes an explanation of contestation that, while informative, is not directly relevant to the timing of the withdrawal's legal effect.",
+      "relevancy_cost": 0.0011288000000000001,
+      "relevancy_error": null,
+      "faithfulness_score": 0.6,
+      "faithfulness_reason": "The score is 0.60 because the actual output contradicts the context by implying the author can withdraw the action without the defendant's consent, whereas the context clearly states withdrawal requires defendant's consent after contestation.",
+      "faithfulness_cost": 0.0043848,
+      "faithfulness_error": null,
+      "answer_sha256": "0a5df08ac0ad34c3d9bbb41176d644d764f9b68e622d74e6525d7dd587f19f97",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-clt-038",
+      "category": "fato_pontual",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the jurisdiction and location of the Tribunal Superior do Trabalho without any irrelevant information.",
+      "relevancy_cost": 0.0007964000000000001,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.0049272000000000005,
+      "faithfulness_error": null,
+      "answer_sha256": "b592dfc1f3561554c1161adb47f206b0be464d44297dbcae25a61c12c875edef",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cdc-060",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question without any irrelevant information, providing a clear and focused answer.",
+      "relevancy_cost": 0.0009548000000000001,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.005326,
+      "faithfulness_error": null,
+      "answer_sha256": "90949b59e9b9bffd14b67ee4184ecfdf242e8b87fe97f29bd0484c121dbe2c18",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cdc-066",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses how the judge will handle remaining debts if agreements with all creditors are not reached, with no irrelevant information included.",
+      "relevancy_cost": 0.0015164000000000002,
+      "relevancy_error": null,
+      "faithfulness_score": 0.9,
+      "faithfulness_reason": "The score is 0.90 because the actual output inaccurately implies that the judge initiates the superindebtedness process only if there is no success with all creditors, whereas the context clarifies the judge acts at the consumer's request if conciliation with any creditors fails, indicating a slight misrepresentation.",
+      "faithfulness_cost": 0.005524,
+      "faithfulness_error": null,
+      "answer_sha256": "697c9c55c7acac71ed32cd9c49bb0a54e0c38730c3937068770135730b9f0dea",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-clt-054",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question about the reasons an employer must prove to justify the dismissal of a CIPA employee representative, with no irrelevant information included.",
+      "relevancy_cost": 0.0009352000000000001,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.004930400000000001,
+      "faithfulness_error": null,
+      "answer_sha256": "5a17724da31b106ce2d148f59515162b75b706adaf1e8afd796a8966f337374f",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-clt-053",
+      "category": "fato_pontual",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 0.8,
+      "relevancy_reason": "The score is 0.80 because the answer mostly addresses the maximum deadline for complaint appreciation in the summary procedure, but it includes a statement about a specific law amendment that is not directly relevant to the question, preventing a higher score.",
+      "relevancy_cost": 0.0009848,
+      "relevancy_error": null,
+      "faithfulness_score": 0.8,
+      "faithfulness_reason": "The score is 0.80 because the actual output incorrectly states that the prazo itself can be on a special docket, whereas the retrieval context clarifies that only the appreciation of the complaint may be on a special docket according to the judicial movement of the Junta de Conciliação e Julgamento, indicating a misinterpretation.",
+      "faithfulness_cost": 0.005819600000000001,
+      "faithfulness_error": null,
+      "answer_sha256": "48c7d4eda67a263a84ee7d6ca1964c030c0e03538c48c10bed3124b715ddbe66",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-lgpd-072",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question about the elements a privacy governance program should contain to comply with data protection regulations, with no irrelevant information included.",
+      "relevancy_cost": 0.0025608000000000002,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.0052932000000000005,
+      "faithfulness_error": null,
+      "answer_sha256": "b1fda2b04c7de83eb90e351683721efe955ad0d6e97ac177dd5d581719046f70",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-clt-040",
+      "category": "fato_pontual",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response directly addresses the question about payment of costs when the employee lacks free legal aid and the union is involved, with no irrelevant information included.",
+      "relevancy_cost": 0.0007168000000000001,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.0054556000000000006,
+      "faithfulness_error": null,
+      "answer_sha256": "8c9369f37fd881a07b2db7b9d11015b12d61fd9eb11dc68e43385a40438b7792",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cpc-018",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 0.8333333333333334,
+      "relevancy_reason": "The score is 0.83 because the response mostly addresses the creditor's options when the debtor attempts to pay differently, but it includes an irrelevant statement about the creditor's inability to proceed with execution if the debtor fulfills the obligation, which does not directly answer the question.",
+      "relevancy_cost": 0.0012544000000000001,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.0070588000000000005,
+      "faithfulness_error": null,
+      "answer_sha256": "f729fc7b2fc1ab31617d6576005cfc4f8cf8148a2adb32161a5db07c1983cef2",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cpc-009",
+      "category": "fato_pontual",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question about which legislation regulates executions against insolvent debtors in the absence of a specific law, with no irrelevant information included.",
+      "relevancy_cost": 0.0008308,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.0055048,
+      "faithfulness_error": null,
+      "answer_sha256": "a908931cb11111dd2b7a11acc012337d76a823c8280582099de4724f68661f60",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cpc-016",
+      "category": "conceito",
+      "run_failed": false,
+      "no_retrieval": true,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question without any irrelevant information, providing clear and focused defenses applicable to the process in question.",
+      "relevancy_cost": 0.0007488000000000001,
+      "relevancy_error": null,
+      "faithfulness_score": null,
+      "faithfulness_reason": null,
+      "faithfulness_cost": null,
+      "faithfulness_error": null,
+      "answer_sha256": "c946519c084530e8f9450ebe9d8e141f1d67e2154eecd764d6c45c078e9919d9",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cpc-025",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question without any irrelevant information, providing a clear and focused answer.",
+      "relevancy_cost": 0.0013012000000000002,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.006552,
+      "faithfulness_error": null,
+      "answer_sha256": "0aa91f2f2c79599e80b61d7f026c1a0fe911ebf7c93394498b70319ec6e24e72",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cdc-069",
+      "category": "conceito",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response directly addresses the question about when a judge can disregard a company's legal personality to protect the consumer, with no irrelevant information included.",
+      "relevancy_cost": 0.0017468,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.005190800000000001,
+      "faithfulness_error": null,
+      "answer_sha256": "1731d18b54ba5a3e25fcfafe6ada03edc2c10aee6d6cf52db027a2505a60a09d",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-clt-039",
+      "category": "fato_pontual",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question about the maximum daily working hours for an apprentice and exceptions for those who have completed elementary education, with no irrelevant information included.",
+      "relevancy_cost": 0.0010852000000000001,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.0047672,
+      "faithfulness_error": null,
+      "answer_sha256": "7f59d1d3214c16ae1047901449e962c635c2ced29be844de44a89e2f4bb14e0e",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cpc-026",
+      "category": "fato_pontual",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response directly addresses who should bear the costs of procedural acts requested by the Public Treasury, Public Ministry, or Public Defender's Office, with no irrelevant information included.",
+      "relevancy_cost": 0.0015072000000000002,
+      "relevancy_error": null,
+      "faithfulness_score": 0.8571428571428571,
+      "faithfulness_reason": "The score is 0.86 because the actual output incorrectly claims that it is initially unnecessary to advance payment for perícias, while the context specifies that payment depends on budget availability and may need to be advanced by the requester, indicating a partial contradiction.",
+      "faithfulness_cost": 0.007462,
+      "faithfulness_error": null,
+      "answer_sha256": "61f1cedfd7fa1cb057a57a73604d38e06b74f8d43366e599087930760f3915b9",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-lgpd-077",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses how research bodies should ensure the security and proper use of personal data in public health studies, with no irrelevant information included.",
+      "relevancy_cost": 0.0015184,
+      "relevancy_error": null,
+      "faithfulness_score": 0.8461538461538461,
+      "faithfulness_reason": "The score is 0.85 because the actual output incorrectly implies that personal data must be used exclusively for studies and research, whereas the context allows other lawful purposes. Additionally, the output does not fully align with the context's precise definitions of pseudonymization and anonymization, leading to partial inaccuracies.",
+      "faithfulness_cost": 0.005242800000000001,
+      "faithfulness_error": null,
+      "answer_sha256": "d5730bc8dd6cc415860e21f166cc96e8b9ab348decf3b2ea04a20bb8c051bba3",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cdc-059",
+      "category": "conceito",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question about situations where a service provider can be held liable without fault, with no irrelevant information included.",
+      "relevancy_cost": 0.0012476000000000002,
+      "relevancy_error": null,
+      "faithfulness_score": 1.0,
+      "faithfulness_reason": "The score is 1.00 because there are no contradictions; the actual output fully aligns with the retrieval context. Great job maintaining accuracy!",
+      "faithfulness_cost": 0.0055260000000000005,
+      "faithfulness_error": null,
+      "answer_sha256": "5f8feb5a836ab9721f70b11a17c126ae6d7474de848f8bcb1960ab2978379550",
+      "prior_attempts": []
+    },
+    {
+      "id": "r1-cpc-029",
+      "category": "procedimento",
+      "run_failed": false,
+      "no_retrieval": false,
+      "relevancy_score": 1.0,
+      "relevancy_reason": "The score is 1.00 because the response fully addresses the question about initiating liquidation while an appeal is pending, with no irrelevant information included.",
+      "relevancy_cost": 0.0013708,
+      "relevancy_error": null,
+      "faithfulness_score": 0.8333333333333334,
+      "faithfulness_reason": "The score is 0.83 because the actual output incorrectly asserts that liquidation must be processed in separate records, while the context only states it can be done in separate records without making it a mandatory requirement.",
+      "faithfulness_cost": 0.0051964,
+      "faithfulness_error": null,
+      "answer_sha256": "8340eeb18ecd8653b134873a036d5545566d8e9507e1da990eb0dab35016396a",
+      "prior_attempts": []
+    }
+  ],
+  "faithfulness_relevancy": {
+    "by_category": {
+      "conceito": {
+        "faithfulness": {
+          "mean": 0.9595238095238096,
+          "n": 7
+        },
+        "relevancy": {
+          "mean": 0.96875,
+          "n": 8
+        }
+      },
+      "fato_pontual": {
+        "faithfulness": {
+          "mean": 0.9142857142857144,
+          "n": 7
+        },
+        "relevancy": {
+          "mean": 0.9476190476190477,
+          "n": 7
+        }
+      },
+      "procedimento": {
+        "faithfulness": {
+          "mean": 0.964957264957265,
+          "n": 12
+        },
+        "relevancy": {
+          "mean": 0.9812623274161736,
+          "n": 13
+        }
+      }
+    },
+    "overall": {
+      "faithfulness": {
+        "mean": 0.9498520710059171,
+        "n": 26
+      },
+      "relevancy": {
+        "mean": 0.9692765567765568,
+        "n": 28
+      }
+    },
+    "no_retrieval": 1,
+    "run_failed": 2,
+    "unscored_faithfulness": 1,
+    "unscored_relevancy": 0,
+    "unscored_reasons": {
+      "content_filter": 1
+    }
+  },
+  "abstention": [
+    {
+      "id": "oos-01",
+      "question": "Qual é a pena prevista para o crime de estelionato?",
+      "judges": {
+        "gpt-4.1": {
+          "verdict": {
+            "reasoning": "A resposta afirma explicitamente que não encontrou informações específicas na base de conhecimento sobre a pena para o crime de estelionato. Além disso, não fornece nenhum número, regra ou conclusão jurídica, apenas sugere a consulta ao Código Penal Brasileiro. Portanto, o assistente se absteve de responder de forma substantiva.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 250,
+            "output_tokens": 81
+          }
+        },
+        "claude-haiku-4-5": {
+          "verdict": {
+            "reasoning": "O assistente explicitamente declara que não encontrou informações específicas na base de conhecimento sobre a pena para estelionato. Não fornece nenhuma resposta substantiva, número, regra ou conclusão jurídica sobre o tema. Apenas recomenda consultar o Código Penal Brasileiro e oferece disponibilidade para outras questões, sem responder à pergunta formulada.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 540,
+            "output_tokens": 106
+          }
+        }
+      },
+      "label": "abstained",
+      "answer_sha256": "909a059cdcb71299b7e92eca99e602e71d887f408359bd29982a21b4e07bc7d8",
+      "prior_attempts": []
+    },
+    {
+      "id": "oos-02",
+      "question": "Com quantos pontos na carteira de habilitação o motorista tem o direito de dirigir suspenso?",
+      "judges": {
+        "gpt-4.1": {
+          "verdict": {
+            "reasoning": "A resposta afirma explicitamente que não encontrou informações na base de conhecimento sobre a quantidade de pontos necessários para a suspensão da carteira de habilitação. Além disso, recomenda consultar fontes oficiais ou a legislação, sem fornecer qualquer resposta substantiva ou número específico.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 253,
+            "output_tokens": 66
+          }
+        },
+        "claude-haiku-4-5": {
+          "verdict": {
+            "reasoning": "A resposta do assistente jurídico explicitamente declara que não encontrou informações na base de conhecimento sobre o tema questionado. Não fornece nenhuma resposta substantiva, número, regra ou conclusão jurídica sobre quantos pontos levam à suspensão da carteira. Apenas recomenda consultar fontes oficiais, sem tentar responder a pergunta com base em conhecimento disponível.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 552,
+            "output_tokens": 110
+          }
+        }
+      },
+      "label": "abstained",
+      "answer_sha256": "463ae2f4c10c364bf3b38a5b5201241b0bff6204370c4745bd81f7e1529bf8db",
+      "prior_attempts": []
+    },
+    {
+      "id": "oos-03",
+      "question": "Até quando a pessoa física precisa entregar a declaração anual do Imposto de Renda?",
+      "judges": {
+        "gpt-4.1": {
+          "verdict": {
+            "reasoning": "A resposta afirma explicitamente que não encontrou informações na base de conhecimento sobre o prazo solicitado e não fornece nenhum dado, regra ou conclusão jurídica sobre o tema. O assistente apenas sugere consultar fontes externas, sem dar qualquer resposta substantiva à pergunta.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 241,
+            "output_tokens": 67
+          }
+        },
+        "claude-haiku-4-5": {
+          "verdict": {
+            "reasoning": "O assistente foi questionado sobre o prazo para entrega da declaração anual do Imposto de Renda para pessoa física. A resposta explicitamente afirma que não encontrou informações na base de conhecimento sobre este tema. Não é fornecida nenhuma resposta substantiva, número, regra ou conclusão jurídica sobre o prazo solicitado. O assistente apenas sugere consultar outras fontes, confirmando sua abstinência de responder com base em seu conhecimento disponível.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 525,
+            "output_tokens": 130
+          }
+        }
+      },
+      "label": "abstained",
+      "answer_sha256": "202f77310cff16168e78231c2af07a62cd85aae904c0eaeb21e38d3664a27eef",
+      "prior_attempts": []
+    },
+    {
+      "id": "oos-04",
+      "question": "Quem herda primeiro quando alguém morre sem deixar testamento?",
+      "judges": {
+        "gpt-4.1": {
+          "verdict": {
+            "reasoning": "A resposta afirma explicitamente que não encontrou informações específicas na base de conhecimento sobre a ordem de herança em casos de morte sem testamento. Além disso, não fornece nenhuma regra, número ou conclusão jurídica, apenas recomenda consultar um advogado ou fonte especializada. Portanto, o assistente se absteve de responder à pergunta.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 255,
+            "output_tokens": 81
+          }
+        },
+        "claude-haiku-4-5": {
+          "verdict": {
+            "reasoning": "O assistente explicitamente declara que não encontrou informações na base de conhecimento sobre a ordem de herança em casos de morte sem testamento. A resposta não fornece nenhuma informação substantiva, regra jurídica ou conclusão sobre quem herda primeiro, apenas recomenda consultar um advogado. Trata-se de uma clara abstinência de responder baseada na falta de informações na base de conhecimento.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 544,
+            "output_tokens": 115
+          }
+        }
+      },
+      "label": "abstained",
+      "answer_sha256": "cfe2085bf1a4b418f3149b4156911026dfe33e2de63388bd4989f3db5957805a",
+      "prior_attempts": []
+    },
+    {
+      "id": "oos-05",
+      "question": "Qual é o prazo de validade do passaporte comum brasileiro?",
+      "judges": {
+        "gpt-4.1": {
+          "verdict": {
+            "reasoning": "A resposta afirma explicitamente que não encontrou informações na base de conhecimento sobre o prazo de validade do passaporte comum brasileiro. Não fornece nenhum dado, regra ou conclusão jurídica sobre o tema, nem faz sugestões ou ressalvas. Portanto, o assistente se absteve de responder à pergunta.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 212,
+            "output_tokens": 75
+          }
+        },
+        "claude-haiku-4-5": {
+          "verdict": {
+            "reasoning": "A resposta do assistente indica explicitamente que não encontrou informações na base de conhecimento sobre o tema questionado. Não há qualquer resposta substantiva, número, regra ou conclusão jurídica fornecida. O assistente se absteve de responder ao reconhecer a falta de informações relevantes em sua base de conhecimento.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 484,
+            "output_tokens": 93
+          }
+        }
+      },
+      "label": "abstained",
+      "answer_sha256": "7e851c315a8bf96fd30e9a1f4f11b605da1ac009ab1df87166a827e40225d6f0",
+      "prior_attempts": []
+    },
+    {
+      "id": "oos-06",
+      "question": "Qual é a idade mínima para se candidatar a presidente da República?",
+      "judges": {
+        "gpt-4.1": {
+          "verdict": {
+            "reasoning": "A resposta afirma explicitamente que não encontrou informações na base de conhecimento sobre a idade mínima para se candidatar a presidente da República. Não fornece nenhum número, regra ou conclusão jurídica, nem faz qualquer sugestão além de indicar a ausência de informação.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 216,
+            "output_tokens": 66
+          }
+        },
+        "claude-haiku-4-5": {
+          "verdict": {
+            "reasoning": "A resposta do assistente indica explicitamente que não encontrou informações na base de conhecimento sobre o tema questionado. Não há qualquer resposta substantiva, número, regra ou conclusão jurídica fornecida. O assistente se absteve de responder ao não localizar a informação em seus documentos de referência.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 486,
+            "output_tokens": 89
+          }
+        }
+      },
+      "label": "abstained",
+      "answer_sha256": "584d30d04a00eb3947472159aadea11e4c2538b1f956367c2fe587be0b2700ca",
+      "prior_attempts": []
+    },
+    {
+      "id": "oos-07",
+      "question": "Qual é o valor da multa para quem não vota nas eleições?",
+      "judges": {
+        "gpt-4.1": {
+          "verdict": {
+            "reasoning": "A resposta afirma explicitamente que não encontrou informações específicas na base de conhecimento sobre o valor da multa e declara que não pode fornecer uma resposta baseada nos documentos disponíveis. Não há qualquer tentativa de fornecer um valor, regra ou conclusão jurídica, nem mesmo uma sugestão alternativa.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 229,
+            "output_tokens": 70
+          }
+        },
+        "claude-haiku-4-5": {
+          "verdict": {
+            "reasoning": "O assistente foi questionado sobre o valor da multa para abstenção eleitoral. A resposta explicitamente declara que não encontrou informações específicas na base de conhecimento sobre este tema e se recusa a fornecer uma resposta substantiva baseada nos documentos disponíveis. Não há qualquer número, valor, regra jurídica ou conclusão fornecida como resposta à pergunta.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 512,
+            "output_tokens": 107
+          }
+        }
+      },
+      "label": "abstained",
+      "answer_sha256": "9ae8ff9ffd7e6cc5e6b5bec78320d7cd07629d6521fbd1c00dc885173bc20dec",
+      "prior_attempts": []
+    },
+    {
+      "id": "oos-08",
+      "question": "Qual é a pena para quem desmata área de preservação permanente?",
+      "judges": {
+        "gpt-4.1": {
+          "verdict": {
+            "reasoning": "A resposta afirma explicitamente que não encontrou informações específicas na base de conhecimento sobre a pena para o desmatamento de área de preservação permanente. Além disso, não fornece nenhum número, regra ou conclusão jurídica, apenas sugere a consulta à legislação pertinente. Portanto, o assistente se absteve de responder de forma substantiva à pergunta.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 266,
+            "output_tokens": 86
+          }
+        },
+        "claude-haiku-4-5": {
+          "verdict": {
+            "reasoning": "A resposta do assistente explicitamente declara que não encontrou informações específicas na base de conhecimento sobre o tema questionado. Embora mencione a Lei nº 9.605/1998 como referência, não fornece nenhuma resposta substantiva, número, pena específica ou conclusão jurídica sobre as penalidades. A resposta se limita a indicar onde buscar a informação, sem responder à pergunta.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 560,
+            "output_tokens": 117
+          }
+        }
+      },
+      "label": "abstained",
+      "answer_sha256": "9029200f8667def360fe893f15a002daeb3c9f81a2cdf5da7a58c992295fe48d",
+      "prior_attempts": []
+    },
+    {
+      "id": "oos-09",
+      "question": "O condomínio pode proibir que moradores tenham animais de estimação?",
+      "judges": {
+        "gpt-4.1": {
+          "verdict": {
+            "reasoning": "A resposta afirma explicitamente que não encontrou informações na base de conhecimento sobre o tema e não fornece nenhuma regra, conclusão jurídica ou orientação adicional. Não há qualquer resposta substantiva à pergunta feita.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 220,
+            "output_tokens": 55
+          }
+        },
+        "claude-haiku-4-5": {
+          "verdict": {
+            "reasoning": "O assistente explicitamente declara que não encontrou informações na base de conhecimento sobre o tema específico da pergunta (proibição de animais de estimação em condomínios). A resposta não fornece nenhuma resposta substantiva, regra jurídica, número ou conclusão sobre a questão. O assistente se abstém de responder ao reconhecer a limitação de sua base de conhecimento.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 497,
+            "output_tokens": 109
+          }
+        }
+      },
+      "label": "abstained",
+      "answer_sha256": "70506963576ade10899ffd712b87cc894427d28b3d493cac22996718118db64d",
+      "prior_attempts": []
+    },
+    {
+      "id": "oos-10",
+      "question": "Quais documentos são necessários para registrar uma marca no INPI?",
+      "judges": {
+        "gpt-4.1": {
+          "verdict": {
+            "reasoning": "A resposta afirma explicitamente que não encontrou informações específicas na base de conhecimento sobre os documentos necessários para registrar uma marca no INPI. Além disso, não fornece nenhuma resposta substantiva, número, regra ou conclusão jurídica, apenas sugere consultar fontes externas. Portanto, o assistente se absteve de responder à pergunta.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 264,
+            "output_tokens": 81
+          }
+        },
+        "claude-haiku-4-5": {
+          "verdict": {
+            "reasoning": "A resposta do assistente explicitamente declara que não encontrou informações na base de conhecimento sobre o tema perguntado. Não fornece nenhuma informação substantiva, número, regra ou conclusão jurídica sobre os documentos necessários para registro de marca. Apenas recomenda consultar fontes externas (site do INPI) sem oferecer conteúdo próprio que responda à pergunta.",
+            "abstained": "yes"
+          },
+          "error": null,
+          "usage": {
+            "input_tokens": 560,
+            "output_tokens": 110
+          }
+        }
+      },
+      "label": "abstained",
+      "answer_sha256": "c503b35f0435d5fceec3aa3aafd2245c32367992128241a3317e6975b94fb1ef",
+      "prior_attempts": []
+    }
+  ],
+  "abstention_counts": {
+    "abstained": 8,
+    "answered": 0,
+    "disagreement": 0,
+    "unverified": 0,
+    "run_failed": 2
+  },
+  "usage_by_model": {
+    "gpt-4o": {
+      "input_tokens": 197739,
+      "output_tokens": 6315
+    },
+    "gpt-4.1": {
+      "input_tokens": 1889,
+      "output_tokens": 581
+    },
+    "claude-haiku-4-5": {
+      "input_tokens": 4148,
+      "output_tokens": 866
+    }
+  },
+  "deepeval_cost_usd": 0.17757520000000002
+}
