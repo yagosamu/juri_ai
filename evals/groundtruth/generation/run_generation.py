@@ -17,7 +17,7 @@ from pathlib import Path
 from evals.groundtruth.config import (ANSWERS, GENERATION_REPORT, GENERATION_RUNTIME_DIR, GOLDEN_SET, OUT_OF_SCOPE,
                                       PRODUCTION, SAMPLE_SEED, SAMPLE_SIZE, SCORES, load_corpus)
 from evals.groundtruth.generation.abstention import abstention_counts, relabel_stored_abstention, run_abstention
-from evals.groundtruth.generation.answers import build_answer_row, is_failed_run
+from evals.groundtruth.generation.answers import build_answer_row, input_tokens_per_turn, is_failed_run
 from evals.groundtruth.generation.cost import PRICE_SOURCE, model_cost, total_cost
 from evals.groundtruth.generation.documentos_table import ensure_documentos_table
 from evals.groundtruth.generation.gen_report import MEMORY_UPDATE_COST_NOTE, render_report
@@ -349,14 +349,20 @@ def run_report_only() -> dict:
     }
     extra_costs = {DEEPEVAL_MODEL: deepeval_cost_total(scored_golden)}
 
+    # Tokens per turn over the completed rows (ruling 3): a failed run records 0 input tokens of its
+    # own, so including it would pull the mean down and hide the real per-turn cost.
+    tokens_per_turn = input_tokens_per_turn([r for r in all_rows if not is_failed_run(r)])
+
     report_text = render_report(setup, agg, abstention_results, counts, tool_use, usage_by_model, PRICE_SOURCE,
-                                limitations, extra_costs=extra_costs, failed_rows=failed)
+                                limitations, extra_costs=extra_costs, failed_rows=failed,
+                                tokens_per_turn=tokens_per_turn)
     GENERATION_REPORT.parent.mkdir(parents=True, exist_ok=True)
     GENERATION_REPORT.write_text(report_text, encoding="utf-8")
 
     return {"faithfulness_relevancy": agg, "abstention_results": abstention_results, "abstention_counts": counts,
            "tool_use": tool_use, "failed_ids": [r["id"] for r in failed], "setup": setup,
-           "usage_by_model": usage_by_model, "extra_costs": extra_costs}
+           "usage_by_model": usage_by_model, "extra_costs": extra_costs,
+           "tokens_per_turn": tokens_per_turn}
 
 
 def run_score_only(score_golden_fn=score_golden_answers, abstain_fn=run_abstention,
@@ -547,7 +553,9 @@ def main(argv: list[str] | None = None) -> dict:
 
     if not args.smoke:
         report_text = render_report(setup, agg, abstention_results, counts, tool_use, usage_by_model, PRICE_SOURCE,
-                                    limitations, extra_costs=extra_costs, failed_rows=failed)
+                                    limitations, extra_costs=extra_costs, failed_rows=failed,
+                                    tokens_per_turn=input_tokens_per_turn(
+                                        [r for r in all_rows if not is_failed_run(r)]))
         GENERATION_REPORT.parent.mkdir(parents=True, exist_ok=True)
         GENERATION_REPORT.write_text(report_text, encoding="utf-8")
 

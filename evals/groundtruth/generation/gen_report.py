@@ -9,13 +9,28 @@ from evals.groundtruth.generation.cost import model_cost, total_cost
 # Matches the OpenAI 429 TPM message: "... on tokens per min (TPM): Limit 30000, Requested 40571. ..."
 TPM_ERROR_PATTERN = re.compile(r"Limit\s+(\d+),\s+Requested\s+(\d+)")
 
-# Task 20: this used to name "5000-character chunks", which stopped being true when production adopted
-# 1500/150. The chunking is already stated in the Setup section of every report, so the note points there
-# rather than carrying a second copy that can go stale.
-TIER_1_TPM_NOTE = (
-    "A single agent turn with the retrieval config named in Setup above, at 10 results per search, can "
-    "send enough context to gpt-4o to exceed a Tier 1 OpenAI account's 30,000 tokens-per-minute limit on "
-    "its own.")
+# Task 20, phase 3: a rate-limit failure has two different causes and the report used to assert only
+# one of them unconditionally. At the pre-adoption 5000/0 config a single turn really did send more than
+# the whole per-minute budget (largest measured turn 40912 input tokens). At 1500/150 the largest turn is
+# 6257, so one turn cannot do it and any failure comes from consecutive turns landing inside the same
+# minute. Which note is rendered is decided from the measured tokens-per-turn maximum, never assumed, and
+# neither is rendered unless a run actually failed.
+TPM_SINGLE_TURN_NOTE = (
+    "One agent turn, with the retrieval config named in Setup above and 10 results per search, sent more "
+    "than a Tier 1 OpenAI account's 30,000 gpt-4o tokens-per-minute limit on its own: the largest "
+    "measured turn is {max_tokens} input tokens.")
+
+TPM_PACING_NOTE = (
+    "No single turn came close to the limit: the largest measured turn is {max_tokens} input tokens, "
+    "against a Tier 1 OpenAI account's 30,000 gpt-4o tokens-per-minute limit. The harness paces nothing, "
+    "calling the agent back to back with no delay and no backoff, so consecutive turns accumulate inside "
+    "the same one-minute window. The failed-run count is therefore a property of that pacing and of the "
+    "account tier, not of the retrieval config being measured.")
+
+TPM_UNMEASURED_NOTE = (
+    "Tokens per turn were not measured for this run, so whether one turn alone exceeded the account's "
+    "30,000 gpt-4o tokens-per-minute limit, or consecutive turns accumulated inside one minute, is not "
+    "determined here.")
 
 # Confirmed in agno 2.4.7 source: with update_memory_on_run=True, each agent.run() starts a background
 # future (ThreadPoolExecutor "agno-bg", agent.py:758-760 and 1136) that calls
@@ -48,9 +63,19 @@ def parse_tpm_error(message: str) -> dict | None:
     return {"limit": int(match.group(1)), "requested": int(match.group(2))}
 
 
+def tpm_cause_note(tokens_per_turn: dict | None) -> str:
+    """Which explanation of a rate-limit failure the measured data actually supports."""
+    if not tokens_per_turn or tokens_per_turn.get("max") is None:
+        return TPM_UNMEASURED_NOTE
+    max_tokens = tokens_per_turn["max"]
+    limit = tokens_per_turn.get("tpm_limit", 30000)
+    template = TPM_SINGLE_TURN_NOTE if max_tokens > limit else TPM_PACING_NOTE
+    return template.format(max_tokens=max_tokens)
+
+
 def render_report(setup: dict, agg: dict, abstention_results: list, abstention_counts_: dict, tool_use: dict,
                   usage_by_model: dict, price_source: str, limitations: list, extra_costs: dict | None = None,
-                  failed_rows: list | None = None) -> str:
+                  failed_rows: list | None = None, tokens_per_turn: dict | None = None) -> str:
     """setup keys: agent_model, retrieval_config, seed, sampled_golden_ids, sampled_oos_ids,
     deepeval_model, deepeval_version, abstention_judges. tool_use keys: searched, datajud_called, total.
 
@@ -134,10 +159,21 @@ def render_report(setup: dict, agg: dict, abstention_results: list, abstention_c
             requested = parsed["requested"] if parsed else "n/a"
             lines.append(f"| {row['id']} | {limit} | {requested} |")
         lines.append("")
-        lines.append(TIER_1_TPM_NOTE)
+        lines.append(tpm_cause_note(tokens_per_turn))
     else:
         lines.append("No run failed.")
     lines.append("")
+
+    if tokens_per_turn:
+        lines += ["## Tokens per turn", ""]
+        lines.append("Input tokens sent by one agent turn, over every answer row of this run.")
+        lines.append("")
+        lines.append("| turns | mean | median | max | over the limit | limit |")
+        lines.append("|---|---|---|---|---|---|")
+        lines.append(f"| {tokens_per_turn['count']} | {_fmt(tokens_per_turn['mean'], 1)} | "
+                     f"{_fmt(tokens_per_turn['median'], 1)} | {tokens_per_turn['max']} | "
+                     f"{tokens_per_turn['over_tpm_limit']} | {tokens_per_turn['tpm_limit']} |")
+        lines.append("")
 
     lines += ["## Tool use", ""]
     lines.append(f"Answers that searched the knowledge base: {tool_use['searched']} of {tool_use['total']}.")
@@ -160,8 +196,11 @@ def render_report(setup: dict, agg: dict, abstention_results: list, abstention_c
     lines.append("")
     lines.append(MEMORY_UPDATE_COST_NOTE)
     lines.append("")
-    lines.append(JUDGE_USAGE_INCLUDES_FAILED_NOTE)
-    lines.append("")
+    if failed_rows:
+        # With no failed run there is no error text any judge was called on, so the note would be
+        # describing calls this run never made.
+        lines.append(JUDGE_USAGE_INCLUDES_FAILED_NOTE)
+        lines.append("")
 
     lines += ["## Limitations", ""]
     for item in limitations:
