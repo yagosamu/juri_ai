@@ -3,7 +3,8 @@ cache/chunks/
 indexes/
 runtime/
 results/*.json
-generation/answers.jsonl
-generation/scores.json
+# generation/answers.jsonl and generation/scores.json were ignored until Task 21. The abstention
+# gate reads them, and the baseline-change label job can only protect a tracked path, so the record
+# of the 2026-10-06 run is now committed next to the preserved pre-adoption pair.
 golden/decisions.jsonl
 cache/triage/
