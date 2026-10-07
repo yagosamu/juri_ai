@@ -1,5 +1,5 @@
 # PRD: JuriAI
-> Documento de Produto | Versão 3.0 | Setembro 2026
+> Documento de Produto | Versão 3.1 | Outubro 2026
 
 ---
 
@@ -53,7 +53,7 @@
 
 | Agente | Stack e modelo | O que faz |
 |---|---|---|
-| **JuriAI** | Agno 2.4.7, modelo padrão do Agno (gpt-4o), LanceDB | Responde perguntas jurídicas sobre os documentos do cliente (RAG com filtro `cliente_id`), consulta processos no DataJud/CNJ e mantém memória de longo prazo (`update_memory_on_run=True`) |
+| **JuriAI** | Agno 2.4.7, modelo padrão do Agno (gpt-4o), LanceDB | Responde perguntas jurídicas sobre os documentos do cliente (RAG com filtro `cliente_id`), consulta processos no DataJud/CNJ e mantém memória de longo prazo (`update_memory_on_run=True`). Desde outubro de 2026 é instruído a dizer que não encontrou base, em vez de responder pelo conhecimento geral, quando a busca não sustenta a resposta |
 | **SecretariaAI** | Agno, gpt-4o-mini, Evolution API, Google Calendar | Atende no WhatsApp, agenda reuniões entre 13h e 18h e cria leads para contatos novos; histórico por telefone (`session_id=phone_number`) |
 | **JurisprudenciaAI** | LangChain, gpt-4.1-mini, saída estruturada Pydantic | Analisa petições e contratos: `indice_risco` de 0 a 100, erros de coerência, riscos jurídicos, problemas de formatação e red flags |
 | **RedacaoAI** | Agno, gpt-4o | Gera minutas a partir de templates, dados do cliente, do processo e instruções do advogado |
@@ -93,7 +93,7 @@ Groundtruth (`evals/groundtruth/`) é o harness de avaliação do RAG do JuriAI.
 - **Corpus:** 4 leis públicas (CPC, CDC, CLT, LGPD), normalizadas e com manifesto.
 - **Golden set:** 59 perguntas, cada uma ligada a um trecho exato do texto (spans de caracteres). As perguntas foram selecionadas por consenso de dois juízes (gpt-4.1 e claude-haiku-4-5, rubrica v2), com calibração cega. Há também perguntas fora de escopo verificadas contra o corpus.
 - **Métricas:** recall@1, @5 e @10, MRR e nDCG@10, com regra de acerto bidirecional sobre spans.
-- **Configurações comparadas:** production (5000/0, vetorial), chunk1500, chunk800, hybrid e rerank (bge-reranker-v2-m3).
+- **Configurações comparadas:** production, que era 5000/0 vetorial na comparação e hoje roda 1500/150, mais chunk1500, chunk800, hybrid e rerank (bge-reranker-v2-m3).
 - **Significância:** intervalos de bootstrap e testes pareados pré-registrados (McNemar exato, bootstrap e sign-flip para MRR), com correção de Holm.
 - **Geração:** faithfulness e answer relevancy do agente JuriAI real, pontuadas pelo DeepEval, separadas da avaliação de retrieval.
 
@@ -101,22 +101,26 @@ Groundtruth (`evals/groundtruth/`) é o harness de avaliação do RAG do JuriAI.
 
 Fonte: `evals/groundtruth/results/`.
 
+A comparação de setembro, com `production` ainda em 5000/0:
+
 | Configuração | recall@1 | recall@10 | MRR |
 |---|---|---|---|
-| production (atual) | 0.373 | 0.915 | 0.594 |
+| production, antes da adoção | 0.373 | 0.915 | 0.594 |
 | chunk1500 | 0.712 | 0.932 | 0.811 |
 | hybrid | 0.695 | 0.966 | 0.806 |
 | rerank | 0.881 | 0.966 | 0.921 |
 
-- **Recomendação medida:** chunk1500 como padrão. Os ganhos de recall@1 e MRR sobre production são significativos após Holm (p=0.0004 e 0.0010); o de recall@10 não é. Ainda não foi implantado.
-- **Rerank** tem os melhores números de ranking, mas a busca leva 45356 ms no p50, porque o agno 2.4.7 recarrega o modelo a cada chamada.
-- **Geração:** faithfulness média de 0.952 (n=29) e relevancy de 0.983 (n=30).
-- **Abstenção:** o agente não se absteve em nenhuma das 7 perguntas fora de escopo concluídas (0 de 7); 3 das 10 falharam por limite de tokens por minuto.
+- **Adotado em produção:** chunk1500, em 30 de setembro de 2026. Os ganhos de recall@1 e MRR sobre a configuração anterior são significativos após Holm (p=0.0004 e 0.0010); o de recall@10 não é. Registro em `results/adoption.md`, e o baseline do gate passou a ser recall@10 0.9322 e MRR 0.8107.
+- **Rerank** tem os melhores números de ranking e continua fora de cogitação por latência. O recarregamento do modelo a cada chamada, que o agno 2.4.7 faz, era 23% do custo: corrigido no harness, o p50 caiu de 45356 ms para 34730 ms, e as métricas de ranking saíram idênticas em precisão completa. O resto é a passagem do cross-encoder em CPU. Registro em `results/rerank_cache.md`.
+- **Geração, medida de novo na configuração adotada:** faithfulness 0.938 (n=28) e relevancy 0.971 (n=30), contra 0.952 (n=29) e 0.983 (n=30) antes. Chunking e instrução mudaram juntos, então a comparação não isola nenhum dos dois.
+- **Abstenção, depois da instrução nova:** 10 de 10 perguntas fora de escopo terminaram em abstenção, contra 0 de 7 antes. Nenhuma execução falhou, contra 3 de 10 antes, porque os tokens por turno caíram de 15004 de média, com máximo de 40912, para 5480 e 6257. Registro em `results/generation_adoption.md`.
+- **O custo dessa mudança:** uma pergunta dentro do escopo passou a ser recusada, a `r1-cdc-060`. Isso motivou a métrica da seção 6.3.
 
 ### 6.3 Gate de regressão no CI
 
 - **`groundtruth.yml`:** roda os testes a cada pull request, a cada push na main e por disparo manual. Reprova se o recall@10 de produção cair mais de 0.01 ou o MRR mais de 0.02 abaixo de `baseline.json`. Demonstrado no PR #12, em que `MAX_RESULTS=3` derrubou o recall@10 de 0.915 para 0.780 e o check reprovou.
-- **`groundtruth-baseline-label.yml`:** reprova quando um PR altera o baseline, o golden set, o índice ou o cache de consultas sem o rótulo `baseline-change`. Num repositório com um único mantenedor, isso é uma trava de atenção, não um controle de autorização.
+- **Abstenção, nos dois sentidos:** fora de escopo, as abstenções não podem cair de 10 de 10; dentro do escopo, as recusas não podem subir de 1 de 30. Essa segunda direção existe porque faithfulness e relevancy são cegas para a recusa indevida: o DeepEval deu 1.00 nas duas métricas para a recusa da `r1-cdc-060`, já que uma recusa não afirma nada e portanto não contradiz nada. A detecção é offline e reconhece frases conhecidas, então uma recusa parafraseada escapa. Esse gate protege o registro versionado, não o comportamento ao vivo: mudar a instrução do agente só reprova o CI depois que a geração for rodada e versionada de novo. Registro em `results/abstention.md`.
+- **`groundtruth-baseline-label.yml`:** reprova quando um PR altera o baseline, o golden set, o índice, o cache de consultas, as respostas versionadas da geração ou o baseline de abstenção sem o rótulo `baseline-change`. Num repositório com um único mantenedor, isso é uma trava de atenção, não um controle de autorização.
 
 ### 6.4 Revisão humana
 
@@ -167,9 +171,9 @@ Fonte: `evals/groundtruth/results/`.
 | Filtro `cliente_id` depois do top-k | O agno 2.4.7 busca as 10 linhas mais próximas e só depois filtra por cliente. Medido com 2 clientes: 26 de 59 perguntas receberam menos de 10 trechos; buscando pelo cliente que não é dono do documento, 33 de 59 receberam 0. Nenhum vazamento entre clientes em 236 buscas | Over-fetch ×10 já mitiga no harness de avaliação; no app, exige `cliente_id` como coluna (mudança no agno ou banco vetorial próprio) |
 | Isolamento só na camada de RAG | Não há row-level security no banco | Avaliar junto com multi-tenancy de escritórios |
 | Índice vetorial efêmero no Render | `render.yaml` define `DATA_DIR=/tmp/juri-ai` | Armazenamento persistente antes de escalar |
-| Chunking de produção | 5000 caracteres sem overlap; recall@1 de 0.373 | Adotar chunk1500 (medido, ainda não implantado) |
-| Abstenção | 0 de 7 perguntas fora de escopo concluídas terminaram em abstenção | Instrução e limiar de abstenção, medidos pelo Groundtruth |
-| Tokens por turno | 3 de 10 execuções fora de escopo passaram de 30000 tokens por minuto | Limitar o contexto por turno |
+| Documentos já indexados não são reprocessados | O signal só enfileira OCR e indexação na criação do registro (`usuarios/signals.py:7-16`), então a tabela misturaria trechos de 5000 caracteres, de antes da adoção, com trechos de 1500 | Um comando de reindexação, antes de qualquer cliente real |
+| Recusa indevida | 1 de 30 perguntas do golden set é recusada, e as duas métricas de qualidade não detectam isso | Gate de abstenção já criado; a detecção reconhece frases conhecidas e pode subestimar |
+| Ritmo das chamadas no harness | A avaliação de geração dispara uma pergunta após a outra, sem pausa nem recuo, então a soma dos turnos pode estourar a janela de um minuto | Pacing no harness; não afeta a aplicação |
 | Data fixa na SecretariaAI | A data e hora nas instruções são calculadas quando o servidor sobe | Montar as instruções por requisição |
 | Plano gratuito do Render | Web e banco no plano free | Plano pago antes de clientes reais |
 
@@ -187,11 +191,12 @@ Fonte: `evals/groundtruth/results/`.
 | Fase 5: Calculadora judicial | Concluída | Índices, cálculo judicial e trabalhista, tabelas de tribunal, parcelas e cenários |
 | Fase 6: Observabilidade de IA | Concluída (julho 2026) | Langfuse opcional, OpenTelemetry e OpenInference, mascaramento de dados pessoais |
 | Fase 7: Avaliação e qualidade do RAG | Concluída (setembro 2026) | Groundtruth: golden set, 5 configurações, significância, avaliação de geração, gate de CI, medição multi-cliente |
-| Fase 8: Aplicar o que foi medido | Próxima | chunk1500 em produção, controle de tokens por turno, abstenção |
+| Fase 8: Aplicar o que foi medido | Concluída (outubro 2026) | chunk1500 em produção, instrução de abstenção, tokens por turno dentro do limite, gate de abstenção nos dois sentidos, reranker sem recarregar o modelo |
+| Fase 9: Selo humano | Próxima | Ingestão da revisão do advogado e publicação da concordância com os juízes automáticos |
 
 ### Backlog
 
-- **Avaliação:** golden set de 59 para 100 perguntas; cache do reranker; concordância com a revisão do advogado.
+- **Avaliação:** golden set de 59 para 100 perguntas; pacing das chamadas no harness; avaliação de geração em escala maior, quando a conta OpenAI subir de tier.
 - **Infraestrutura:** índice vetorial persistente; avaliar a migração para Azure AI Search, com antes e depois medidos pelo Groundtruth; pré-filtro real por `cliente_id`.
 - **Segurança:** 2FA e CSP dedicado.
 - **Produto:** portal do cliente, PWA e notificações push, análise preditiva e jurimetria, multi-tenancy para escritórios com vários advogados, planos e cobrança.
@@ -239,4 +244,4 @@ Levantamento de junho de 2026, não reverificado desde então.
 
 ---
 
-*Última atualização: setembro de 2026*
+*Última atualização: outubro de 2026*
